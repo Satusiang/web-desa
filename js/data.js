@@ -1,0 +1,286 @@
+// Mengisi halaman publik dengan data dari Supabase.
+// Jika Supabase belum dikonfigurasi atau gagal dihubungi, isi bawaan di HTML tetap tampil.
+import { getClient, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf } from './sb.js';
+
+const $ = (s) => document.querySelector(s);
+const page = document.body.dataset.page;
+const BLN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+function setText(key, value) {
+  if (value == null || String(value).trim() === '') return;
+  document.querySelectorAll(`[data-bind="${key}"]`).forEach(el => { el.textContent = value; el.classList.remove('belum'); });
+}
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const inisial = (n) => String(n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+// ---------- kartu & daftar ----------
+function kartuBerita(b) {
+  const foto = safeUrl(b.foto_url);
+  return `<article><a class="card-link" href="berita.html?id=${encodeURIComponent(b.id)}">
+    <div class="img">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : 'Desa Karang Bahagia'}</div>
+    <div class="txt"><time>${esc(tanggalID(b.tanggal))}</time> <span class="kat">· ${esc(b.kategori || '')}</span>
+    <h3>${esc(b.judul)}</h3><p>${esc(ringkas(b.isi))}</p></div></a></article>`;
+}
+function kartuAgenda(a) {
+  const [, m, d] = String(a.tanggal).split('-').map(Number);
+  const info = [a.waktu, a.tempat].filter(Boolean).map(esc).join(' · ');
+  return `<div class="ag"><div class="tgl"><b>${d}</b><small>${BLN[m - 1]}</small></div>
+    <div><h4>${esc(a.judul)}</h4><p>${esc(tanggalID(a.tanggal))}${info ? ' · ' + info : ''}</p>${a.keterangan ? `<p>${esc(a.keterangan)}</p>` : ''}</div></div>`;
+}
+function kartuOrang(p) {
+  const foto = safeUrl(p.foto_url);
+  return `<div class="person"><div class="avatar">${foto ? `<img src="${esc(foto)}" alt="">` : esc(inisial(p.nama))}</div>
+    <b>${esc(p.nama)}</b><small>${esc(p.jabatan)}</small></div>`;
+}
+function totalOf(arr) { return (Array.isArray(arr) ? arr : []).reduce((s, b) => s + (Number(b.nilai) || 0), 0); }
+
+// ---------- bagian bersama ----------
+function terapkanPengaturan(cfg) {
+  const k = cfg.kontak || {}, p = cfg.profil || {}, s = cfg.statistik || {}, pg = cfg.pengumuman || {};
+  if (k.wa) {
+    window.WA_DESA = waIntl(k.wa);
+    $('#wa-float')?.removeAttribute('hidden');
+    document.querySelectorAll('[data-bind="wa"]').forEach(a => { a.textContent = waLocal(k.wa); a.href = `https://wa.me/${window.WA_DESA}`; a.classList.remove('belum'); });
+  }
+  if (k.telp) document.querySelectorAll('[data-bind="telp"]').forEach(a => { a.textContent = k.telp; a.href = `tel:${k.telp.replace(/[^\d+]/g, '')}`; a.classList.remove('belum'); });
+  if (k.email) document.querySelectorAll('[data-bind="email"]').forEach(a => { a.textContent = k.email; a.href = `mailto:${k.email}`; a.classList.remove('belum'); });
+  setText('alamat', k.alamat);
+  setText('jam', k.jam);
+
+  if (pg.aktif && pg.teks) {
+    const t = $('#pengumuman-teks');
+    const url = safeUrl(pg.tautan);
+    t.innerHTML = esc(pg.teks) + (url ? ` <a href="${esc(url)}">Selengkapnya →</a>` : '');
+    $('#pengumuman').hidden = false;
+  }
+
+  ['kades', 'sejarah', 'visi', 'sambutan', 'batas_utara', 'batas_selatan', 'batas_timur', 'batas_barat'].forEach(x => setText(x, p[x]));
+  if (Array.isArray(p.misi) && p.misi.length) {
+    document.querySelectorAll('[data-bind="misi"]').forEach(el => { el.innerHTML = p.misi.map(m => `<li>${esc(m)}</li>`).join(''); });
+  }
+  const fmt = (v) => (v === '' || v == null) ? '' : (isFinite(Number(String(v).replace(/\./g, ''))) ? Number(String(v).replace(/\./g, '')).toLocaleString('id-ID') : v);
+  ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt'].forEach(x => setText('st-' + x, fmt(s[x])));
+  setText('st-luas', s.luas);
+  if (s.tahun_data) setText('st-tahun', `Data tahun ${s.tahun_data}`);
+
+  const dar = (cfg.darurat || {}).daftar;
+  if (Array.isArray(dar) && dar.length && $('#darurat')) {
+    $('#darurat').innerHTML = dar.map(d => `<a href="tel:${esc(String(d.nomor).replace(/[^\d+]/g, ''))}"><b>${esc(d.nomor)}</b><small>${esc(d.nama)}</small></a>`).join('');
+  }
+  const bd = cfg.bumdes || {};
+  if ($('#bumdes') && (bd.nama || bd.url)) {
+    setText('bumdes-nama', bd.nama); setText('bumdes-ringkasan', bd.ringkasan);
+    const u = safeUrl(bd.url); if (u) $('#bumdes-link').href = u;
+  }
+  const peta = $('#peta');
+  if (peta) {
+    const mp = mapsInfo(k.maps_embed);
+    if (mp.embed || mp.link) {
+      peta.classList.toggle('has-map', !!mp.embed);
+      peta.innerHTML = (mp.embed ? `<iframe src="${esc(mp.embed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Peta lokasi kantor desa"></iframe>` : '')
+        + (mp.link ? `<a class="btn map-btn" href="${esc(mp.link)}" target="_blank" rel="noopener">Buka di Google Maps</a>` : '');
+    }
+  }
+}
+
+// ---------- per halaman ----------
+async function beranda(sb) {
+  const [b, a, ap] = await Promise.all([
+    sb.from('berita').select('id,judul,isi,kategori,tanggal,foto_url').eq('terbit', true).order('tanggal', { ascending: false }).limit(3),
+    sb.from('agenda').select('*').gte('tanggal', today()).order('tanggal').limit(4),
+    sb.from('apbdes').select('*').order('tahun', { ascending: false }).limit(1),
+  ]);
+  if (b.data?.length) $('#berita-terbaru').innerHTML = b.data.map(kartuBerita).join('');
+  if (a.data) $('#agenda-dekat').innerHTML = a.data.length ? a.data.map(kartuAgenda).join('') : '<p class="empty">Belum ada agenda terdekat.</p>';
+  const x = ap.data?.[0];
+  if (x) {
+    $('#apb-mini').innerHTML = `<p class="muted">APBDes Tahun ${x.tahun}</p>
+      <div class="apb-ringkas"><div><small>Pendapatan</small><b>${rupiah(totalOf(x.pendapatan))}</b></div>
+      <div><small>Belanja</small><b>${rupiah(totalOf(x.belanja))}</b></div>
+      <div><small>Pembiayaan</small><b>${rupiah(totalOf(x.pembiayaan))}</b></div></div>`;
+  }
+}
+
+async function profil(sb) {
+  const { data } = await sb.from('perangkat').select('*').order('urutan').order('dibuat');
+  if (!data) return;
+  const grup = (k) => data.filter(p => p.kelompok === k);
+  if (grup('pemerintah').length) $('#perangkat').innerHTML = grup('pemerintah').map(kartuOrang).join('');
+  $('#bpd').innerHTML = grup('bpd').length ? grup('bpd').map(kartuOrang).join('') : '<p class="empty">Data BPD menyusul.</p>';
+  $('#lembaga').innerHTML = grup('lembaga').length ? grup('lembaga').map(kartuOrang).join('') : '<p class="empty">Data lembaga desa menyusul.</p>';
+}
+
+async function layanan(sb) {
+  const { data } = await sb.from('layanan').select('*').order('urutan').order('dibuat');
+  if (!data?.length) return;
+  $('#layanan-list').innerHTML = data.map(l => `<div class="card"><h3>${esc(l.nama)}</h3>
+    <b class="small">Syarat:</b><ul>${String(l.syarat || '').split('\n').filter(s => s.trim()).map(s => `<li>${esc(s.trim())}</li>`).join('')}</ul>
+    ${l.lama ? `<p class="ket">Lama proses: ${esc(l.lama)}</p>` : ''}${l.keterangan ? `<p class="ket">${esc(l.keterangan)}</p>` : ''}</div>`).join('');
+}
+
+let apbCache = [];
+function gambarAPB(tahun) {
+  const x = apbCache.find(a => a.tahun === tahun);
+  document.querySelectorAll('#tahun-apb button').forEach(b => b.classList.toggle('on', +b.dataset.t === tahun));
+  if (!x) return;
+  const bagian = (judul, arr) => {
+    const rows = Array.isArray(arr) ? arr : [];
+    if (!rows.length) return '';
+    const tot = totalOf(rows), max = Math.max(...rows.map(r => Number(r.nilai) || 0), 1);
+    return `<h3 style="color:var(--hijau-2);margin-top:18px">${judul}</h3>
+      <div class="bars">${rows.map(r => `<div class="bar-row"><span>${esc(r.uraian)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${((Number(r.nilai) || 0) / max * 100).toFixed(1)}%"></div></div>
+        <span class="v">${rupiah(r.nilai)}</span></div>`).join('')}</div>
+      <div class="table-scroll"><table class="tbl"><thead><tr><th>Uraian</th><th style="text-align:right">Jumlah</th></tr></thead><tbody>
+        ${rows.map(r => `<tr><td>${esc(r.uraian)}</td><td class="num">${rupiah(r.nilai)}</td></tr>`).join('')}
+        <tr class="total"><td>Total ${judul.toLowerCase()}</td><td class="num">${rupiah(tot)}</td></tr></tbody></table></div>`;
+  };
+  $('#apbdes').innerHTML = `${x.catatan ? `<p class="muted">${esc(x.catatan)}</p>` : ''}
+    <div class="apb-ringkas"><div><small>Pendapatan</small><b>${rupiah(totalOf(x.pendapatan))}</b></div>
+    <div><small>Belanja</small><b>${rupiah(totalOf(x.belanja))}</b></div>
+    <div><small>Pembiayaan</small><b>${rupiah(totalOf(x.pembiayaan))}</b></div></div>
+    ${bagian('Pendapatan', x.pendapatan)}${bagian('Belanja', x.belanja)}${bagian('Pembiayaan', x.pembiayaan)}`;
+}
+
+let dokCache = [];
+function gambarDokumen(kat) {
+  const list = dokCache.filter(d => kat === 'Semua' || d.kategori === kat);
+  $('#dokumen').innerHTML = list.length ? list.map(d => `<div class="doc"><div><b>${esc(d.judul)}</b>
+    <small>${esc(d.kategori)}${d.keterangan ? ' · ' + esc(d.keterangan) : ''}</small></div>
+    <a class="btn alt" href="${esc(safeUrl(d.file_url))}" target="_blank" rel="noopener">Unduh</a></div>`).join('') : '<p class="empty">Belum ada dokumen.</p>';
+}
+
+async function transparansi(sb) {
+  const [ap, pb, dk] = await Promise.all([
+    sb.from('apbdes').select('*').order('tahun', { ascending: false }),
+    sb.from('pembangunan').select('*').order('tahun', { ascending: false }).order('dibuat', { ascending: false }),
+    sb.from('dokumen').select('*').order('urutan').order('dibuat', { ascending: false }),
+  ]);
+  if (ap.data) {
+    apbCache = ap.data;
+    if (apbCache.length) {
+      $('#tahun-apb').innerHTML = apbCache.map(a => `<button data-t="${a.tahun}">${a.tahun}</button>`).join('');
+      $('#tahun-apb').onclick = e => { if (e.target.dataset.t) gambarAPB(+e.target.dataset.t); };
+      gambarAPB(apbCache[0].tahun);
+    } else $('#apbdes').innerHTML = '<p class="empty">Data APBDes belum diunggah.</p>';
+  }
+  if (pb.data) {
+    $('#pembangunan').innerHTML = pb.data.length ? pb.data.map(p => {
+      const foto = safeUrl(p.foto_url);
+      return `<div class="card"><div class="foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : ''}</div>
+        <div><h3>${esc(p.nama)}</h3><p class="small muted">${[p.lokasi, 'Tahun ' + p.tahun, p.sumber_dana].filter(Boolean).map(esc).join(' · ')}</p>
+        ${Number(p.anggaran) ? `<p class="small"><b>${rupiah(p.anggaran)}</b></p>` : ''}
+        <div class="progres"><i style="width:${Math.max(0, Math.min(100, p.progres))}%"></i></div><small class="muted">Progres ${p.progres}%</small>
+        ${p.keterangan ? `<p class="small muted">${esc(p.keterangan)}</p>` : ''}</div></div>`;
+    }).join('') : '<p class="empty">Belum ada data kegiatan pembangunan.</p>';
+  }
+  if (dk.data) {
+    dokCache = dk.data;
+    const kats = ['Semua', ...new Set(dokCache.map(d => d.kategori))];
+    $('#filter-dok').innerHTML = kats.map((k, i) => `<button data-k="${esc(k)}" class="${i ? '' : 'on'}">${esc(k)}</button>`).join('');
+    $('#filter-dok').onclick = e => {
+      if (!e.target.dataset.k) return;
+      document.querySelectorAll('#filter-dok button').forEach(b => b.classList.toggle('on', b === e.target));
+      gambarDokumen(e.target.dataset.k);
+    };
+    gambarDokumen('Semua');
+  }
+}
+
+async function berita(sb) {
+  const id = new URLSearchParams(location.search).get('id');
+  if (id) {
+    const { data } = await sb.from('berita').select('*').eq('id', id).eq('terbit', true).maybeSingle();
+    $('#daftar-berita').hidden = true;
+    const box = $('#artikel');
+    box.hidden = false;
+    if (!data) { box.innerHTML = '<p class="empty">Berita tidak ditemukan.</p><a class="more" href="berita.html">← Semua berita</a>'; return; }
+    document.title = `${data.judul} – Desa Karang Bahagia`;
+    const foto = safeUrl(data.foto_url);
+    box.innerHTML = `<a class="more" href="berita.html">← Semua berita</a>
+      <p class="kat" style="margin-top:14px">${esc(tanggalID(data.tanggal))} · ${esc(data.kategori || '')}</p>
+      <h1>${esc(data.judul)}</h1>${foto ? `<img class="cover" src="${esc(foto)}" alt="">` : ''}${paragraf(data.isi)}`;
+    return;
+  }
+  const [b, a] = await Promise.all([
+    sb.from('berita').select('id,judul,isi,kategori,tanggal,foto_url').eq('terbit', true).order('tanggal', { ascending: false }).limit(60),
+    sb.from('agenda').select('*').gte('tanggal', today()).order('tanggal').limit(20),
+  ]);
+  if (b.data) $('#semua-berita').innerHTML = b.data.length ? b.data.map(kartuBerita).join('') : '<p class="empty">Belum ada berita.</p>';
+  if (a.data) $('#agenda-semua').innerHTML = a.data.length ? a.data.map(kartuAgenda).join('') : '<p class="empty">Belum ada agenda.</p>';
+}
+
+let umkmCache = [];
+function gambarUMKM(kat) {
+  const list = umkmCache.filter(u => kat === 'Semua' || u.kategori === kat);
+  $('#umkm').innerHTML = list.length ? list.map(u => {
+    const foto = safeUrl(u.foto_url);
+    const wa = u.wa ? waIntl(u.wa) : '';
+    return `<div class="card"><div class="foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : '🛍️'}</div>
+      <div class="body"><span class="kat">${esc(u.kategori)}</span><h3>${esc(u.nama)}</h3><p>${esc(u.deskripsi)}</p>
+      ${u.harga ? `<span class="harga">${esc(u.harga)}</span>` : ''}${u.alamat ? `<small class="muted">${esc(u.alamat)}</small>` : ''}
+      ${wa ? `<a class="btn" href="#" data-wa="Halo ${esc(u.nama)}, saya lihat di website Desa Karang Bahagia dan ingin bertanya." data-wa-no="${esc(wa)}">Pesan via WhatsApp</a>` : ''}</div></div>`;
+  }).join('') : '<p class="empty">Belum ada UMKM yang terdaftar.</p>';
+}
+async function ekonomi(sb) {
+  const { data } = await sb.from('umkm').select('*').eq('tampil', true).order('urutan').order('dibuat');
+  if (!data) return;
+  umkmCache = data;
+  const kats = ['Semua', ...new Set(data.map(u => u.kategori))];
+  $('#filter-umkm').innerHTML = kats.length > 2 ? kats.map((k, i) => `<button data-k="${esc(k)}" class="${i ? '' : 'on'}">${esc(k)}</button>`).join('') : '';
+  $('#filter-umkm').onclick = e => {
+    if (!e.target.dataset.k) return;
+    document.querySelectorAll('#filter-umkm button').forEach(b => b.classList.toggle('on', b === e.target));
+    gambarUMKM(e.target.dataset.k);
+  };
+  gambarUMKM('Semua');
+}
+
+function kartuLaporan(l, lengkap) {
+  return `<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <span class="kat">${esc(l.kategori)} · ${esc(tanggalID(l.dibuat))}${lengkap ? '' : ' · ' + esc(l.tiket)}</span>
+    <span class="status-b st-${esc(l.status)}">${esc(l.status)}</span></div>
+    ${l.isi ? `<p style="margin-top:6px">${esc(l.isi)}</p>` : ''}${l.lokasi ? `<p class="small muted">📍 ${esc(l.lokasi)}</p>` : ''}
+    ${l.tanggapan ? `<div class="tg"><b>Tanggapan desa:</b> ${esc(l.tanggapan)}</div>` : ''}</div>`;
+}
+async function lapor(sb) {
+  $('#lapor-off')?.setAttribute('hidden', '');
+  $('#f-lapor').hidden = false; $('#f-cek').hidden = false;
+  $('#f-lapor').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = e.submitter; btn.disabled = true;
+    $('#lp-err').textContent = '';
+    const { data, error } = await sb.rpc('kirim_pengaduan', {
+      p_nama: $('#lp-nama').value, p_kontak: $('#lp-kontak').value, p_kategori: $('#lp-kat').value,
+      p_isi: $('#lp-isi').value, p_lokasi: $('#lp-lokasi').value,
+    });
+    btn.disabled = false;
+    if (error) { $('#lp-err').textContent = 'Gagal mengirim: ' + error.message; return; }
+    $('#f-lapor').reset();
+    $('#lp-hasil').innerHTML = `<div class="tiket">Laporan terkirim. Simpan nomor tiket ini untuk mengecek status:<br><b>${esc(data)}</b></div>`;
+    $('#ck-tiket').value = data;
+  });
+  $('#f-cek').addEventListener('submit', async e => {
+    e.preventDefault();
+    const { data, error } = await sb.rpc('cek_pengaduan', { p_tiket: $('#ck-tiket').value });
+    const r = data?.[0];
+    $('#ck-hasil').innerHTML = error ? `<p class="err">${esc(error.message)}</p>`
+      : r ? kartuLaporan({ ...r, isi: '' }, true) + `<p class="small muted">Terakhir diperbarui ${esc(tanggalID(r.diperbarui))}</p>`
+      : '<p class="err">Nomor tiket tidak ditemukan. Periksa penulisannya.</p>';
+  });
+  const { data } = await sb.rpc('laporan_publik');
+  if (data) $('#laporan-publik').innerHTML = data.length ? data.map(l => kartuLaporan(l, false)).join('') : '<p class="empty">Belum ada laporan yang ditampilkan.</p>';
+}
+
+// ---------- jalankan ----------
+(async () => {
+  let sb;
+  try { sb = await getClient(); } catch (e) { console.warn('Supabase gagal dimuat', e); }
+  if (!sb) return;
+  try {
+    const { data } = await sb.from('pengaturan').select('kunci,nilai');
+    if (data) terapkanPengaturan(Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])));
+    const fn = { beranda, profil, layanan, transparansi, berita, ekonomi, lapor }[page];
+    if (fn) await fn(sb);
+  } catch (e) { console.warn('Gagal memuat data', e); }
+})();

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin – Desa Karang Bahagia</title>
+<link rel="icon" href="../assets/logo-bekasi.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin">
+
+<header class="site">
+  <div class="wrap nav">
+    <a class="brand" href="../index.html"><img src="../assets/logo-bekasi.png" alt="">
+      <span><b>Admin Desa Karang Bahagia</b><small>Khusus petugas desa</small></span></a>
+    <div class="who"><span id="who-email"></span><button class="btn alt small" id="btn-logout" hidden>Keluar</button></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="v-noconfig" class="panel" hidden>
+    <h1>Mode admin belum aktif</h1>
+    <p>Isi <code>supabaseUrl</code> dan <code>supabaseAnonKey</code> di file <code>js/config.js</code>, lalu jalankan <code>supabase/schema.sql</code> di SQL Editor Supabase. Panduan lengkap ada di README.</p>
+    <p style="margin-top:12px">Pembuat surat tetap bisa dipakai tanpa database: <a class="btn small" href="surat.html">Buka Layanan Surat</a></p>
+  </section>
+
+  <section id="v-login" class="panel narrow" hidden>
+    <h1>Masuk Admin</h1>
+    <p class="muted">Khusus petugas Pemerintah Desa Karang Bahagia.</p>
+    <form id="f-login" class="form">
+      <label>Email<input type="email" id="l-email" autocomplete="username" required></label>
+      <label>Password<input type="password" id="l-pass" autocomplete="current-password" required></label>
+      <button class="btn" type="submit">Masuk</button>
+      <p class="err" id="l-err"></p>
+      <a href="#" class="link" id="to-forgot">Lupa password?</a>
+    </form>
+  </section>
+
+  <section id="v-forgot" class="panel narrow" hidden>
+    <h1>Lupa password</h1>
+    <p class="muted">Masukkan email admin. Kami kirim tautan untuk membuat password baru.</p>
+    <form id="f-forgot" class="form">
+      <label>Email<input type="email" id="fg-email" autocomplete="username" required></label>
+      <button class="btn" type="submit">Kirim tautan reset</button>
+      <p class="err" id="fg-err"></p><p class="ok" id="fg-ok"></p>
+      <a href="#" class="link" id="to-login">← Kembali ke halaman masuk</a>
+    </form>
+  </section>
+
+  <section id="v-reset" class="panel narrow" hidden>
+    <h1>Buat password baru</h1>
+    <p class="muted" id="rs-who"></p>
+    <form id="f-reset" class="form">
+      <label>Password baru<input type="password" id="rs-pass" autocomplete="new-password" minlength="8" required></label>
+      <label>Ulangi password baru<input type="password" id="rs-pass2" autocomplete="new-password" minlength="8" required></label>
+      <button class="btn" type="submit">Simpan password</button>
+      <p class="err" id="rs-err"></p>
+    </form>
+  </section>
+
+  <section id="v-denied" class="panel narrow" hidden>
+    <h1>Akses ditolak</h1>
+    <p>Akun ini belum terdaftar sebagai admin. Tambahkan email-nya ke tabel <code>admin</code> di Supabase.</p>
+  </section>
+
+  <section id="v-app" hidden>
+    <div class="tabs" role="tablist">
+      <a class="tab-surat" href="surat.html">📄 Layanan Surat</a>
+      <button data-tab="pengaduan" class="on">📣 Pengaduan <span class="count" id="cnt-aduan"></span></button>
+      <button data-tab="berita">📰 Berita</button>
+      <button data-tab="agenda">📅 Agenda</button>
+      <button data-tab="apbdes">📊 APBDes</button>
+      <button data-tab="pembangunan">🏗️ Pembangunan</button>
+      <button data-tab="dokumen">📁 Dokumen</button>
+      <button data-tab="perangkat">👥 Perangkat</button>
+      <button data-tab="layanan">📋 Syarat Layanan</button>
+      <button data-tab="umkm">🛍️ UMKM</button>
+      <button data-tab="pengaturan">⚙️ Pengaturan</button>
+    </div>
+
+    <!-- PENGADUAN -->
+    <div class="tab" id="t-pengaduan">
+      <div class="panel">
+        <h2>Pengaduan warga</h2>
+        <div class="row wrap-row">
+          <label class="grow">Tampilkan
+            <select id="a-filter"><option value="aktif">Belum selesai</option><option value="semua">Semua</option><option value="Selesai">Selesai</option><option value="Ditolak">Ditolak</option></select></label>
+        </div>
+        <div id="l-aduan" class="list" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- BERITA -->
+    <div class="tab" id="t-berita" hidden>
+      <div class="grid-admin">
+        <form id="f-berita" class="panel form">
+          <h2 id="berita-title">Tulis berita baru</h2>
+          <input type="hidden" id="b-id">
+          <label>Judul<input id="b-judul" required maxlength="160"></label>
+          <div class="row wrap-row">
+            <label class="grow">Tanggal<input type="date" id="b-tanggal" required></label>
+            <label class="grow">Kategori<select id="b-kat"><option>Pemerintahan</option><option>Pembangunan</option><option>Kesehatan</option><option>Pendidikan</option><option>Pertanian</option><option>Ekonomi</option><option>Kemasyarakatan</option><option>Pengumuman</option></select></label>
+          </div>
+          <label>Isi berita<textarea id="b-isi" rows="9" placeholder="Pisahkan paragraf dengan baris kosong."></textarea></label>
+          <label>Foto sampul<input type="file" id="b-foto" accept="image/*"></label>
+          <div class="preview" id="b-preview"></div>
+          <label class="check"><input type="checkbox" id="b-terbit" checked> Terbitkan (tampil di website)</label>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="b-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Daftar berita</h2><div id="l-berita" class="list"></div></div>
+      </div>
+    </div>
+
+    <!-- AGENDA -->
+    <div class="tab" id="t-agenda" hidden>
+      <div class="grid-admin">
+        <form id="f-agenda" class="panel form">
+          <h2 id="agenda-title">Tambah agenda</h2>
+          <input type="hidden" id="ag-id">
+          <label>Nama kegiatan<input id="ag-judul" required maxlength="160" placeholder="mis. Musyawarah Desa RKPDes 2027"></label>
+          <div class="row wrap-row">
+            <label class="grow">Tanggal<input type="date" id="ag-tanggal" required></label>
+            <label class="grow">Waktu<input id="ag-waktu" maxlength="40" placeholder="mis. 09.00 WIB"></label>
+          </div>
+          <label>Tempat<input id="ag-tempat" maxlength="120" placeholder="mis. Balai Desa"></label>
+          <label>Keterangan<textarea id="ag-ket" rows="3" maxlength="400"></textarea></label>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="ag-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Daftar agenda</h2><div id="l-agenda" class="list"></div></div>
+      </div>
+    </div>
+
+    <!-- APBDES -->
+    <div class="tab" id="t-apbdes" hidden>
+      <form id="f-apbdes" class="panel form">
+        <h2>APBDes</h2>
+        <div class="row wrap-row">
+          <label>Tahun<input type="number" id="ap-tahun" min="2015" max="2100" required style="width:130px"></label>
+          <button class="btn alt small" type="button" id="ap-muat">Muat data tahun ini</button>
+          <span class="muted" id="ap-ada"></span>
+        </div>
+        <label>Catatan (mis. "APBDes Perubahan, disahkan Perdes No. ...")<input id="ap-catatan" maxlength="200"></label>
+        <p class="muted">Satu baris satu pos, format <code>Uraian: angka</code>. Contoh: <code>Dana Desa: 1.250.000.000</code></p>
+        <div class="grid-admin" style="grid-template-columns:repeat(3,1fr)">
+          <label>Pendapatan<textarea id="ap-pendapatan" rows="9" placeholder="Dana Desa: 0&#10;Alokasi Dana Desa: 0&#10;Pendapatan Asli Desa: 0&#10;Bagi Hasil Pajak dan Retribusi: 0&#10;Bantuan Keuangan Provinsi: 0"></textarea></label>
+          <label>Belanja<textarea id="ap-belanja" rows="9" placeholder="Penyelenggaraan Pemerintahan Desa: 0&#10;Pelaksanaan Pembangunan Desa: 0&#10;Pembinaan Kemasyarakatan: 0&#10;Pemberdayaan Masyarakat: 0&#10;Penanggulangan Bencana, Darurat dan Mendesak: 0"></textarea></label>
+          <label>Pembiayaan<textarea id="ap-pembiayaan" rows="9" placeholder="SiLPA Tahun Sebelumnya: 0&#10;Penyertaan Modal BUM Desa: 0"></textarea></label>
+        </div>
+        <p class="muted" id="ap-total"></p>
+        <div class="row"><button class="btn" type="submit">Simpan APBDes</button><button class="btn danger small" type="button" id="ap-hapus">Hapus tahun ini</button></div>
+      </form>
+    </div>
+
+    <!-- PEMBANGUNAN -->
+    <div class="tab" id="t-pembangunan" hidden>
+      <div class="grid-admin">
+        <form id="f-pb" class="panel form">
+          <h2 id="pb-title">Tambah kegiatan pembangunan</h2>
+          <input type="hidden" id="pb-id">
+          <label>Nama kegiatan<input id="pb-nama" required maxlength="160" placeholder="mis. Betonisasi jalan lingkungan"></label>
+          <label>Lokasi<input id="pb-lokasi" maxlength="160" placeholder="mis. RT 002/RW 003"></label>
+          <div class="row wrap-row">
+            <label>Tahun<input type="number" id="pb-tahun" min="2015" max="2100" style="width:110px"></label>
+            <label class="grow">Anggaran (Rp)<input id="pb-anggaran" inputmode="numeric" placeholder="mis. 150.000.000"></label>
+          </div>
+          <div class="row wrap-row">
+            <label class="grow">Sumber dana<input id="pb-sumber" maxlength="80" placeholder="mis. Dana Desa"></label>
+            <label>Progres (%)<input type="number" id="pb-progres" min="0" max="100" value="0" style="width:110px"></label>
+          </div>
+          <label>Keterangan<textarea id="pb-ket" rows="3"></textarea></label>
+          <label>Foto<input type="file" id="pb-foto" accept="image/*"></label>
+          <div class="preview" id="pb-preview"></div>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="pb-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Daftar kegiatan</h2><div id="l-pb" class="list"></div></div>
+      </div>
+    </div>
+
+    <!-- DOKUMEN -->
+    <div class="tab" id="t-dokumen" hidden>
+      <div class="grid-admin">
+        <form id="f-dokumen" class="panel form">
+          <h2>Unggah dokumen publik</h2>
+          <label>Judul<input id="d-judul" required maxlength="160" placeholder="mis. Perdes APBDes Tahun 2026"></label>
+          <label>Kategori<select id="d-kat"><option>APBDes</option><option>RPJMDes</option><option>RKPDes</option><option>Peraturan Desa</option><option>Laporan</option><option>Lainnya</option></select></label>
+          <label>Keterangan<input id="d-ket" maxlength="160"></label>
+          <label>Urutan tampil<input type="number" id="d-urutan" value="10" min="0"></label>
+          <label>File (PDF, maks 10 MB)<input type="file" id="d-file" accept=".pdf,application/pdf" required></label>
+          <button class="btn" type="submit">Unggah</button>
+        </form>
+        <div class="panel"><h2>Dokumen publik</h2><div id="l-dokumen" class="list"></div></div>
+      </div>
+    </div>
+
+    <!-- PERANGKAT -->
+    <div class="tab" id="t-perangkat" hidden>
+      <div class="grid-admin">
+        <form id="f-perangkat" class="panel form">
+          <h2 id="perangkat-title">Tambah orang</h2>
+          <input type="hidden" id="p-id">
+          <label>Nama<input id="p-nama" required maxlength="80"></label>
+          <label>Jabatan<input id="p-jabatan" required maxlength="80" placeholder="mis. Sekretaris Desa, Ketua BPD, Ketua PKK"></label>
+          <div class="row wrap-row">
+            <label class="grow">Kelompok<select id="p-kelompok"><option value="pemerintah">Perangkat desa</option><option value="bpd">BPD</option><option value="lembaga">Lembaga desa</option></select></label>
+            <label>Urutan<input type="number" id="p-urutan" value="10" min="0" style="width:100px"></label>
+          </div>
+          <label>Foto (opsional)<input type="file" id="p-foto" accept="image/*"></label>
+          <div class="preview" id="p-preview"></div>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="p-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Susunan</h2><div id="l-perangkat" class="list"></div></div>
+      </div>
+    </div>
+
+    <!-- LAYANAN -->
+    <div class="tab" id="t-layanan" hidden>
+      <div class="grid-admin">
+        <form id="f-layanan" class="panel form">
+          <h2 id="layanan-title">Tambah layanan</h2>
+          <input type="hidden" id="ly-id">
+          <label>Nama layanan<input id="ly-nama" required maxlength="120"></label>
+          <label>Syarat (satu per baris)<textarea id="ly-syarat" rows="5"></textarea></label>
+          <label>Lama proses (opsional)<input id="ly-lama" maxlength="60" placeholder="mis. Selesai di hari yang sama"></label>
+          <label>Keterangan (opsional)<input id="ly-ket" maxlength="200"></label>
+          <label>Urutan<input type="number" id="ly-urutan" value="10" min="0"></label>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="ly-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Daftar layanan (tampil di halaman Layanan)</h2><div id="l-layanan" class="list"></div></div>
+      </div>
+    </div>
+
+    <!-- UMKM -->
+    <div class="tab" id="t-umkm" hidden>
+      <div class="grid-admin">
+        <form id="f-umkm" class="panel form">
+          <h2 id="umkm-title">Tambah UMKM</h2>
+          <input type="hidden" id="u-id">
+          <label>Nama usaha<input id="u-nama" required maxlength="80"></label>
+          <div class="row wrap-row">
+            <label class="grow">Kategori<select id="u-kat"><option>Makanan &amp; minuman</option><option>Pertanian &amp; perikanan</option><option>Kerajinan</option><option>Jasa</option><option>Toko &amp; warung</option><option>Lainnya</option></select></label>
+            <label>Urutan<input type="number" id="u-urutan" value="10" min="0" style="width:100px"></label>
+          </div>
+          <label>Deskripsi<textarea id="u-desk" rows="3" maxlength="400"></textarea></label>
+          <label>Harga / kisaran harga<input id="u-harga" maxlength="60" placeholder="mis. Rp 15.000 – Rp 25.000"></label>
+          <label>Nomor WhatsApp pemilik (dengan izin pemilik)<input id="u-wa" inputmode="tel" maxlength="20"></label>
+          <label>Alamat usaha<input id="u-alamat" maxlength="160"></label>
+          <label>Foto produk<input type="file" id="u-foto" accept="image/*"></label>
+          <div class="preview" id="u-preview"></div>
+          <label class="check"><input type="checkbox" id="u-tampil" checked> Tampilkan di website</label>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="u-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Daftar UMKM</h2><div id="l-umkm" class="list"></div></div>
+      </div>
+    </div>
+
+    <!-- PENGATURAN -->
+    <div class="tab" id="t-pengaturan" hidden>
+      <form id="f-pengaturan" class="grid-admin">
+        <div class="panel form">
+          <h2>Pengumuman (pita kuning di atas website)</h2>
+          <label class="check"><input type="checkbox" id="s-pg-aktif"> Tampilkan pengumuman</label>
+          <label>Teks pengumuman<input id="s-pg-teks" maxlength="200" placeholder="mis. Pelayanan kantor desa libur tanggal ..."></label>
+          <label>Tautan (opsional)<input id="s-pg-link" placeholder="https://..."></label>
+          <h2 style="margin-top:12px">Kontak kantor desa</h2>
+          <label>Nomor WhatsApp<input id="s-wa" inputmode="tel" placeholder="08xxxxxxxxxx"></label>
+          <label>Telepon<input id="s-telp" inputmode="tel"></label>
+          <label>Email<input type="email" id="s-email"></label>
+          <label>Alamat kantor<input id="s-alamat"></label>
+          <label>Jam layanan<input id="s-jam" placeholder="mis. Senin–Jumat, 08.00–15.00 WIB"></label>
+          <label>Lokasi Google Maps<textarea id="s-maps" rows="3" placeholder="Link Google Maps, koordinat (mis. -6.2, 107.2), atau kode sematan &lt;iframe&gt;"></textarea></label>
+          <label>Nomor darurat (satu per baris, format <code>Nama: nomor</code>)<textarea id="s-darurat" rows="5"></textarea></label>
+        </div>
+        <div class="panel form">
+          <h2>Profil desa</h2>
+          <label>Nama Kepala Desa<input id="s-kades"></label>
+          <label>Sejarah singkat<textarea id="s-sejarah" rows="5"></textarea></label>
+          <label>Visi<textarea id="s-visi" rows="2"></textarea></label>
+          <label>Misi (satu per baris)<textarea id="s-misi" rows="5"></textarea></label>
+          <div class="row wrap-row">
+            <label class="grow">Batas utara<input id="s-bu"></label><label class="grow">Batas selatan<input id="s-bs"></label>
+          </div>
+          <div class="row wrap-row">
+            <label class="grow">Batas timur<input id="s-bt"></label><label class="grow">Batas barat<input id="s-bb"></label>
+          </div>
+          <h2 style="margin-top:12px">Statistik (angka agregat saja)</h2>
+          <div class="row wrap-row">
+            <label class="grow">Penduduk<input id="s-st-penduduk" inputmode="numeric"></label>
+            <label class="grow">Kepala keluarga<input id="s-st-kk" inputmode="numeric"></label>
+          </div>
+          <div class="row wrap-row">
+            <label class="grow">Laki-laki<input id="s-st-laki" inputmode="numeric"></label>
+            <label class="grow">Perempuan<input id="s-st-perempuan" inputmode="numeric"></label>
+          </div>
+          <div class="row wrap-row">
+            <label class="grow">Dusun<input id="s-st-dusun" inputmode="numeric"></label>
+            <label class="grow">RW<input id="s-st-rw" inputmode="numeric"></label>
+            <label class="grow">RT<input id="s-st-rt" inputmode="numeric"></label>
+          </div>
+          <div class="row wrap-row">
+            <label class="grow">Luas wilayah<input id="s-st-luas" placeholder="mis. 450 ha"></label>
+            <label class="grow">Tahun data<input id="s-st-tahun" inputmode="numeric"></label>
+          </div>
+          <h2 style="margin-top:12px">BUM Desa</h2>
+          <label>Nama<input id="s-bd-nama"></label>
+          <label>Alamat website<input id="s-bd-url"></label>
+          <label>Ringkasan<textarea id="s-bd-ring" rows="2"></textarea></label>
+        </div>
+        <div class="span2"><button class="btn" type="submit">Simpan pengaturan</button></div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<div id="atoast" class="toast"></div>
+
+<script src="../js/config.js"></script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>

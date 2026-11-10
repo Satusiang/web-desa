@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pengaduan Warga – Desa Karang Bahagia</title>
+<meta name="description" content="Website resmi Pemerintah Desa Karang Bahagia, Kecamatan Karang Bahagia, Kabupaten Bekasi: layanan warga, berita, transparansi APBDes, dan potensi desa.">
+<meta name="theme-color" content="#1f5f3f">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="id_ID">
+<meta property="og:site_name" content="Desa Karang Bahagia">
+<meta property="og:title" content="Pengaduan Warga – Desa Karang Bahagia">
+<meta property="og:description" content="Website resmi Pemerintah Desa Karang Bahagia, Kecamatan Karang Bahagia, Kabupaten Bekasi: layanan warga, berita, transparansi APBDes, dan potensi desa.">
+<meta property="og:image" content="assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/logo-bekasi.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="lapor">
+<main>
+<section class="page-hero"><div class="wrap"><div class="crumb"><a href="index.html">Beranda</a> / Lapor</div><h1>Pengaduan dan aspirasi warga</h1><p>Laporkan masalah di lingkungan desa. Setiap laporan mendapat nomor tiket untuk mengecek tindak lanjutnya.</p></div><svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none"><path d="M0,50 C240,95 480,0 720,35 C960,70 1200,20 1440,45 L1440,90 L0,90 Z" fill="#fff"/></svg></section>
+<section>
+  <div class="wrap grid2">
+    <div class="card">
+      <h3>Buat laporan</h3>
+      <p id="lapor-off" class="muted">Formulir pengaduan aktif setelah database website tersambung. Sementara itu, sampaikan laporan lewat <a href="#" data-wa="Halo petugas Desa Karang Bahagia, saya ingin menyampaikan laporan:">WhatsApp kantor desa</a>.</p>
+      <form class="form" id="f-lapor" hidden>
+        <label>Kategori
+          <select id="lp-kat" required>
+            <option value="">Pilih kategori</option><option>Jalan &amp; jembatan</option><option>Drainase &amp; banjir</option><option>Penerangan jalan</option><option>Sampah &amp; lingkungan</option><option>Keamanan &amp; ketertiban</option><option>Sosial &amp; bantuan</option><option>Pelayanan desa</option><option>Lainnya</option>
+          </select></label>
+        <label>Isi laporan<textarea id="lp-isi" rows="5" maxlength="2000" required placeholder="Jelaskan masalahnya: apa yang terjadi dan sejak kapan."></textarea></label>
+        <label>Lokasi<input id="lp-lokasi" maxlength="200" placeholder="mis. Jalan depan masjid, RT 002/RW 003"></label>
+        <label>Nama (boleh dikosongkan)<input id="lp-nama" maxlength="80"></label>
+        <label>Nomor HP (boleh dikosongkan, hanya dilihat petugas)<input id="lp-kontak" maxlength="40" inputmode="tel"></label>
+        <button class="btn" type="submit">Kirim laporan</button>
+        <p class="err" id="lp-err"></p>
+        <div id="lp-hasil"></div>
+        <p class="small muted">Nama dan nomor HP tidak ditampilkan di website. Jangan menuliskan NIK atau data pribadi orang lain.</p>
+      </form>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Cek status laporan</h3>
+        <form class="form" id="f-cek" hidden>
+          <label>Nomor tiket<input id="ck-tiket" required placeholder="LP-261110-AB12" style="text-transform:uppercase"></label>
+          <button class="btn alt" type="submit">Cek status</button>
+        </form>
+        <div id="ck-hasil" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bg-soft">
+  <div class="wrap">
+    <span class="eyebrow">Tindak lanjut</span>
+    <h2>Laporan warga</h2>
+    <p class="lead">Laporan yang sudah diverifikasi petugas, tanpa identitas pelapor.</p>
+    <div class="laporan" id="laporan-publik"><p class="empty">Belum ada laporan yang ditampilkan.</p></div>
+  </div>
+</section>
+
+</main>
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script type="module" src="js/data.js"></script>
+</body>
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layanan Surat – Admin Desa Karang Bahagia</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../assets/logo-bekasi.png">
+<style id="pagesize"></style>
+<style>
+:root{--bg:#f4f5f3;--card:#fff;--ink:#1d2320;--muted:#5f6b65;--line:#d9ddd9;--acc:#1f6f4a;--acc2:#e8f3ed;--err:#b3261e;--warn:#fff4d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{background:var(--acc);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:600}
+header .sub{font-size:12px;opacity:.85}
+nav{display:flex;gap:4px;margin-left:auto}
+nav button{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:14px}
+nav button.on{background:#fff;color:var(--acc);font-weight:600}
+main{padding:16px 20px;max-width:1400px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+.banner{background:var(--warn);border:1px solid #ecd38a;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(320px,440px) 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+.card h2{font-size:15px;margin:0 0 12px}
+.card h3{font-size:14px;margin:16px 0 8px;color:var(--muted)}
+.jenis{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.jenis button{text-align:left;border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1.3}
+.jenis button.on{border-color:var(--acc);background:var(--acc2);font-weight:600}
+label.f{display:block;margin-bottom:9px}
+label.f span{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+label.f span b{color:var(--err)}
+input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+input:disabled,select:disabled,textarea:disabled{background:#f1f2f0;color:#444}
+input.bad,select.bad{border-color:var(--err)}
+textarea{min-height:70px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.b{border:1px solid var(--acc);background:var(--acc);color:#fff;padding:9px 14px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600}
+.b.alt{background:#fff;color:var(--acc)}
+.b.danger{background:#fff;color:var(--err);border-color:var(--err)}
+.b:disabled{opacity:.45;cursor:not-allowed}
+.msg{font-size:13px;margin-top:8px}
+.msg.err{color:var(--err)}.msg.ok{color:var(--acc)}
+.hint{font-size:12px;color:var(--muted)}
+.previewwrap{background:#e3e6e2;border-radius:8px;padding:16px;overflow:hidden}
+.pagebox{margin:0 auto;position:relative}
+#page{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);transform-origin:top left;position:absolute;left:0;top:0;font-family:"Times New Roman",Times,serif;font-size:12pt;line-height:1.45;color:#000;padding:12mm 20mm 15mm 25mm}
+.kop{display:flex;align-items:center;border-bottom:3.5px double #000;padding-bottom:6px;margin-bottom:14px}
+.kop img{width:22mm;height:auto}
+.kop .kt{flex:1;text-align:center;padding-right:22mm}
+.kop .l1{font-size:14pt;font-weight:bold;line-height:1.2}
+.kop .l2{font-size:17pt;font-weight:bold;line-height:1.25}
+.kop .l3{font-size:10.5pt;line-height:1.3}
+.judul{text-align:center;margin:6px 0 14px}
+.judul .t{font-weight:bold;text-decoration:underline;font-size:13pt;text-transform:uppercase}
+.judul .n{font-size:12pt}
+#page p{margin:0 0 8px;text-align:justify;text-indent:0}
+#page table.id{margin:4px 0 10px 8mm;border-collapse:collapse}
+#page table.id td{vertical-align:top;padding:1px 0}
+#page table.id td.k{width:48mm}
+#page table.id td.c{width:5mm}
+.ttd{display:flex;justify-content:space-between;margin-top:18px}
+.ttd .blk{text-align:center;min-width:62mm}
+.ttd .sp{height:24mm}
+.ttd .nm{font-weight:bold;text-decoration:underline;text-transform:uppercase}
+.kosong{color:#999}
+table.list{width:100%;border-collapse:collapse;font-size:13px}
+table.list th,table.list td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+table.list th{font-size:12px;color:var(--muted);font-weight:600}
+.rekap{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+.rekap div{background:var(--acc2);border-radius:6px;padding:6px 10px;font-size:13px}
+.rekap b{font-size:16px;margin-right:4px}
+details.tpl{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+details.tpl summary{cursor:pointer;font-weight:600}
+.ph{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f1f2f0;padding:1px 4px;border-radius:3px}
+#gate[hidden]{display:none!important}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1d2320;color:#fff;padding:10px 16px;border-radius:6px;font-size:14px;display:none;z-index:9}
+@media print{
+  body{background:#fff}
+  #gate,header,main>*:not(#v-buat),#v-buat .grid>.card,.previewwrap>.hint,#toast,.banner{display:none!important}
+  main{padding:0;max-width:none}
+  #v-buat{display:block!important}
+  .grid{display:block}
+  .previewwrap{background:none;padding:0;border-radius:0}
+  .pagebox{width:auto!important;height:auto!important}
+  #page{position:static;transform:none!important;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Pembuat Surat Desa</h1>
+    <div class="sub" id="hdrsub">Desa Karang Bahagia</div>
+  </div>
+  <nav>
+    <a href="./" style="color:#fff;align-self:center;margin-right:8px;font-size:14px">← Admin</a>
+    <button data-v="buat" class="on">Buat Surat</button>
+    <button data-v="riwayat">Riwayat</button>
+    <button data-v="atur">Pengaturan</button>
+  </nav>
+</header>
+<main>
+  <div class="banner" id="storewarn" style="display:none"></div>
+
+  <section class="view on" id="v-buat">
+    <div class="grid">
+      <div class="card">
+        <h2>1. Pilih jenis surat</h2>
+        <div class="jenis" id="jenisList"></div>
+        <h2>2. Isi data</h2>
+        <div id="lockinfo" class="msg ok" style="display:none"></div>
+        <form id="form" autocomplete="off" onsubmit="return false"></form>
+        <div class="msg err" id="formerr"></div>
+        <div class="btns" id="actBtns"></div>
+      </div>
+      <div class="previewwrap">
+        <div class="hint" style="margin-bottom:8px">Pratinjau surat. Nomor diberikan saat surat disimpan.</div>
+        <div class="pagebox" id="pagebox"><div id="page"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-riwayat">
+    <div class="card">
+      <h2>Riwayat surat (buku agenda surat keluar)</h2>
+      <div class="row2" style="max-width:640px">
+        <label class="f"><span>Cari nama, NIK, atau nomor surat</span><input id="cari"></label>
+        <label class="f"><span>Bulan</span><select id="bulanFilter"></select></label>
+      </div>
+      <div class="rekap" id="rekap"></div>
+      <div style="overflow:auto"><table class="list"><thead><tr><th>Tanggal</th><th>Nomor surat</th><th>Jenis</th><th>Nama</th><th>Petugas</th><th></th></tr></thead><tbody id="riwayatBody"></tbody></table></div>
+      <h3>Cadangan data</h3>
+      <p class="hint">Data tersimpan di browser komputer ini saja. Unduh cadangan secara rutin (misalnya setiap Jumat) dan simpan di flashdisk.</p>
+      <div class="btns">
+        <button class="b alt" id="btnExport">Unduh cadangan (.json)</button>
+        <label class="b alt" style="display:inline-block">Pulihkan dari cadangan<input type="file" id="fileImport" accept=".json,application/json" style="display:none"></label>
+      </div>
+      <div class="msg" id="backupMsg"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-atur">
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <h2>Identitas desa dan kop surat</h2>
+        <div class="row2">
+          <label class="f"><span>Kabupaten</span><input data-s="kabupaten"></label>
+          <label class="f"><span>Kecamatan</span><input data-s="kecamatan"></label>
+        </div>
+        <label class="f"><span>Desa</span><input data-s="desa"></label>
+        <label class="f"><span>Alamat kantor desa</span><input data-s="alamat_kantor" placeholder="Jl. ..."></label>
+        <div class="row2">
+          <label class="f"><span>Kode pos</span><input data-s="kodepos"></label>
+          <label class="f"><span>Telepon</span><input data-s="telp"></label>
+        </div>
+        <label class="f"><span>Email</span><input data-s="email"></label>
+        <label class="f"><span>Logo kop (gambar)</span><input type="file" id="logoFile" accept="image/*"></label>
+        <h3>Penandatangan</h3>
+        <label class="f"><span>Nama Kepala Desa</span><input data-s="kades"></label>
+        <div class="row2">
+          <label class="f"><span>Nama penandatangan pengganti</span><input data-s="pengganti_nama"></label>
+          <label class="f"><span>Jabatan pengganti</span><input data-s="pengganti_jabatan"></label>
+        </div>
+        <h3>Kertas</h3>
+        <label class="f"><span>Ukuran kertas</span><select data-s="kertas"><option value="A4">A4 (210 x 297 mm)</option><option value="F4">F4 / Folio (215 x 330 mm)</option></select></label>
+      </div>
+      <div class="card">
+        <h2>Penomoran surat</h2>
+        <label class="f"><span>Format nomor</span><input data-s="format"></label>
+        <p class="hint">Isian: <span class="ph">{kode}</span> kode klasifikasi jenis surat, <span class="ph">{nomor}</span> nomor urut, <span class="ph">{kodedesa}</span>, <span class="ph">{bulan}</span> bulan Romawi, <span class="ph">{tahun}</span>.</p>
+        <div class="row2">
+          <label class="f"><span>Kode desa</span><input data-s="kodedesa"></label>
+          <label class="f"><span>Jumlah digit nomor urut</span><input data-s="digit" type="number" min="1" max="5"></label>
+        </div>
+        <div class="row2">
+          <label class="f"><span>Tahun berjalan</span><input id="ctrYear" type="number" disabled></label>
+          <label class="f"><span>Nomor urut terakhir</span><input id="ctrLast" type="number" min="0"></label>
+        </div>
+        <p class="hint">Isi nomor urut terakhir dari buku agenda manual supaya nomor berikutnya melanjutkan. Nomor otomatis kembali ke 1 di awal tahun.</p>
+        <label class="f"><span>Nama petugas di komputer ini (tercatat di riwayat)</span><input data-s="petugas"></label>
+        <h3>Templat surat</h3>
+        <p class="hint">Ubah judul, kode klasifikasi, dan kalimat surat. Isian yang bisa dipakai di kalimat ditulis dalam kurung kurawal, misalnya <span class="ph">{desa}</span>, <span class="ph">{keperluan}</span>.</p>
+        <div id="tplEditor"></div>
+        <div class="btns">
+          <button class="b" id="btnSaveSet">Simpan pengaturan</button>
+          <button class="b danger" id="btnResetTpl">Kembalikan templat bawaan</button>
+        </div>
+        <div class="msg" id="setMsg"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="gate" hidden style="position:fixed;inset:0;background:#f4f5f3;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:420px;text-align:center"><h2>Khusus petugas desa</h2><p class="hint" style="margin:8px 0 14px">Silakan masuk di halaman admin terlebih dahulu.</p><a class="b" href="./" style="text-decoration:none">Masuk admin</a></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const LOGO_DEFAULT = 'data:image/jpeg;base64,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';
+const KEY = 'pembuatSurat.karangBahagia.v1';
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+
+const STD = [
+  {k:'nama',l:'Nama lengkap',req:1},
+  {k:'nik',l:'NIK',req:1,nik:1},
+  {k:'tempat_lahir',l:'Tempat lahir',req:1,half:1},
+  {k:'tanggal_lahir',l:'Tanggal lahir',t:'date',req:1,half:1},
+  {k:'jk',l:'Jenis kelamin',t:'select',o:['Laki-laki','Perempuan'],req:1,half:1},
+  {k:'agama',l:'Agama',t:'select',o:['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'],req:1,half:1},
+  {k:'status_kawin',l:'Status perkawinan',t:'select',o:['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'],req:1,half:1},
+  {k:'kewarganegaraan',l:'Kewarganegaraan',def:'WNI',req:1,half:1},
+  {k:'pekerjaan',l:'Pekerjaan',req:1},
+  {k:'alamat',l:'Alamat (kampung, RT/RW)',req:1,ph:'Kp. ..., RT 001/RW 002'}
+];
+const ID_ROWS = [['Nama','{nama}',1],['NIK','{nik}'],['Tempat/Tgl. Lahir','{ttl}'],['Jenis Kelamin','{jk}'],['Agama','{agama}'],['Status Perkawinan','{status_kawin}'],['Pekerjaan','{pekerjaan}'],['Kewarganegaraan','{kewarganegaraan}'],['Alamat','{alamat_lengkap}']];
+const PEMBUKA = 'Yang bertanda tangan di bawah ini, Kepala Desa {desa}, Kecamatan {kecamatan}, Kabupaten {kabupaten}, dengan ini menerangkan bahwa:';
+const PENUTUP = 'Demikian surat keterangan ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.';
+
+const TEMPLATES = [
+  {id:'sktm',nama:'SKTM',judul:'Surat Keterangan Tidak Mampu',kode:'401',identitas:true,
+   fields:[{k:'no_pengantar',l:'Nomor pengantar RT/RW',req:1},{k:'keperluan',l:'Keperluan',t:'textarea',req:1,ph:'mis. pengajuan keringanan biaya sekolah anak atas nama ...'}],
+   body:[{p:PEMBUKA},{id:1},{p:'Orang tersebut di atas adalah benar warga Desa {desa} dan berdasarkan surat pengantar Ketua RT/RW Nomor {no_pengantar}, yang bersangkutan termasuk keluarga tidak mampu.'},{p:'Surat keterangan ini diberikan untuk keperluan {keperluan}.'},{p:PENUTUP}]},
+  {id:'domisili',nama:'Keterangan Domisili',judul:'Surat Keterangan Domisili',kode:'470',identitas:true,
+   fields:[{k:'sejak',l:'Berdomisili sejak (tahun)',req:1,ph:'mis. 2015'},{k:'keperluan',l:'Keperluan',t:'textarea',req:1}],
+   body:[{p:PEMBUKA},{id:1},{p:'Orang tersebut di atas adalah benar berdomisili di {alamat_lengkap} sejak tahun {sejak} sampai dengan sekarang.'},{p:'Surat keterangan ini diberikan untuk keperluan {keperluan}.'},{p:PENUTUP}]},
+  {id:'usaha',nama:'Keterangan Usaha',judul:'Surat Keterangan Usaha',kode:'503',identitas:true,
+   fields:[{k:'nama_usaha',l:'Nama usaha',req:1},{k:'jenis_usaha',l:'Jenis usaha',req:1,ph:'mis. warung sembako'},{k:'alamat_usaha',l:'Alamat usaha',req:1},{k:'usaha_sejak',l:'Berdiri sejak (tahun)',req:1},{k:'keperluan',l:'Keperluan',t:'textarea',req:1,ph:'mis. pengajuan pinjaman modal usaha'}],
+   body:[{p:PEMBUKA},{id:1},{p:'Orang tersebut di atas adalah benar warga Desa {desa} yang mempunyai usaha sebagai berikut:'},{tbl:[['Nama Usaha','{nama_usaha}'],['Jenis Usaha','{jenis_usaha}'],['Alamat Usaha','{alamat_usaha}'],['Berdiri Sejak','Tahun {usaha_sejak}']]},{p:'Surat keterangan ini diberikan untuk keperluan {keperluan}.'},{p:PENUTUP}]},
+  {id:'skck',nama:'Pengantar SKCK',judul:'Surat Pengantar',kode:'331',identitas:true,
+   fields:[{k:'tujuan',l:'Ditujukan ke',req:1,def:'Polsek Karang Bahagia'},{k:'keperluan',l:'Keperluan',t:'textarea',req:1,ph:'mis. melamar pekerjaan'}],
+   body:[{p:PEMBUKA},{id:1},{p:'Orang tersebut di atas adalah benar warga Desa {desa} dan sepanjang pengetahuan kami berkelakuan baik serta tidak sedang tersangkut perkara pidana.'},{p:'Surat pengantar ini diberikan untuk pengurusan Surat Keterangan Catatan Kepolisian (SKCK) di {tujuan} guna keperluan {keperluan}.'},{p:'Demikian surat pengantar ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.'}]},
+  {id:'lahir',nama:'Keterangan Kelahiran',judul:'Surat Keterangan Kelahiran',kode:'474.1',identitas:false,
+   fields:[{k:'nama_bayi',l:'Nama anak',req:1},{k:'jk_bayi',l:'Jenis kelamin',t:'select',o:['Laki-laki','Perempuan'],req:1,half:1},{k:'anak_ke',l:'Anak ke-',t:'number',req:1,half:1},{k:'tgl_lahir_bayi',l:'Tanggal lahir',t:'hari',req:1,half:1},{k:'jam_lahir',l:'Pukul',t:'time',req:0,half:1},{k:'tempat_lahir_bayi',l:'Tempat lahir',req:1,ph:'mis. RSUD / Bidan ... / rumah'},{k:'nama_ayah',l:'Nama ayah',req:1,half:1},{k:'nik_ayah',l:'NIK ayah',req:0,nik:1,half:1},{k:'nama_ibu',l:'Nama ibu',req:1,half:1},{k:'nik_ibu',l:'NIK ibu',req:0,nik:1,half:1},{k:'alamat',l:'Alamat orang tua (kampung, RT/RW)',req:1,ph:'Kp. ..., RT 001/RW 002'},{k:'pelapor',l:'Nama pelapor',req:1,half:1},{k:'hubungan_pelapor',l:'Hubungan dengan anak',req:1,half:1,ph:'mis. ayah kandung'}],
+   body:[{p:'Yang bertanda tangan di bawah ini, Kepala Desa {desa}, Kecamatan {kecamatan}, Kabupaten {kabupaten}, dengan ini menerangkan bahwa telah lahir seorang anak:'},{tbl:[['Nama','{nama_bayi}',1],['Jenis Kelamin','{jk_bayi}'],['Hari/Tanggal Lahir','{tgl_lahir_bayi}'],['Pukul','{jam_lahir}'],['Tempat Lahir','{tempat_lahir_bayi}'],['Anak ke-','{anak_ke}']]},{p:'Dari pasangan suami istri:'},{tbl:[['Nama Ayah','{nama_ayah}'],['NIK Ayah','{nik_ayah}'],['Nama Ibu','{nama_ibu}'],['NIK Ibu','{nik_ibu}'],['Alamat','{alamat_lengkap}']]},{p:'Surat keterangan ini dibuat berdasarkan laporan dari {pelapor} ({hubungan_pelapor}) untuk keperluan pengurusan akta kelahiran.'},{p:PENUTUP}]},
+  {id:'mati',nama:'Keterangan Kematian',judul:'Surat Keterangan Kematian',kode:'474.3',identitas:true,labelIdentitas:'Identitas almarhum/almarhumah',
+   fields:[{k:'tgl_meninggal',l:'Tanggal meninggal',t:'hari',req:1,half:1},{k:'jam_meninggal',l:'Pukul',t:'time',req:0,half:1},{k:'tempat_meninggal',l:'Tempat meninggal',req:1},{k:'sebab',l:'Sebab kematian',req:1,ph:'mis. sakit'},{k:'pelapor',l:'Nama pelapor',req:1,half:1},{k:'hubungan_pelapor',l:'Hubungan dengan almarhum',req:1,half:1}],
+   body:[{p:PEMBUKA},{id:1},{p:'Telah meninggal dunia pada:'},{tbl:[['Hari/Tanggal','{tgl_meninggal}'],['Pukul','{jam_meninggal}'],['Tempat','{tempat_meninggal}'],['Sebab','{sebab}']]},{p:'Surat keterangan ini dibuat berdasarkan laporan dari {pelapor} ({hubungan_pelapor}).'},{p:PENUTUP}]}
+];
+
+const DEF_SET = {kabupaten:'Bekasi',kecamatan:'Karang Bahagia',desa:'Karang Bahagia',alamat_kantor:'',kodepos:'',telp:'',email:'',kades:'Caum',pengganti_nama:'',pengganti_jabatan:'Sekretaris Desa',kertas:'A4',format:'{kode}/{nomor}/{kodedesa}/{bulan}/{tahun}',kodedesa:'Ds.KB',digit:3,petugas:'',logo:''};
+
+// ---------- storage ----------
+let storeOK = true, mem = null;
+function load(){
+  let d = null;
+  try{ const raw = localStorage.getItem(KEY); d = raw ? JSON.parse(raw) : null; }catch(e){ storeOK = false; }
+  if(!d) d = {};
+  d.settings = Object.assign({}, DEF_SET, d.settings||{});
+  d.counter = d.counter || {year:new Date().getFullYear(), last:0};
+  d.letters = d.letters || [];
+  d.tpl = d.tpl || {};
+  return d;
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){ storeOK = false; showStoreWarn(); }
+}
+let DB = load();
+function showStoreWarn(){
+  const w = document.getElementById('storewarn');
+  if(!storeOK){ w.style.display='block'; w.textContent='Penyimpanan browser tidak tersedia. Surat dan nomor tidak akan tersimpan setelah halaman ditutup. Buka file ini di Chrome atau Edge biasa (bukan mode penyamaran).'; }
+}
+
+// ---------- templates (with user overrides) ----------
+function tplOf(id){
+  const base = TEMPLATES.find(t=>t.id===id);
+  const ov = DB.tpl[id];
+  if(!ov) return base;
+  const t = JSON.parse(JSON.stringify(base));
+  if(ov.judul) t.judul = ov.judul;
+  if(ov.kode !== undefined) t.kode = ov.kode;
+  if(ov.ps){ let i=0; t.body.forEach(b=>{ if('p' in b){ if(ov.ps[i]!==undefined) b.p = ov.ps[i]; i++; } }); }
+  return t;
+}
+
+// ---------- formatting ----------
+const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function parseDate(v){ if(!v) return null; const [y,m,d]=v.split('-').map(Number); if(!y||!m||!d) return null; return {y,m,d,wd:new Date(Date.UTC(y,m-1,d)).getUTCDay()}; }
+function fmtDate(v){ const p=parseDate(v); return p ? `${String(p.d).padStart(2,'0')} ${BULAN[p.m-1]} ${p.y}` : ''; }
+function fmtHari(v){ const p=parseDate(v); return p ? `${HARI[p.wd]}, ${fmtDate(v)}` : ''; }
+function todayISO(){ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
+
+function allFields(t){ return (t.identitas ? STD : []).concat(t.fields); }
+
+function context(t, data, S){
+  const c = {desa:S.desa, kecamatan:S.kecamatan, kabupaten:S.kabupaten};
+  allFields(t).forEach(f=>{
+    let v = (data[f.k]??'').toString().trim();
+    if(v){
+      if(f.t==='date') v = fmtDate(v);
+      else if(f.t==='hari') v = fmtHari(v);
+      else if(f.t==='time') v = v.replace(':','.')+' WIB';
+      else if(f.k==='nama'||f.k==='nama_bayi') v = v.toUpperCase();
+    }
+    c[f.k] = v;
+  });
+  c.ttl = (c.tempat_lahir||c.tanggal_lahir) ? `${c.tempat_lahir||'…'}, ${c.tanggal_lahir||'…'}` : '';
+  c.alamat_lengkap = c.alamat ? `${c.alamat}, Desa ${S.desa}, Kecamatan ${S.kecamatan}, Kabupaten ${S.kabupaten}` : '';
+  return c;
+}
+function fill(text, c){
+  return esc(text).replace(/\{([a-z_]+)\}/g, (m,k)=>{
+    const v = c[k];
+    return (v===undefined || v==='') ? '<span class="kosong">……………</span>' : esc(v);
+  });
+}
+function tableHTML(rows, c){
+  return '<table class="id">'+rows.map(r=>`<tr><td class="k">${esc(r[0])}</td><td class="c">:</td><td>${r[2]?'<b>':''}${fill(r[1],c)}${r[2]?'</b>':''}</td></tr>`).join('')+'</table>';
+}
+function nomorText(S, t, urut, tgl){
+  const p = parseDate(tgl) || parseDate(todayISO());
+  return S.format.replace('{kode}', t.kode).replace('{nomor}', String(urut).padStart(Number(S.digit)||3,'0')).replace('{kodedesa}', S.kodedesa).replace('{bulan}', ROMAWI[p.m-1]).replace('{tahun}', p.y);
+}
+
+function renderLetter(t, data, S, nomor){
+  const c = context(t, data, S);
+  const logo = S.logo || LOGO_DEFAULT;
+  const kontak = [S.telp?`Telp. ${esc(S.telp)}`:'', S.email?`Email: ${esc(S.email)}`:''].filter(Boolean).join(' &middot; ');
+  const alamat = S.alamat_kantor ? esc(S.alamat_kantor)+(S.kodepos?` Kode Pos ${esc(S.kodepos)}`:'') : '<span class="kosong">[Alamat kantor desa: isi di Pengaturan]</span>';
+  let h = `<div class="kop"><img src="${logo}" alt="Logo"><div class="kt">
+    <div class="l1">PEMERINTAH KABUPATEN ${esc(S.kabupaten.toUpperCase())}</div>
+    <div class="l1">KECAMATAN ${esc(S.kecamatan.toUpperCase())}</div>
+    <div class="l2">DESA ${esc(S.desa.toUpperCase())}</div>
+    <div class="l3">${alamat}</div>${kontak?`<div class="l3">${kontak}</div>`:''}</div></div>`;
+  h += `<div class="judul"><div class="t">${esc(t.judul)}</div><div class="n">Nomor: ${nomor?esc(nomor):'<span class="kosong">(diberikan saat disimpan)</span>'}</div></div>`;
+  t.body.forEach(b=>{
+    if('p' in b) h += `<p>${fill(b.p,c)}</p>`;
+    else if(b.id) h += tableHTML(ID_ROWS, c);
+    else if(b.tbl) h += tableHTML(b.tbl, c);
+  });
+  const tgl = fmtDate(data._tanggal) || '……………';
+  const pengganti = data._signer==='pengganti';
+  const sigName = pengganti ? (S.pengganti_nama||'……………') : (S.kades||'……………');
+  const jab = pengganti ? `a.n. Kepala Desa ${esc(S.desa)}<br>${esc(S.pengganti_jabatan)}` : `Kepala Desa ${esc(S.desa)}`;
+  const pemohon = data._ttdPemohon ? `<div class="blk"><div>&nbsp;</div><div>Yang Bersangkutan,</div><div class="sp"></div><div class="nm">${esc(c.nama||'……………')}</div></div>` : '<div></div>';
+  h += `<div class="ttd">${pemohon}<div class="blk"><div>${esc(S.desa)}, ${tgl}</div><div>${jab}</div><div class="sp"></div><div class="nm">${esc(sigName)}</div></div></div>`;
+  return h;
+}
+
+// ---------- page sizing ----------
+const MM = 96/25.4;
+function paper(S){ return S.kertas==='F4' ? {w:215,h:330} : {w:210,h:297}; }
+function layoutPage(S){
+  const pg = paper(S);
+  const page = document.getElementById('page'), box = document.getElementById('pagebox');
+  page.style.width = pg.w+'mm'; page.style.minHeight = pg.h+'mm';
+  const avail = box.parentElement.clientWidth - 32;
+  const pw = pg.w*MM;
+  const sc = Math.min(1, avail/pw);
+  page.style.transform = `scale(${sc})`;
+  box.style.width = (pw*sc)+'px';
+  box.style.height = (Math.max(page.scrollHeight, pg.h*MM)*sc)+'px';
+  document.getElementById('pagesize').textContent = `@page{size:${pg.w}mm ${pg.h}mm;margin:0}`;
+}
+
+// ---------- state & UI: Buat Surat ----------
+let cur = {tpl:'sktm', data:{}, locked:null};
+function freshData(t){
+  const d = {_tanggal:todayISO(), _signer:'kades', _ttdPemohon:false};
+  allFields(t).forEach(f=>{ if(f.def) d[f.k]=f.def; });
+  return d;
+}
+function renderJenis(){
+  document.getElementById('jenisList').innerHTML = TEMPLATES.map(t=>`<button type="button" data-t="${t.id}" class="${t.id===cur.tpl?'on':''}">${esc(t.nama)}</button>`).join('');
+  document.querySelectorAll('#jenisList button').forEach(b=>b.onclick=()=>{
+    if(cur.locked){ newLetter(b.dataset.t); return; }
+    cur.tpl=b.dataset.t; cur.data=freshData(tplOf(cur.tpl)); renderAll();
+  });
+}
+function inputHTML(f, v, dis){
+  const a = `name="${f.k}" ${dis?'disabled':''}`;
+  if(f.t==='select') return `<select ${a}><option value="">Pilih…</option>${f.o.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  if(f.t==='textarea') return `<textarea ${a} placeholder="${esc(f.ph||'')}">${esc(v)}</textarea>`;
+  const type = f.t==='hari'?'date':(f.t||'text');
+  const extra = f.nik ? 'inputmode="numeric" maxlength="16"' : '';
+  return `<input type="${type}" ${a} ${extra} value="${esc(v)}" placeholder="${esc(f.ph||'')}">`;
+}
+function fieldHTML(f, dis){
+  return `<label class="f"><span>${esc(f.l)}${f.req?' <b>*</b>':''}</span>${inputHTML(f, cur.data[f.k]??'', dis)}</label>`;
+}
+function groupHTML(list, dis){
+  let h='', buf=[];
+  list.forEach(f=>{
+    if(f.half){ buf.push(f); if(buf.length===2){ h+=`<div class="row2">${buf.map(x=>fieldHTML(x,dis)).join('')}</div>`; buf=[]; } }
+    else { if(buf.length){ h+=`<div class="row2">${fieldHTML(buf[0],dis)}<div></div></div>`; buf=[]; } h+=fieldHTML(f,dis); }
+  });
+  if(buf.length) h+=`<div class="row2">${fieldHTML(buf[0],dis)}<div></div></div>`;
+  return h;
+}
+function renderForm(){
+  const t = tplOf(cur.tpl), dis = !!cur.locked;
+  let h = '';
+  if(t.identitas) h += `<h3>${esc(t.labelIdentitas||'Identitas pemohon')}</h3>` + groupHTML(STD, dis);
+  h += `<h3>Isian surat ${esc(t.nama)}</h3>` + groupHTML(t.fields, dis);
+  h += `<h3>Penandatanganan</h3><div class="row2">
+    <label class="f"><span>Tanggal surat</span><input type="date" name="_tanggal" value="${esc(cur.data._tanggal)}" ${dis?'disabled':''}></label>
+    <label class="f"><span>Ditandatangani oleh</span><select name="_signer" ${dis?'disabled':''}><option value="kades" ${cur.data._signer!=='pengganti'?'selected':''}>Kepala Desa</option><option value="pengganti" ${cur.data._signer==='pengganti'?'selected':''}>a.n. Kepala Desa (pengganti)</option></select></label></div>`;
+  if(t.identitas) h += `<label class="f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="_ttdPemohon" style="width:auto" ${cur.data._ttdPemohon?'checked':''} ${dis?'disabled':''}> <span style="margin:0">Tambahkan kolom tanda tangan pemohon</span></label>`;
+  const form = document.getElementById('form');
+  form.innerHTML = h;
+  form.querySelectorAll('input,select,textarea').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      cur.data[el.name] = el.type==='checkbox' ? el.checked : (el.dataset.nik!==undefined ? el.value : el.value);
+      if(el.name.startsWith('nik')||el.name==='nik') { el.value = el.value.replace(/\D/g,'').slice(0,16); cur.data[el.name]=el.value; }
+      el.classList.remove('bad');
+      renderPreview();
+    });
+    el.addEventListener('change', ()=>{ cur.data[el.name] = el.type==='checkbox' ? el.checked : el.value; renderPreview(); });
+  });
+  const li = document.getElementById('lockinfo');
+  if(cur.locked){ li.style.display='block'; li.textContent = `Tersimpan dengan nomor ${cur.locked.nomor}. Data dikunci agar sama dengan arsip.`; }
+  else li.style.display='none';
+  renderButtons();
+}
+function renderButtons(){
+  const b = document.getElementById('actBtns');
+  if(cur.locked){
+    b.innerHTML = `<button class="b" id="bPrint">Cetak / Simpan PDF</button><button class="b alt" id="bNew">Surat baru</button><button class="b alt" id="bCopy">Salin data ke surat baru</button>`;
+    document.getElementById('bPrint').onclick = doPrint;
+    document.getElementById('bNew').onclick = ()=>newLetter(cur.tpl);
+    document.getElementById('bCopy').onclick = ()=>{ const d = Object.assign({}, cur.data, {_tanggal:todayISO()}); cur.locked=null; cur.data=d; renderAll(); };
+  } else {
+    b.innerHTML = `<button class="b" id="bSave">Simpan &amp; beri nomor</button><button class="b alt" id="bReset">Kosongkan formulir</button>`;
+    document.getElementById('bSave').onclick = saveLetter;
+    document.getElementById('bReset').onclick = ()=>{ cur.data=freshData(tplOf(cur.tpl)); renderAll(); };
+  }
+}
+function renderPreview(){
+  const t = tplOf(cur.tpl);
+  const S = cur.locked ? cur.locked.settings : DB.settings;
+  document.getElementById('page').innerHTML = renderLetter(t.id===cur.tpl && cur.locked ? cur.locked.tplSnap : t, cur.data, S, cur.locked?cur.locked.nomor:null);
+  layoutPage(S);
+}
+function renderAll(){ renderJenis(); renderForm(); renderPreview(); document.getElementById('formerr').textContent=''; }
+function newLetter(id){ cur = {tpl:id, data:freshData(tplOf(id)), locked:null}; renderAll(); }
+
+function validate(t){
+  const errs=[]; const form=document.getElementById('form');
+  allFields(t).forEach(f=>{
+    const v=(cur.data[f.k]??'').toString().trim();
+    const el=form.querySelector(`[name="${f.k}"]`);
+    let bad=false;
+    if(f.req && !v){ errs.push(`${f.l} belum diisi`); bad=true; }
+    else if(f.nik && v && !/^\d{16}$/.test(v)){ errs.push(`${f.l} harus 16 digit angka`); bad=true; }
+    if(el) el.classList.toggle('bad', bad);
+  });
+  if(!cur.data._tanggal) errs.push('Tanggal surat belum diisi');
+  if(cur.data._signer==='pengganti' && !DB.settings.pengganti_nama) errs.push('Nama penandatangan pengganti belum diisi di Pengaturan');
+  return errs;
+}
+function saveLetter(){
+  const t = tplOf(cur.tpl);
+  const errs = validate(t);
+  const fe = document.getElementById('formerr');
+  if(errs.length){ fe.innerHTML = 'Periksa kembali: '+errs.map(esc).join('; ')+'.'; return; }
+  fe.textContent='';
+  const yr = (parseDate(cur.data._tanggal)||parseDate(todayISO())).y;
+  if(DB.counter.year !== yr){
+    if(yr < DB.counter.year){ fe.textContent = `Tanggal surat (${yr}) lebih lama dari tahun penomoran berjalan (${DB.counter.year}). Periksa tanggal surat.`; return; }
+    DB.counter = {year:yr, last:0};
+  }
+  DB.counter.last += 1;
+  const urut = DB.counter.last;
+  const S = JSON.parse(JSON.stringify(DB.settings));
+  const nomor = nomorText(S, t, urut, cur.data._tanggal);
+  const rec = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nomor, urut, tahun:yr, tpl:t.id, jenis:t.nama, tanggal:cur.data._tanggal, nama:(cur.data.nama||cur.data.nama_bayi||'').toUpperCase(), nik:cur.data.nik||'', data:JSON.parse(JSON.stringify(cur.data)), settings:S, tplSnap:JSON.parse(JSON.stringify(t)), petugas:S.petugas||'', dibuat:new Date().toISOString()};
+  DB.letters.push(rec);
+  save();
+  cur.locked = rec;
+  renderAll();
+  toast(`Tersimpan: nomor ${nomor}`);
+}
+function doPrint(){
+  layoutPage(cur.locked ? cur.locked.settings : DB.settings);
+  try{ window.print(); }catch(e){ toast('Browser menolak mencetak. Buka file ini langsung di Chrome/Edge.'); }
+}
+
+// ---------- Riwayat ----------
+function monthKey(iso){ return iso ? iso.slice(0,7) : ''; }
+function renderRiwayat(){
+  const sel = document.getElementById('bulanFilter');
+  const months = [...new Set(DB.letters.map(l=>monthKey(l.tanggal)))].sort().reverse();
+  const curM = sel.value || months[0] || '';
+  sel.innerHTML = '<option value="all">Semua bulan</option>' + months.map(m=>{ const [y,mo]=m.split('-'); return `<option value="${m}" ${m===curM?'selected':''}>${BULAN[Number(mo)-1]} ${y}</option>`; }).join('');
+  if(!months.length) sel.value='all';
+  const q = document.getElementById('cari').value.trim().toLowerCase();
+  const fm = sel.value;
+  const list = DB.letters.filter(l=> (fm==='all'||monthKey(l.tanggal)===fm) && (!q || l.nama.toLowerCase().includes(q) || l.nik.includes(q) || l.nomor.toLowerCase().includes(q)) ).sort((a,b)=> b.tanggal.localeCompare(a.tanggal) || b.urut-a.urut);
+  const counts = {}; list.forEach(l=>counts[l.jenis]=(counts[l.jenis]||0)+1);
+  document.getElementById('rekap').innerHTML = `<div><b>${list.length}</b>surat</div>` + Object.entries(counts).map(([k,v])=>`<div><b>${v}</b>${esc(k)}</div>`).join('');
+  document.getElementById('riwayatBody').innerHTML = list.length ? list.map(l=>`<tr><td>${fmtDate(l.tanggal)}</td><td>${esc(l.nomor)}</td><td>${esc(l.jenis)}</td><td>${esc(l.nama)}</td><td>${esc(l.petugas)}</td><td><button class="b alt" data-open="${l.id}" style="padding:5px 10px;font-size:13px">Buka / cetak ulang</button></td></tr>`).join('') : '<tr><td colspan="6" class="hint">Belum ada surat.</td></tr>';
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{
+    const r = DB.letters.find(l=>l.id===b.dataset.open);
+    cur = {tpl:r.tpl, data:JSON.parse(JSON.stringify(r.data)), locked:r};
+    show('buat'); renderAll();
+  });
+}
+
+function download(name, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text],{type:'application/json'}));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+document.getElementById('btnExport').onclick = ()=>{
+  download(`cadangan-surat-karangbahagia-${todayISO()}.json`, JSON.stringify(DB));
+  document.getElementById('backupMsg').className='msg ok';
+  document.getElementById('backupMsg').textContent='Cadangan diunduh. Simpan file-nya di flashdisk.';
+};
+document.getElementById('fileImport').onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    const m = document.getElementById('backupMsg');
+    try{
+      const d = JSON.parse(rd.result);
+      if(!d || !Array.isArray(d.letters) || !d.settings) throw new Error('format');
+      const ids = new Set(DB.letters.map(l=>l.id));
+      let added = 0; d.letters.forEach(l=>{ if(!ids.has(l.id)){ DB.letters.push(l); added++; } });
+      if(d.counter && (d.counter.year>DB.counter.year || (d.counter.year===DB.counter.year && d.counter.last>DB.counter.last))) DB.counter = d.counter;
+      if(!DB.letters.length || added===d.letters.length){ DB.settings = Object.assign({}, DEF_SET, d.settings); DB.tpl = d.tpl||{}; }
+      save(); m.className='msg ok'; m.textContent=`Pulih: ${added} surat ditambahkan. Nomor urut terakhir sekarang ${DB.counter.last} (${DB.counter.year}).`;
+      renderRiwayat(); loadSettingsForm();
+    }catch(err){ m.className='msg err'; m.textContent='File bukan cadangan pembuat surat yang valid.'; }
+    e.target.value='';
+  };
+  rd.readAsText(f);
+};
+document.getElementById('cari').oninput = renderRiwayat;
+document.getElementById('bulanFilter').onchange = renderRiwayat;
+
+// ---------- Pengaturan ----------
+function loadSettingsForm(){
+  document.querySelectorAll('[data-s]').forEach(el=>{ el.value = DB.settings[el.dataset.s] ?? ''; });
+  document.getElementById('ctrYear').value = DB.counter.year;
+  document.getElementById('ctrLast').value = DB.counter.last;
+  document.getElementById('tplEditor').innerHTML = TEMPLATES.map(base=>{
+    const t = tplOf(base.id);
+    const ps = t.body.filter(b=>'p' in b).map(b=>b.p);
+    const keys = ['desa','kecamatan','kabupaten'].concat(allFields(t).map(f=>f.k)).concat(t.identitas||base.id==='lahir'?['alamat_lengkap']:[]).concat(t.identitas?['ttl']:[]);
+    return `<details class="tpl" data-tpl="${t.id}"><summary>${esc(t.nama)}</summary>
+      <div class="row2" style="margin-top:8px"><label class="f"><span>Judul surat</span><input data-tj value="${esc(t.judul)}"></label><label class="f"><span>Kode klasifikasi</span><input data-tk value="${esc(t.kode)}"></label></div>
+      ${ps.map((p,i)=>`<label class="f"><span>Kalimat ${i+1}</span><textarea data-tp="${i}">${esc(p)}</textarea></label>`).join('')}
+      <p class="hint">Isian tersedia: ${keys.map(k=>`<span class="ph">{${k}}</span>`).join(' ')}. Tabel data (identitas, rincian) tetap di posisinya.</p></details>`;
+  }).join('');
+}
+document.getElementById('btnSaveSet').onclick = ()=>{
+  document.querySelectorAll('[data-s]').forEach(el=>{ DB.settings[el.dataset.s] = el.dataset.s==='digit' ? (Number(el.value)||3) : el.value.trim(); });
+  const last = Number(document.getElementById('ctrLast').value);
+  if(Number.isInteger(last) && last>=0) DB.counter.last = last;
+  document.querySelectorAll('details.tpl').forEach(d=>{
+    const id = d.dataset.tpl, base = TEMPLATES.find(t=>t.id===id);
+    const ov = {judul:d.querySelector('[data-tj]').value.trim()||base.judul, kode:d.querySelector('[data-tk]').value.trim(), ps:[...d.querySelectorAll('[data-tp]')].map(x=>x.value)};
+    DB.tpl[id] = ov;
+  });
+  save();
+  document.getElementById('hdrsub').textContent = 'Desa '+DB.settings.desa;
+  const m=document.getElementById('setMsg'); m.className='msg ok'; m.textContent='Pengaturan disimpan.';
+  if(!cur.locked) renderPreview();
+};
+document.getElementById('btnResetTpl').onclick = ()=>{
+  const m=document.getElementById('setMsg');
+  if(m.dataset.confirm!=='1'){ m.dataset.confirm='1'; m.className='msg err'; m.textContent='Tekan sekali lagi untuk mengembalikan semua templat ke bawaan.'; return; }
+  m.dataset.confirm=''; DB.tpl={}; save(); loadSettingsForm(); m.className='msg ok'; m.textContent='Templat dikembalikan ke bawaan.';
+  if(!cur.locked) renderPreview();
+};
+document.getElementById('logoFile').onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader(); rd.onload=()=>{ DB.settings.logo=rd.result; save(); toast('Logo diganti.'); if(!cur.locked) renderPreview(); }; rd.readAsDataURL(f);
+};
+
+// ---------- nav ----------
+function show(v){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.v===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on', s.id==='v-'+v));
+  if(v==='riwayat') renderRiwayat();
+  if(v==='atur') loadSettingsForm();
+  if(v==='buat') renderPreview();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block'; clearTimeout(el._t); el._t=setTimeout(()=>el.style.display='none', 3500); }
+window.addEventListener('resize', ()=>{ if(document.getElementById('v-buat').classList.contains('on')) layoutPage(cur.locked?cur.locked.settings:DB.settings); });
+
+// ---------- start ----------
+showStoreWarn();
+document.getElementById('hdrsub').textContent = 'Desa '+DB.settings.desa;
+cur.data = freshData(tplOf(cur.tpl));
+renderAll();
+</script>
+<script src="../js/config.js"></script>
+<script type="module">
+// Hanya petugas yang sudah login admin yang boleh memakai halaman ini.
+// Data surat tetap tersimpan di browser komputer ini, tidak dikirim ke server.
+import { getClient, isConfigured } from '../js/sb.js';
+(async () => {
+  if (!isConfigured()) return;
+  const gate = document.getElementById('gate');
+  try {
+    const sb = await getClient();
+    const { data } = await sb.auth.getSession();
+    if (!data.session) { gate.hidden = false; return; }
+    const { data: ok } = await sb.rpc('is_admin');
+    if (!ok) gate.hidden = false;
+  } catch (e) { gate.hidden = false; }
+})();
+</script>
+</body>
+</html>

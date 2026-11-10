@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desa Karang Bahagia – Kecamatan Karang Bahagia, Kabupaten Bekasi</title>
+<meta name="description" content="Website resmi Pemerintah Desa Karang Bahagia, Kecamatan Karang Bahagia, Kabupaten Bekasi: layanan warga, berita, transparansi APBDes, dan potensi desa.">
+<meta name="theme-color" content="#1f5f3f">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="id_ID">
+<meta property="og:site_name" content="Desa Karang Bahagia">
+<meta property="og:title" content="Desa Karang Bahagia – Kecamatan Karang Bahagia, Kabupaten Bekasi">
+<meta property="og:description" content="Website resmi Pemerintah Desa Karang Bahagia, Kecamatan Karang Bahagia, Kabupaten Bekasi: layanan warga, berita, transparansi APBDes, dan potensi desa.">
+<meta property="og:image" content="assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/logo-bekasi.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="beranda">
+<main>
+
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="tag">PEMERINTAH DESA · KABUPATEN BEKASI</span>
+    <h1>Selamat datang di <span>Desa Karang Bahagia</span></h1>
+    <p>Layanan, informasi, dan transparansi pemerintah desa untuk seluruh warga. Cek syarat surat, sampaikan laporan, dan pantau penggunaan dana desa dari sini.</p>
+    <div class="cta"><a class="btn emas" href="layanan.html">Panduan Layanan Surat</a><a class="btn alt" href="lapor.html">Sampaikan Laporan</a></div>
+  </div>
+  <div class="hero-card">
+    <h3>Sekilas desa</h3>
+    <div class="stat"><small>Kepala Desa</small><b data-bind="kades">Caum</b></div>
+    <div class="stat"><small>Kecamatan</small><b>Karang Bahagia</b></div>
+    <div class="stat"><small>Kabupaten</small><b>Bekasi, Jawa Barat</b></div>
+    <div class="stat"><small>Jam layanan</small><b data-bind="jam">Senin–Jumat</b></div>
+  </div>
+</div><svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none"><path d="M0,50 C240,95 480,0 720,35 C960,70 1200,20 1440,45 L1440,90 L0,90 Z" fill="#fff"/></svg></section>
+
+<div class="wrap">
+  <nav class="quick" aria-label="Layanan cepat">
+    <a href="layanan.html"><span class="ico">📄</span>Layanan Surat</a>
+    <a href="lapor.html"><span class="ico">📣</span>Lapor Masalah</a>
+    <a href="transparansi.html"><span class="ico">📊</span>APBDes</a>
+    <a href="berita.html"><span class="ico">📰</span>Berita &amp; Agenda</a>
+    <a href="ekonomi.html"><span class="ico">🛍️</span>UMKM Desa</a>
+    <a href="kontak.html"><span class="ico">☎️</span>Nomor Darurat</a>
+  </nav>
+</div>
+
+<section>
+  <div class="wrap grid2">
+    <div>
+      <span class="eyebrow">Kabar desa</span>
+      <h2>Berita terbaru</h2>
+      <div class="news" id="berita-terbaru" style="grid-template-columns:1fr;gap:14px;margin-top:16px"><p class="empty">Belum ada berita.</p></div>
+      <a class="more" href="berita.html">Semua berita →</a>
+    </div>
+    <div>
+      <span class="eyebrow">Agenda</span>
+      <h2>Kegiatan terdekat</h2>
+      <div class="agenda" id="agenda-dekat" style="margin-top:16px"><p class="empty">Belum ada agenda terdekat.</p></div>
+      <a class="more" href="berita.html#agenda">Semua agenda →</a>
+    </div>
+  </div>
+</section>
+
+<section class="bg-soft">
+  <div class="wrap">
+    <span class="eyebrow">Data desa</span>
+    <h2>Desa Karang Bahagia dalam angka</h2>
+    <p class="lead small" data-bind="st-tahun">Data kependudukan sedang dimutakhirkan.</p>
+    <div class="stats">
+      <div><b data-bind="st-penduduk">–</b><small>Penduduk</small></div>
+      <div><b data-bind="st-kk">–</b><small>Kepala keluarga</small></div>
+      <div><b data-bind="st-rw">–</b><small>Rukun Warga (RW)</small></div>
+      <div><b data-bind="st-rt">–</b><small>Rukun Tetangga (RT)</small></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap grid2">
+    <div>
+      <span class="eyebrow">Transparansi</span>
+      <h2>Dana desa terbuka untuk warga</h2>
+      <p class="lead">Lihat pendapatan, belanja per bidang, kegiatan pembangunan, dan dokumen perencanaan desa.</p>
+      <a class="more" href="transparansi.html">Lihat APBDes &amp; pembangunan →</a>
+    </div>
+    <div class="card" id="apb-mini"><p class="muted">Ringkasan APBDes akan tampil di sini setelah diunggah petugas desa.</p></div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap"><div class="band">
+    <div><h2>Ada jalan rusak, lampu mati, atau masalah lain?</h2><p class="lead">Laporkan lewat website, dapatkan nomor tiket, dan pantau tindak lanjutnya.</p></div>
+    <a class="btn" href="lapor.html">Sampaikan Laporan</a>
+  </div></div>
+</section>
+
+</main>
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script type="module" src="js/data.js"></script>
+</body>
+</html>
