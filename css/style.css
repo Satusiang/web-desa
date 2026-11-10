@@ -307,3 +307,7 @@ footer.site .copy{border-top:1px solid rgba(255,255,255,.15);margin-top:26px;pad
   .wa-float{padding:12px}
 }
 .sambutan.tanpa-foto{grid-template-columns:1fr}
+.lompat{position:absolute;left:-9999px;top:0;background:var(--kuning);color:#3A2E00;padding:10px 14px;font-weight:700;z-index:100}
+.lompat:focus{left:8px;top:8px}
+.bagikan{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--garis)}
+@media print{header.site,footer.site,.wa-float,.pengumuman,.bagikan,.lompat{display:none!important}}

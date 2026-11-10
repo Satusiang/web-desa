@@ -217,7 +217,10 @@ async function berita(sb) {
     const foto = safeUrl(data.foto_url);
     box.innerHTML = `<a class="kembali" href="berita.html">Kembali ke semua berita</a>
       <p class="kat">${esc(tanggalID(data.tanggal))}, ${esc(data.kategori || '')}</p>
-      <h1>${esc(data.judul)}</h1>${foto ? `<img class="cover" src="${esc(foto)}" alt="">` : ''}${paragraf(data.isi)}`;
+      <h1>${esc(data.judul)}</h1>${foto ? `<img class="cover" src="${esc(foto)}" alt="">` : ''}${paragraf(data.isi)}
+      <p class="bagikan"><a class="btn alt" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(data.judul + ' ' + location.href)}">Bagikan lewat WhatsApp</a>
+      <button class="btn alt" type="button" id="salin-link">Salin tautan</button></p>`;
+    $('#salin-link').onclick = async () => { try { await navigator.clipboard.writeText(location.href); window.toast('Tautan disalin'); } catch { window.toast('Salin alamat dari kolom alamat browser.'); } };
     return;
   }
   const [b, a] = await Promise.all([

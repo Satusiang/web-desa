@@ -23,6 +23,9 @@
     </div>
   </header>`;
   document.body.prepend(...hdr.children);
+  const mainEl = document.querySelector('main'); if (mainEl) mainEl.id = 'isi';
+  const skip = document.createElement('a'); skip.href = '#isi'; skip.className = 'lompat'; skip.textContent = 'Langsung ke isi';
+  document.body.prepend(skip);
 
   const ftr = document.createElement('footer');
   ftr.className = 'site';
