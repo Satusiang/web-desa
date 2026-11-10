@@ -16,16 +16,16 @@ const inisial = (n) => String(n || '?').trim().split(/\s+/).slice(0, 2).map(w =>
 // ---------- kartu & daftar ----------
 function kartuBerita(b) {
   const foto = safeUrl(b.foto_url);
-  return `<article><a class="card-link" href="berita.html?id=${encodeURIComponent(b.id)}">
-    <div class="img">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : 'Desa Karang Bahagia'}</div>
-    <div class="txt"><time>${esc(tanggalID(b.tanggal))}</time> <span class="kat">· ${esc(b.kategori || '')}</span>
+  return `<article><a href="berita.html?id=${encodeURIComponent(b.id)}">
+    <div class="img${foto ? '' : ' kosong'}">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : ''}</div>
+    <div><p class="meta"><time datetime="${esc(b.tanggal)}">${esc(tanggalID(b.tanggal))}</time>, ${esc(b.kategori || '')}</p>
     <h3>${esc(b.judul)}</h3><p>${esc(ringkas(b.isi))}</p></div></a></article>`;
 }
 function kartuAgenda(a) {
   const [, m, d] = String(a.tanggal).split('-').map(Number);
-  const info = [a.waktu, a.tempat].filter(Boolean).map(esc).join(' · ');
+  const info = [a.waktu, a.tempat].filter(Boolean).map(esc).join(', ');
   return `<div class="ag"><div class="tgl"><b>${d}</b><small>${BLN[m - 1]}</small></div>
-    <div><h4>${esc(a.judul)}</h4><p>${esc(tanggalID(a.tanggal))}${info ? ' · ' + info : ''}</p>${a.keterangan ? `<p>${esc(a.keterangan)}</p>` : ''}</div></div>`;
+    <div><h4>${esc(a.judul)}</h4><p>${esc(tanggalID(a.tanggal))}${info ? ', ' + info : ''}</p>${a.keterangan ? `<p>${esc(a.keterangan)}</p>` : ''}</div></div>`;
 }
 function kartuOrang(p) {
   const foto = safeUrl(p.foto_url);
@@ -50,10 +50,25 @@ function terapkanPengaturan(cfg) {
   if (pg.aktif && pg.teks) {
     const t = $('#pengumuman-teks');
     const url = safeUrl(pg.tautan);
-    t.innerHTML = esc(pg.teks) + (url ? ` <a href="${esc(url)}">Selengkapnya →</a>` : '');
+    t.innerHTML = esc(pg.teks) + (url ? ` <a href="${esc(url)}">Baca selengkapnya</a>` : '');
     $('#pengumuman').hidden = false;
   }
 
+  const tp = cfg.tampilan || {};
+  const fb = safeUrl(tp.foto_beranda);
+  if (fb && $('#foto-beranda')) {
+    $('#foto-beranda img').src = fb;
+    $('#foto-beranda img').alt = tp.keterangan_foto || 'Desa Karang Bahagia';
+    $('#foto-beranda figcaption').textContent = tp.keterangan_foto || '';
+    $('#foto-beranda').hidden = false;
+    $('#papan').hidden = true;
+  }
+  if ($('#bagian-sambutan') && p.sambutan) {
+    $('#bagian-sambutan').hidden = false;
+    const fk = safeUrl(tp.foto_kades);
+    if (fk) $('#foto-kades').innerHTML = `<img src="${esc(fk)}" alt="Foto Kepala Desa ${esc(p.kades || '')}">`;
+    else { $('#foto-kades').hidden = true; $('#bagian-sambutan .sambutan').classList.add('tanpa-foto'); }
+  }
   ['kades', 'sejarah', 'visi', 'sambutan', 'batas_utara', 'batas_selatan', 'batas_timur', 'batas_barat'].forEach(x => setText(x, p[x]));
   if (Array.isArray(p.misi) && p.misi.length) {
     document.querySelectorAll('[data-bind="misi"]').forEach(el => { el.innerHTML = p.misi.map(m => `<li>${esc(m)}</li>`).join(''); });
@@ -91,10 +106,13 @@ async function beranda(sb) {
     sb.from('apbdes').select('*').order('tahun', { ascending: false }).limit(1),
   ]);
   if (b.data?.length) $('#berita-terbaru').innerHTML = b.data.map(kartuBerita).join('');
+  if (a.data?.length && $('#papan-isi')) {
+    $('#papan-isi').insertAdjacentHTML('beforeend', a.data.slice(0, 2).map(x => `<li><b>${esc(x.judul)}</b>${esc(tanggalID(x.tanggal))}${x.tempat ? ', ' + esc(x.tempat) : ''}</li>`).join(''));
+  }
   if (a.data) $('#agenda-dekat').innerHTML = a.data.length ? a.data.map(kartuAgenda).join('') : '<p class="empty">Belum ada agenda terdekat.</p>';
   const x = ap.data?.[0];
   if (x) {
-    $('#apb-mini').innerHTML = `<p class="muted">APBDes Tahun ${x.tahun}</p>
+    $('#apb-mini').innerHTML = `<p class="muted">APBDes tahun ${x.tahun}</p>
       <div class="apb-ringkas"><div><small>Pendapatan</small><b>${rupiah(totalOf(x.pendapatan))}</b></div>
       <div><small>Belanja</small><b>${rupiah(totalOf(x.belanja))}</b></div>
       <div><small>Pembiayaan</small><b>${rupiah(totalOf(x.pembiayaan))}</b></div></div>`;
@@ -127,13 +145,13 @@ function gambarAPB(tahun) {
     const rows = Array.isArray(arr) ? arr : [];
     if (!rows.length) return '';
     const tot = totalOf(rows), max = Math.max(...rows.map(r => Number(r.nilai) || 0), 1);
-    return `<h3 style="color:var(--hijau-2);margin-top:18px">${judul}</h3>
+    return `<div class="bagian-apb"><h3>${judul}</h3>
       <div class="bars">${rows.map(r => `<div class="bar-row"><span>${esc(r.uraian)}</span>
         <div class="bar-track"><div class="bar-fill" style="width:${((Number(r.nilai) || 0) / max * 100).toFixed(1)}%"></div></div>
         <span class="v">${rupiah(r.nilai)}</span></div>`).join('')}</div>
-      <div class="table-scroll"><table class="tbl"><thead><tr><th>Uraian</th><th style="text-align:right">Jumlah</th></tr></thead><tbody>
+      <div class="table-scroll"><table class="tbl"><thead><tr><th>Uraian</th><th class="num">Jumlah</th></tr></thead><tbody>
         ${rows.map(r => `<tr><td>${esc(r.uraian)}</td><td class="num">${rupiah(r.nilai)}</td></tr>`).join('')}
-        <tr class="total"><td>Total ${judul.toLowerCase()}</td><td class="num">${rupiah(tot)}</td></tr></tbody></table></div>`;
+        <tr class="total"><td>Total ${judul.toLowerCase()}</td><td class="num">${rupiah(tot)}</td></tr></tbody></table></div></div>`;
   };
   $('#apbdes').innerHTML = `${x.catatan ? `<p class="muted">${esc(x.catatan)}</p>` : ''}
     <div class="apb-ringkas"><div><small>Pendapatan</small><b>${rupiah(totalOf(x.pendapatan))}</b></div>
@@ -146,7 +164,7 @@ let dokCache = [];
 function gambarDokumen(kat) {
   const list = dokCache.filter(d => kat === 'Semua' || d.kategori === kat);
   $('#dokumen').innerHTML = list.length ? list.map(d => `<div class="doc"><div><b>${esc(d.judul)}</b>
-    <small>${esc(d.kategori)}${d.keterangan ? ' · ' + esc(d.keterangan) : ''}</small></div>
+    <small>${esc(d.kategori)}${d.keterangan ? ', ' + esc(d.keterangan) : ''}</small></div>
     <a class="btn alt" href="${esc(safeUrl(d.file_url))}" target="_blank" rel="noopener">Unduh</a></div>`).join('') : '<p class="empty">Belum ada dokumen.</p>';
 }
 
@@ -168,9 +186,9 @@ async function transparansi(sb) {
     $('#pembangunan').innerHTML = pb.data.length ? pb.data.map(p => {
       const foto = safeUrl(p.foto_url);
       return `<div class="card"><div class="foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : ''}</div>
-        <div><h3>${esc(p.nama)}</h3><p class="small muted">${[p.lokasi, 'Tahun ' + p.tahun, p.sumber_dana].filter(Boolean).map(esc).join(' · ')}</p>
+        <div><h3>${esc(p.nama)}</h3><p class="small muted">${[p.lokasi, 'tahun ' + p.tahun, p.sumber_dana].filter(Boolean).map(esc).join(', ')}</p>
         ${Number(p.anggaran) ? `<p class="small"><b>${rupiah(p.anggaran)}</b></p>` : ''}
-        <div class="progres"><i style="width:${Math.max(0, Math.min(100, p.progres))}%"></i></div><small class="muted">Progres ${p.progres}%</small>
+        <div class="progres"><i style="width:${Math.max(0, Math.min(100, p.progres))}%"></i></div><small class="muted">${p.progres >= 100 ? 'Selesai' : 'Berjalan ' + p.progres + '%'}</small>
         ${p.keterangan ? `<p class="small muted">${esc(p.keterangan)}</p>` : ''}</div></div>`;
     }).join('') : '<p class="empty">Belum ada data kegiatan pembangunan.</p>';
   }
@@ -194,11 +212,11 @@ async function berita(sb) {
     $('#daftar-berita').hidden = true;
     const box = $('#artikel');
     box.hidden = false;
-    if (!data) { box.innerHTML = '<p class="empty">Berita tidak ditemukan.</p><a class="more" href="berita.html">← Semua berita</a>'; return; }
+    if (!data) { box.innerHTML = '<a class="kembali" href="berita.html">Kembali ke semua berita</a><p class="empty">Berita ini tidak ditemukan. Mungkin sudah dihapus atau alamatnya salah.</p>'; return; }
     document.title = `${data.judul} – Desa Karang Bahagia`;
     const foto = safeUrl(data.foto_url);
-    box.innerHTML = `<a class="more" href="berita.html">← Semua berita</a>
-      <p class="kat" style="margin-top:14px">${esc(tanggalID(data.tanggal))} · ${esc(data.kategori || '')}</p>
+    box.innerHTML = `<a class="kembali" href="berita.html">Kembali ke semua berita</a>
+      <p class="kat">${esc(tanggalID(data.tanggal))}, ${esc(data.kategori || '')}</p>
       <h1>${esc(data.judul)}</h1>${foto ? `<img class="cover" src="${esc(foto)}" alt="">` : ''}${paragraf(data.isi)}`;
     return;
   }
@@ -216,7 +234,7 @@ function gambarUMKM(kat) {
   $('#umkm').innerHTML = list.length ? list.map(u => {
     const foto = safeUrl(u.foto_url);
     const wa = u.wa ? waIntl(u.wa) : '';
-    return `<div class="card"><div class="foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : '🛍️'}</div>
+    return `<div class="card"><div class="foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : 'Belum ada foto'}</div>
       <div class="body"><span class="kat">${esc(u.kategori)}</span><h3>${esc(u.nama)}</h3><p>${esc(u.deskripsi)}</p>
       ${u.harga ? `<span class="harga">${esc(u.harga)}</span>` : ''}${u.alamat ? `<small class="muted">${esc(u.alamat)}</small>` : ''}
       ${wa ? `<a class="btn" href="#" data-wa="Halo ${esc(u.nama)}, saya lihat di website Desa Karang Bahagia dan ingin bertanya." data-wa-no="${esc(wa)}">Pesan via WhatsApp</a>` : ''}</div></div>`;
@@ -238,9 +256,9 @@ async function ekonomi(sb) {
 
 function kartuLaporan(l, lengkap) {
   return `<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
-    <span class="kat">${esc(l.kategori)} · ${esc(tanggalWIB(l.dibuat))}${lengkap ? '' : ' · ' + esc(l.tiket)}</span>
+    <span class="kat">${esc(l.kategori)}, ${esc(tanggalWIB(l.dibuat))}${lengkap ? '' : ', tiket ' + esc(l.tiket)}</span>
     <span class="status-b st-${esc(l.status)}">${esc(l.status)}</span></div>
-    ${l.isi ? `<p style="margin-top:6px">${esc(l.isi)}</p>` : ''}${l.lokasi ? `<p class="small muted">📍 ${esc(l.lokasi)}</p>` : ''}
+    ${l.isi ? `<p style="margin-top:6px">${esc(l.isi)}</p>` : ''}${l.lokasi ? `<p class="small muted">Lokasi: ${esc(l.lokasi)}</p>` : ''}
     ${l.tanggapan ? `<div class="tg"><b>Tanggapan desa:</b> ${esc(l.tanggapan)}</div>` : ''}</div>`;
 }
 async function lapor(sb) {
@@ -258,7 +276,7 @@ async function lapor(sb) {
     btn.disabled = false;
     if (error) { $('#lp-err').textContent = 'Gagal mengirim: ' + error.message; return; }
     $('#f-lapor').reset();
-    $('#lp-hasil').innerHTML = `<div class="tiket">Laporan terkirim. Simpan nomor tiket ini untuk mengecek status:<br><b>${esc(data)}</b></div>`;
+    $('#lp-hasil').innerHTML = `<div class="tiket">Laporan sudah kami terima. Catat atau foto nomor tiket ini untuk mengecek tindak lanjutnya:<b>${esc(data)}</b></div>`;
     $('#ck-tiket').value = data;
   });
   $('#f-cek').addEventListener('submit', async e => {

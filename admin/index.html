@@ -265,6 +265,12 @@
           <label class="check"><input type="checkbox" id="s-pg-aktif"> Tampilkan pengumuman</label>
           <label>Teks pengumuman<input id="s-pg-teks" maxlength="200" placeholder="mis. Pelayanan kantor desa libur tanggal ..."></label>
           <label>Tautan (opsional)<input id="s-pg-link" placeholder="https://..."></label>
+          <h2 style="margin-top:12px">Foto beranda</h2>
+          <p class="muted">Foto asli desa: kantor desa, sawah, kegiatan warga. Tanpa foto, beranda menampilkan papan pengumuman.</p>
+          <label>Unggah foto (mendatar)<input type="file" id="s-foto-beranda" accept="image/*"></label>
+          <div class="preview" id="s-prev-beranda"></div>
+          <label>Keterangan foto<input id="s-ket-foto" maxlength="140" placeholder="mis. Kantor Desa Karang Bahagia, pagi hari"></label>
+          <label class="check" id="s-hapus-beranda-wrap" hidden><input type="checkbox" id="s-hapus-beranda"> Hapus foto beranda</label>
           <h2 style="margin-top:12px">Kontak kantor desa</h2>
           <label>Nomor WhatsApp<input id="s-wa" inputmode="tel" placeholder="08xxxxxxxxxx"></label>
           <label>Telepon<input id="s-telp" inputmode="tel"></label>
@@ -277,6 +283,9 @@
         <div class="panel form">
           <h2>Profil desa</h2>
           <label>Nama Kepala Desa<input id="s-kades"></label>
+          <label>Sambutan Kepala Desa (tampil di beranda; kosongkan untuk menyembunyikan)<textarea id="s-sambutan" rows="5" placeholder="Tulis dengan kata-kata Kepala Desa sendiri."></textarea></label>
+          <label>Foto Kepala Desa (potret tegak)<input type="file" id="s-foto-kades" accept="image/*"></label>
+          <div class="preview" id="s-prev-kades"></div>
           <label>Sejarah singkat<textarea id="s-sejarah" rows="5"></textarea></label>
           <label>Visi<textarea id="s-visi" rows="2"></textarea></label>
           <label>Misi (satu per baris)<textarea id="s-misi" rows="5"></textarea></label>

@@ -316,6 +316,9 @@ $('#l-aduan').addEventListener('click', async e => {
 });
 
 // ---------- PENGATURAN ----------
+let tampilan = {};
+previewFile($('#s-foto-kades'), $('#s-prev-kades'));
+previewFile($('#s-foto-beranda'), $('#s-prev-beranda'));
 async function muatPengaturan() {
   const rows = check(await sb.from('pengaturan').select('kunci,nilai'));
   const c = Object.fromEntries(rows.map(r => [r.kunci, r.nilai || {}]));
@@ -324,6 +327,12 @@ async function muatPengaturan() {
   $('#s-wa').value = k.wa ? waLocal(k.wa).replace(/-/g, '') : ''; $('#s-telp').value = k.telp || ''; $('#s-email').value = k.email || '';
   $('#s-alamat').value = k.alamat || ''; $('#s-jam').value = k.jam || ''; $('#s-maps').value = k.maps_embed || '';
   $('#s-darurat').value = ((c.darurat || {}).daftar || []).map(d => `${d.nama}: ${d.nomor}`).join('\n');
+  tampilan = c.tampilan || {};
+  $('#s-ket-foto').value = tampilan.keterangan_foto || '';
+  $('#s-prev-beranda').innerHTML = safeUrl(tampilan.foto_beranda) ? `<img src="${esc(tampilan.foto_beranda)}" alt="">` : '';
+  $('#s-prev-kades').innerHTML = safeUrl(tampilan.foto_kades) ? `<img src="${esc(tampilan.foto_kades)}" alt="">` : '';
+  $('#s-hapus-beranda-wrap').hidden = !tampilan.foto_beranda; $('#s-hapus-beranda').checked = false;
+  $('#s-sambutan').value = p.sambutan || '';
   $('#s-kades').value = p.kades || ''; $('#s-sejarah').value = p.sejarah || ''; $('#s-visi').value = p.visi || '';
   $('#s-misi').value = Array.isArray(p.misi) ? p.misi.join('\n') : '';
   $('#s-bu').value = p.batas_utara || ''; $('#s-bs').value = p.batas_selatan || ''; $('#s-bt').value = p.batas_timur || ''; $('#s-bb').value = p.batas_barat || '';
@@ -343,15 +352,26 @@ $('#f-pengaturan').addEventListener('submit', e => {
       const i = l.lastIndexOf(':');
       return i > 0 ? { nama: l.slice(0, i).trim(), nomor: l.slice(i + 1).trim() } : { nama: l, nomor: '' };
     }).filter(d => d.nomor);
+    const t = { ...tampilan, keterangan_foto: v('#s-ket-foto') };
+    const fBer = $('#s-foto-beranda').files[0], fKad = $('#s-foto-kades').files[0];
+    const lamaBer = tampilan.foto_beranda, lamaKad = tampilan.foto_kades;
+    if (fBer) t.foto_beranda = await unggah(fBer, 'tampilan');
+    else if ($('#s-hapus-beranda').checked) t.foto_beranda = '';
+    if (fKad) t.foto_kades = await unggah(fKad, 'tampilan');
     check(await sb.from('pengaturan').upsert([
+      { kunci: 'tampilan', diperbarui: now, nilai: t },
       { kunci: 'pengumuman', diperbarui: now, nilai: { aktif: $('#s-pg-aktif').checked, teks: v('#s-pg-teks'), tautan: v('#s-pg-link') } },
       { kunci: 'kontak', diperbarui: now, nilai: { wa: v('#s-wa'), telp: v('#s-telp'), email: v('#s-email'), alamat: v('#s-alamat'), jam: v('#s-jam'), maps_embed: v('#s-maps') } },
       { kunci: 'darurat', diperbarui: now, nilai: { daftar: darurat } },
-      { kunci: 'profil', diperbarui: now, nilai: { kades: v('#s-kades'), sejarah: v('#s-sejarah'), visi: v('#s-visi'), misi: $('#s-misi').value.split('\n').map(s => s.trim()).filter(Boolean), batas_utara: v('#s-bu'), batas_selatan: v('#s-bs'), batas_timur: v('#s-bt'), batas_barat: v('#s-bb') } },
+      { kunci: 'profil', diperbarui: now, nilai: { kades: v('#s-kades'), sambutan: v('#s-sambutan'), sejarah: v('#s-sejarah'), visi: v('#s-visi'), misi: $('#s-misi').value.split('\n').map(s => s.trim()).filter(Boolean), batas_utara: v('#s-bu'), batas_selatan: v('#s-bs'), batas_timur: v('#s-bt'), batas_barat: v('#s-bb') } },
       { kunci: 'statistik', diperbarui: now, nilai: statistik },
       { kunci: 'bumdes', diperbarui: now, nilai: { nama: v('#s-bd-nama'), url: v('#s-bd-url'), ringkasan: v('#s-bd-ring') } },
     ]));
+    if ((fBer || $('#s-hapus-beranda').checked) && lamaBer) await hapusFile(lamaBer);
+    if (fKad && lamaKad) await hapusFile(lamaKad);
+    $('#s-foto-beranda').value = ''; $('#s-foto-kades').value = '';
     toast('Pengaturan disimpan');
+    await muatPengaturan();
   });
 });
 

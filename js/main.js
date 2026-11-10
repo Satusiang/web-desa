@@ -13,13 +13,13 @@
 
   const hdr = document.createElement('div');
   hdr.innerHTML = `
-  <div class="pengumuman" id="pengumuman" hidden><div class="wrap"><span>📢</span><span id="pengumuman-teks"></span></div></div>
+  <div class="pengumuman" id="pengumuman" hidden><div class="wrap"><b>Pengumuman:</b><span id="pengumuman-teks"></span></div></div>
   <header class="site">
     <div class="wrap nav">
       <a class="brand" href="index.html"><img src="assets/logo-bekasi.png" alt="Logo Kabupaten Bekasi">
-        <span><b>Desa Karang Bahagia</b><small>Kec. Karang Bahagia · Kab. Bekasi</small></span></a>
+        <span><b>Desa Karang Bahagia</b><small>Kabupaten Bekasi</small></span></a>
       <ul id="menu">${MENU.map(([h, t]) => `<li><a href="${h}" class="${h.startsWith(page + '.') ? 'active' : ''}">${t}</a></li>`).join('')}</ul>
-      <button class="menu-btn" aria-label="Menu">☰</button>
+      <button class="menu-btn" aria-controls="menu">Menu</button>
     </div>
   </header>`;
   document.body.prepend(...hdr.children);
@@ -42,7 +42,7 @@
         <li><a href="privasi.html">Kebijakan privasi</a></li>
         <li><a href="admin/">Masuk petugas</a></li></ul></div>
     </div>
-    <div class="copy">© ${new Date().getFullYear()} Pemerintah Desa Karang Bahagia. Website sementara, domain resmi .desa.id menyusul.</div>
+    <div class="copy">© ${new Date().getFullYear()} Pemerintah Desa Karang Bahagia. Alamat website ini sementara sampai domain resmi .desa.id aktif.</div>
   </div>`;
   document.body.appendChild(ftr);
 
@@ -50,7 +50,8 @@
   wa.className = 'wa-float'; wa.href = '#'; wa.hidden = true; wa.id = 'wa-float';
   wa.setAttribute('aria-label', 'WhatsApp kantor desa');
   wa.dataset.wa = 'Halo Pemerintah Desa Karang Bahagia, saya ingin bertanya.';
-  wa.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>';
+  wa.innerHTML = '<span>Tanya petugas</span><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>';
+  wa.prepend(wa.querySelector('svg'));
   document.body.appendChild(wa);
 
   const toast = document.createElement('div');

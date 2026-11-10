@@ -24,27 +24,25 @@
 </head>
 <body data-page="profil">
 <main>
-<section class="page-hero"><div class="wrap"><div class="crumb"><a href="index.html">Beranda</a> / Profil</div><h1>Profil Desa Karang Bahagia</h1><p>Sejarah, visi dan misi, wilayah, serta susunan pemerintahan desa.</p></div><svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none"><path d="M0,50 C240,95 480,0 720,35 C960,70 1200,20 1440,45 L1440,90 L0,90 Z" fill="#fff"/></svg></section>
+<header class="kepala-hal"><div class="wrap"><div class="jejak"><a href="index.html">Beranda</a> / Profil</div><h1>Profil Desa Karang Bahagia</h1><p>Sejarah, visi dan misi, wilayah, serta susunan pemerintahan desa.</p></div></header>
 <section>
-  <div class="wrap grid2">
+  <div class="wrap dua">
     <div>
-      <span class="eyebrow">Sejarah</span>
-      <h2>Tentang desa</h2>
+      <h2>Sejarah desa</h2>
       <p class="prewrap belum" data-bind="sejarah">Sejarah desa sedang disusun oleh pemerintah desa.</p>
     </div>
-    <div class="card vm">
-      <h3>Visi</h3>
+    <div class="vm">
+      <h2>Visi</h2>
       <p class="prewrap belum" data-bind="visi">Visi desa akan ditampilkan di sini.</p>
-      <h4>Misi</h4>
+      <h2 style="margin-top:22px">Misi</h2>
       <ol data-bind="misi"><li class="belum">Misi desa akan ditampilkan di sini.</li></ol>
     </div>
   </div>
 </section>
 
-<section class="bg-soft">
-  <div class="wrap grid2">
+<section class="bidang">
+  <div class="wrap dua">
     <div>
-      <span class="eyebrow">Wilayah</span>
       <h2>Letak dan batas wilayah</h2>
       <dl class="info">
         <dt>Kecamatan</dt><dd>Karang Bahagia</dd>
@@ -57,16 +55,15 @@
       </dl>
     </div>
     <div>
-      <span class="eyebrow">Kependudukan</span>
       <h2>Data penduduk</h2>
       <p class="small muted" data-bind="st-tahun">Data sedang dimutakhirkan.</p>
-      <div class="stats" style="grid-template-columns:1fr 1fr">
-        <div><b data-bind="st-penduduk">–</b><small>Penduduk</small></div>
-        <div><b data-bind="st-kk">–</b><small>Kepala keluarga</small></div>
-        <div><b data-bind="st-laki">–</b><small>Laki-laki</small></div>
-        <div><b data-bind="st-perempuan">–</b><small>Perempuan</small></div>
-        <div><b data-bind="st-dusun">–</b><small>Dusun</small></div>
-        <div><b data-bind="st-rw">–</b><small>RW</small></div>
+      <div class="angka dua-kolom">
+        <div><b data-bind="st-penduduk">–</b><small>penduduk</small></div>
+        <div><b data-bind="st-kk">–</b><small>kepala keluarga</small></div>
+        <div><b data-bind="st-laki">–</b><small>laki-laki</small></div>
+        <div><b data-bind="st-perempuan">–</b><small>perempuan</small></div>
+        <div><b data-bind="st-dusun">–</b><small>dusun</small></div>
+        <div><b data-bind="st-rw">–</b><small>rukun warga</small></div>
       </div>
     </div>
   </div>
@@ -74,19 +71,18 @@
 
 <section>
   <div class="wrap">
-    <span class="eyebrow">Pemerintahan</span>
     <h2>Perangkat desa</h2>
-    <div class="team" id="perangkat"><div class="person"><div class="avatar">C</div><b>Caum</b><small>Kepala Desa</small></div></div>
-    <h2 style="margin-top:48px">Badan Permusyawaratan Desa (BPD)</h2>
+    <div class="team" id="perangkat" style="margin-top:16px"><div class="person"><div class="avatar">C</div><b>Caum</b><small>Kepala Desa</small></div></div>
+    <h2 style="margin-top:44px">Badan Permusyawaratan Desa (BPD)</h2>
     <div class="team" id="bpd"><p class="empty">Data BPD menyusul.</p></div>
-    <h2 style="margin-top:48px">Lembaga desa</h2>
+    <h2 style="margin-top:44px">Lembaga desa</h2>
     <p class="lead small">PKK, LPM, Karang Taruna, dan lembaga kemasyarakatan lainnya.</p>
     <div class="team" id="lembaga"><p class="empty">Data lembaga desa menyusul.</p></div>
   </div>
 </section>
 
 <section style="padding-top:0"><div class="wrap">
-  <span class="eyebrow">Peta</span><h2>Lokasi kantor desa</h2>
+  <h2>Lokasi kantor desa</h2>
   <div class="map" id="peta"><span>Peta lokasi akan tampil setelah diisi petugas desa.</span></div>
 </div></section>
 
