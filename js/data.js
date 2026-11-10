@@ -1,6 +1,6 @@
 // Mengisi halaman publik dengan data dari Supabase.
 // Jika Supabase belum dikonfigurasi atau gagal dihubungi, isi bawaan di HTML tetap tampil.
-import { getClient, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf } from './sb.js';
+import { getClient, tanggalWIB, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf } from './sb.js';
 
 const $ = (s) => document.querySelector(s);
 const page = document.body.dataset.page;
@@ -238,7 +238,7 @@ async function ekonomi(sb) {
 
 function kartuLaporan(l, lengkap) {
   return `<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
-    <span class="kat">${esc(l.kategori)} · ${esc(tanggalID(l.dibuat))}${lengkap ? '' : ' · ' + esc(l.tiket)}</span>
+    <span class="kat">${esc(l.kategori)} · ${esc(tanggalWIB(l.dibuat))}${lengkap ? '' : ' · ' + esc(l.tiket)}</span>
     <span class="status-b st-${esc(l.status)}">${esc(l.status)}</span></div>
     ${l.isi ? `<p style="margin-top:6px">${esc(l.isi)}</p>` : ''}${l.lokasi ? `<p class="small muted">📍 ${esc(l.lokasi)}</p>` : ''}
     ${l.tanggapan ? `<div class="tg"><b>Tanggapan desa:</b> ${esc(l.tanggapan)}</div>` : ''}</div>`;
@@ -248,6 +248,7 @@ async function lapor(sb) {
   $('#f-lapor').hidden = false; $('#f-cek').hidden = false;
   $('#f-lapor').addEventListener('submit', async e => {
     e.preventDefault();
+    if ($('#lp-web').value) return; // isian jebakan robot spam
     const btn = e.submitter; btn.disabled = true;
     $('#lp-err').textContent = '';
     const { data, error } = await sb.rpc('kirim_pengaduan', {
@@ -265,7 +266,7 @@ async function lapor(sb) {
     const { data, error } = await sb.rpc('cek_pengaduan', { p_tiket: $('#ck-tiket').value });
     const r = data?.[0];
     $('#ck-hasil').innerHTML = error ? `<p class="err">${esc(error.message)}</p>`
-      : r ? kartuLaporan({ ...r, isi: '' }, true) + `<p class="small muted">Terakhir diperbarui ${esc(tanggalID(r.diperbarui))}</p>`
+      : r ? kartuLaporan({ ...r, isi: '' }, true) + `<p class="small muted">Terakhir diperbarui ${esc(tanggalWIB(r.diperbarui))}</p>`
       : '<p class="err">Nomor tiket tidak ditemukan. Periksa penulisannya.</p>';
   });
   const { data } = await sb.rpc('laporan_publik');

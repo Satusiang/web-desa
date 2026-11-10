@@ -14,6 +14,8 @@ Dipakai sampai domain resmi `.desa.id` selesai diurus. Cara kerjanya sama dengan
 | `ekonomi.html` | BUM Desa dan katalog UMKM |
 | `lapor.html` | Pengaduan warga dengan nomor tiket, cek status, laporan yang sudah ditindaklanjuti |
 | `kontak.html` | Kontak kantor desa, nomor darurat, peta |
+| `privasi.html` | Kebijakan privasi |
+| `404.html` | Halaman bila alamat tidak ditemukan |
 | `admin/` | Halaman petugas (login) |
 | `admin/surat.html` | **Layanan Surat**: pilih jenis surat, isi formulir, nomor otomatis, cetak / simpan PDF |
 
@@ -37,6 +39,7 @@ Gunakan **project Supabase baru** (terpisah dari BUM Desa, karena nama tabelnya 
 `schema.sql` aman dijalankan ulang setiap ada pembaruan; data yang sudah ada tidak terhapus.
 
 ## Deploy ke Cloudflare
+Konfigurasi ada di `wrangler.jsonc` (nama worker `web-desa`, halaman 404). Header keamanan di `_headers`.
 1. Cloudflare Dashboard → **Workers & Pages → Create → Import a repository** → pilih `web-desa`.
 2. Build command dikosongkan, output directory `/` (atau kosong). Klik **Deploy**.
 3. Setiap push ke branch `main` ter-deploy otomatis.
@@ -53,5 +56,7 @@ Gunakan **project Supabase baru** (terpisah dari BUM Desa, karena nama tabelnya 
 - Tahap berikutnya: database penduduk dan Layanan Surat dipindah ke server lokal di kantor desa.
 
 ## Pengaduan
+Pengaduan dibatasi maksimal 20 laporan per 10 menit dan laporan kembar ditolak. Ada juga isian jebakan untuk robot spam.
+Kategori "Permohonan informasi publik" dipakai untuk permintaan informasi sesuai UU KIP.
 Warga mengirim laporan tanpa login lewat fungsi `kirim_pengaduan`; nama dan nomor HP hanya terlihat petugas.
 Petugas mengubah status, menulis tanggapan, dan memilih laporan mana yang tampil publik di tab **Pengaduan**.

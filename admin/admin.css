@@ -77,3 +77,5 @@ header.site .who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:
 .admin main > section{padding:0}
 #t-pengaduan label{display:grid;gap:6px;font-weight:600;font-size:.9rem;color:var(--hijau-2);max-width:260px}
 #t-pengaduan select#a-filter{padding:10px 12px;border:1px solid #cdd9d1;border-radius:10px;font:inherit;font-weight:400}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.grid-3{grid-template-columns:1fr}}

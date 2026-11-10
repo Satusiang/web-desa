@@ -141,6 +141,8 @@ create table if not exists public.pengaduan (
   diperbarui timestamptz not null default now()
 );
 
+create index if not exists pengaduan_dibuat_idx on public.pengaduan (dibuat desc);
+
 -- ---------- Hak akses Data API ----------
 grant usage on schema public to anon, authenticated;
 grant select on public.pengaturan, public.berita, public.agenda, public.perangkat, public.layanan,
@@ -181,6 +183,13 @@ begin
   if coalesce(trim(p_kategori), '') = '' or length(p_kategori) > 40 then raise exception 'Kategori tidak valid'; end if;
   if length(coalesce(p_nama,'')) > 80 or length(coalesce(p_kontak,'')) > 40 or length(coalesce(p_lokasi,'')) > 200 then
     raise exception 'Isian terlalu panjang';
+  end if;
+  -- Anti-spam: batasi jumlah laporan masuk dan tolak laporan kembar
+  if (select count(*) from public.pengaduan where dibuat > now() - interval '10 minutes') >= 20 then
+    raise exception 'Terlalu banyak laporan masuk. Coba lagi beberapa menit lagi.';
+  end if;
+  if exists (select 1 from public.pengaduan where isi = trim(p_isi) and dibuat > now() - interval '1 day') then
+    raise exception 'Laporan yang sama sudah kami terima hari ini.';
   end if;
   loop
     t := 'LP-' || to_char(now() at time zone 'Asia/Jakarta', 'YYMMDD') || '-' || upper(substr(md5(random()::text), 1, 4));

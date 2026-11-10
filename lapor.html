@@ -11,7 +11,11 @@
 <meta property="og:site_name" content="Desa Karang Bahagia">
 <meta property="og:title" content="Pengaduan Warga – Desa Karang Bahagia">
 <meta property="og:description" content="Website resmi Pemerintah Desa Karang Bahagia, Kecamatan Karang Bahagia, Kabupaten Bekasi: layanan warga, berita, transparansi APBDes, dan potensi desa.">
-<meta property="og:image" content="assets/og-image.jpg">
+<meta property="og:url" content="https://web-desa.karangbahagia.workers.dev/lapor">
+<meta property="og:image" content="https://web-desa.karangbahagia.workers.dev/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="canonical" href="https://web-desa.karangbahagia.workers.dev/lapor">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/logo-bekasi.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,16 +33,17 @@
       <form class="form" id="f-lapor" hidden>
         <label>Kategori
           <select id="lp-kat" required>
-            <option value="">Pilih kategori</option><option>Jalan &amp; jembatan</option><option>Drainase &amp; banjir</option><option>Penerangan jalan</option><option>Sampah &amp; lingkungan</option><option>Keamanan &amp; ketertiban</option><option>Sosial &amp; bantuan</option><option>Pelayanan desa</option><option>Lainnya</option>
+            <option value="">Pilih kategori</option><option>Jalan &amp; jembatan</option><option>Drainase &amp; banjir</option><option>Penerangan jalan</option><option>Sampah &amp; lingkungan</option><option>Keamanan &amp; ketertiban</option><option>Sosial &amp; bantuan</option><option>Pelayanan desa</option><option>Permohonan informasi publik</option><option>Lainnya</option>
           </select></label>
         <label>Isi laporan<textarea id="lp-isi" rows="5" maxlength="2000" required placeholder="Jelaskan masalahnya: apa yang terjadi dan sejak kapan."></textarea></label>
         <label>Lokasi<input id="lp-lokasi" maxlength="200" placeholder="mis. Jalan depan masjid, RT 002/RW 003"></label>
         <label>Nama (boleh dikosongkan)<input id="lp-nama" maxlength="80"></label>
         <label>Nomor HP (boleh dikosongkan, hanya dilihat petugas)<input id="lp-kontak" maxlength="40" inputmode="tel"></label>
+        <label class="hp" aria-hidden="true">Jangan diisi<input id="lp-web" tabindex="-1" autocomplete="off"></label>
         <button class="btn" type="submit">Kirim laporan</button>
         <p class="err" id="lp-err"></p>
         <div id="lp-hasil"></div>
-        <p class="small muted">Nama dan nomor HP tidak ditampilkan di website. Jangan menuliskan NIK atau data pribadi orang lain.</p>
+        <p class="small muted">Nama dan nomor HP tidak ditampilkan di website. Jangan menuliskan NIK atau data pribadi orang lain. Baca <a href="privasi.html">kebijakan privasi</a>.</p>
       </form>
     </div>
     <div>

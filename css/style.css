@@ -246,3 +246,12 @@ footer.site .copy{border-top:1px solid rgba(255,255,255,.12);margin-top:26px;pad
 }
 #apb-mini .apb-ringkas{grid-template-columns:1fr;gap:10px;margin:12px 0 0}
 #apb-mini .apb-ringkas div{display:flex;justify-content:space-between;align-items:center;padding:12px 16px}
+
+@media (max-width:600px){
+  .apb-ringkas{grid-template-columns:1fr}
+  .apb-ringkas b{font-size:1.15rem}
+  #apb-mini .apb-ringkas div{flex-wrap:wrap;gap:4px}
+  .quick{grid-template-columns:repeat(3,1fr);gap:10px}
+  .quick a{padding:14px 6px;font-size:.82rem}
+}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}

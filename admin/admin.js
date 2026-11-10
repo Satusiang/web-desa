@@ -1,4 +1,4 @@
-import { getClient, isConfigured, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks } from '../js/sb.js';
+import { getClient, isConfigured, tanggalWIB, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks } from '../js/sb.js';
 
 const $ = (s) => document.querySelector(s);
 const BUCKET = 'media';
@@ -284,7 +284,7 @@ function gambarAduan() {
   const f = $('#a-filter').value;
   const list = aduanCache.filter(a => f === 'semua' ? true : f === 'aktif' ? (a.status === 'Diterima' || a.status === 'Diproses') : a.status === f);
   $('#l-aduan').innerHTML = list.length ? list.map(a => `<div class="aduan" data-id="${a.id}">
-    <div class="hd"><b>${esc(a.tiket)} · ${esc(a.kategori)}</b><span class="muted">${esc(tanggalID(a.dibuat))}</span></div>
+    <div class="hd"><b>${esc(a.tiket)} · ${esc(a.kategori)}</b><span class="muted">${esc(tanggalWIB(a.dibuat))}</span></div>
     <div class="isi">${esc(a.isi)}</div>
     ${a.lokasi ? `<div class="pelapor">📍 ${esc(a.lokasi)}</div>` : ''}
     <div class="pelapor">Pelapor: ${esc(a.nama || 'tanpa nama')}${a.kontak ? ' · ' + esc(a.kontak) : ''} (hanya terlihat petugas)</div>

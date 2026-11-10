@@ -39,6 +39,7 @@
       <div><h4>Tautan</h4><ul>
         <li><a href="ekonomi.html">BUM Desa &amp; UMKM</a></li>
         <li><a href="kontak.html">Kontak &amp; nomor darurat</a></li>
+        <li><a href="privasi.html">Kebijakan privasi</a></li>
         <li><a href="admin/">Masuk petugas</a></li></ul></div>
     </div>
     <div class="copy">© ${new Date().getFullYear()} Pemerintah Desa Karang Bahagia. Website sementara, domain resmi .desa.id menyusul.</div>
@@ -60,7 +61,9 @@
     clearTimeout(toast._h); toast._h = setTimeout(() => (toast.style.display = 'none'), 4000);
   };
 
-  document.querySelector('.menu-btn').addEventListener('click', () => document.getElementById('menu').classList.toggle('open'));
+  const mb = document.querySelector('.menu-btn');
+  mb.setAttribute('aria-expanded', 'false');
+  mb.addEventListener('click', () => { const o = document.getElementById('menu').classList.toggle('open'); mb.setAttribute('aria-expanded', String(o)); });
 
   // Elemen dengan data-wa="pesan" membuka WhatsApp kantor desa (nomor dari pengaturan admin)
   document.addEventListener('click', e => {

@@ -35,6 +35,13 @@ export function safeUrl(u) {
 }
 
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+// Tanggal dari timestamp (zona WIB), mis. kolom 'dibuat'
+export function tanggalWIB(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (isNaN(d)) return tanggalID(ts);
+  return d.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric' });
+}
 export function tanggalID(iso) {
   if (!iso) return '';
   const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number);
