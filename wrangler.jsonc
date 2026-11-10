@@ -1,9 +1,0 @@
-{
-  // Konfigurasi Cloudflare Workers (aset statis, tanpa build)
-  "name": "web-desa",
-  "compatibility_date": "2025-06-01",
-  "assets": {
-    "directory": ".",
-    "not_found_handling": "404-page"
-  }
-}
