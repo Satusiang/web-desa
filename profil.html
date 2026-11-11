@@ -33,8 +33,16 @@
       <p class="prewrap belum" data-bind="sejarah">Sejarah Desa Karang Bahagia sedang dihimpun dari para sesepuh dan tokoh masyarakat. Punya cerita, foto lama, atau dokumen tentang asal-usul desa? Sampaikan ke kantor desa supaya bisa dimuat di sini.</p>
       <h2 style="margin-top:26px">Sekilas wilayah</h2>
       <p>Desa Karang Bahagia adalah pusat pemerintahan Kecamatan Karangbahagia, satu dari delapan desa di kecamatan ini bersama Sukaraya, Karangrahayu, Karangsetia, Karanganyar, Karangsentosa, Karangsatu, dan Karangmukti. Kecamatan Karangbahagia sendiri adalah pemekaran dari Kecamatan Cikarang (kini Cikarang Utara).</p>
-      <p>Seluruh wilayah desa berupa dataran seluas 3,8 km², sekitar sepersepuluh luas kecamatan.</p>
-      <p class="small muted">Sumber: BPS, Kecamatan Karangbahagia Dalam Angka (2019 dan 2025); Wikipedia bahasa Indonesia.</p>
+      <p>Seluruh wilayahnya berupa dataran seluas 388 hektare. Sebagian besar masih berupa sawah, sehingga pertanian tetap menjadi tumpuan warga meskipun desa ini berada di kabupaten yang dikenal sebagai kawasan industri.</p>
+      <h2 style="margin-top:26px">Penggunaan lahan</h2>
+      <div class="lahan">
+        <div class="lahan-bar"><span class="sawah" style="width:84.79%"></span><span class="darat" style="width:15.21%"></span></div>
+        <ul>
+          <li><i class="k-sawah"></i><b>Sawah</b> 329 ha <span class="muted">(84,79%)</span></li>
+          <li><i class="k-darat"></i><b>Tanah darat</b> 59 ha <span class="muted">(15,21%)</span></li>
+        </ul>
+      </div>
+      <p class="small muted" style="margin-top:14px">Angka luas, penduduk, dan kepala keluarga bersumber dari Pemerintah Desa Karang Bahagia. Keterangan kecamatan dan pemekaran wilayah dari BPS dan Wikipedia.</p>
     </div>
     <div class="vm">
       <h2>Visi</h2>
@@ -54,7 +62,9 @@
         <dt>Kabupaten</dt><dd>Bekasi, Jawa Barat</dd>
         <dt>Kode pos</dt><dd>17535</dd>
         <dt>Kode wilayah</dt><dd>32.16.10.2005</dd>
-        <dt>Luas wilayah</dt><dd data-bind="st-luas">3,8 km²</dd>
+        <dt>Luas wilayah</dt><dd data-bind="st-luas">388 ha</dd>
+        <dt>Lahan sawah</dt><dd data-bind="st-sawah">329 ha</dd>
+        <dt>Tanah darat</dt><dd data-bind="st-darat">59 ha</dd>
         <dt>Batas utara</dt><dd data-bind="batas_utara" class="belum">–</dd>
         <dt>Batas selatan</dt><dd data-bind="batas_selatan" class="belum">–</dd>
         <dt>Batas timur</dt><dd data-bind="batas_timur" class="belum">–</dd>
@@ -63,10 +73,10 @@
     </div>
     <div>
       <h2>Data penduduk</h2>
-      <p class="small muted" data-bind="st-tahun">Perkiraan BPS pertengahan 2024. Rincian lain menyusul dari data desa.</p>
+      <p class="small muted" data-bind="st-tahun">Data Pemerintah Desa Karang Bahagia.</p>
       <div class="angka dua-kolom">
-        <div><b data-bind="st-penduduk">7.239</b><small>penduduk</small></div>
-        <div><b data-bind="st-kk">–</b><small>kepala keluarga</small></div>
+        <div><b data-bind="st-penduduk">6.786</b><small>penduduk</small></div>
+        <div><b data-bind="st-kk">1.929</b><small>kepala keluarga</small></div>
         <div><b data-bind="st-laki">–</b><small>laki-laki</small></div>
         <div><b data-bind="st-perempuan">–</b><small>perempuan</small></div>
         <div><b data-bind="st-dusun">–</b><small>dusun</small></div>
@@ -88,7 +98,19 @@
   </div>
 </section>
 
-<section style="padding-top:0"><div class="wrap">
+<section class="bidang">
+  <div class="wrap">
+    <h2>Peta wilayah desa</h2>
+    <p class="lead">Batas Desa Karang Bahagia dan sebarannya: permukiman memanjang di sepanjang jalan, sisanya hamparan sawah.</p>
+    <figure class="peta-desa">
+      <img src="assets/peta-desa.jpg" width="1100" height="821" loading="lazy"
+           alt="Peta wilayah Desa Karang Bahagia dengan batas desa ditandai garis merah, luas 388 hektare, penduduk 6.786 jiwa, 1.929 kepala keluarga.">
+      <figcaption>Peta dan data demografi Desa Karang Bahagia. Sumber: Pemerintah Desa Karang Bahagia.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section><div class="wrap">
   <h2>Lokasi kantor desa</h2>
   <div class="map" id="peta"><span>Peta lokasi akan tampil setelah diisi petugas desa.</span></div>
 </div></section>

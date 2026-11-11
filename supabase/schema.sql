@@ -248,7 +248,7 @@ insert into public.pengaturan (kunci, nilai) values
       'kades', 'Caum',
       'sambutan', '',
       'batas_utara','', 'batas_selatan','', 'batas_timur','', 'batas_barat','')),
-  ('statistik', jsonb_build_object('penduduk','','kk','','laki','','perempuan','','dusun','','rw','','rt','','luas','','tahun_data','')),
+  ('statistik', jsonb_build_object('penduduk','6786','kk','1929','laki','','perempuan','','dusun','','rw','','rt','','luas','388 ha','sawah','329 ha','darat','59 ha','tahun_data','')),
   ('pengumuman', jsonb_build_object('aktif', false, 'teks', '', 'tautan', '')),
   ('darurat', jsonb_build_object('daftar', jsonb_build_array(
       jsonb_build_object('nama','Panggilan darurat','nomor','112'),

@@ -75,8 +75,8 @@ function terapkanPengaturan(cfg) {
   }
   const fmt = (v) => (v === '' || v == null) ? '' : (isFinite(Number(String(v).replace(/\./g, ''))) ? Number(String(v).replace(/\./g, '')).toLocaleString('id-ID') : v);
   ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt'].forEach(x => setText('st-' + x, fmt(s[x])));
-  setText('st-luas', s.luas);
-  if (s.tahun_data) setText('st-tahun', `Data tahun ${s.tahun_data}`);
+  ['luas', 'sawah', 'darat'].forEach(x => setText('st-' + x, s[x]));
+  if (s.tahun_data) setText('st-tahun', `Data Pemerintah Desa Karang Bahagia, tahun ${s.tahun_data}.`);
 
   const dar = (cfg.darurat || {}).daftar;
   if (Array.isArray(dar) && dar.length && $('#darurat')) {

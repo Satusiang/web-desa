@@ -311,3 +311,18 @@ footer.site .copy{border-top:1px solid rgba(255,255,255,.15);margin-top:26px;pad
 .lompat:focus{left:8px;top:8px}
 .bagikan{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--garis)}
 @media print{header.site,footer.site,.wa-float,.pengumuman,.bagikan,.lompat{display:none!important}}
+
+/* penggunaan lahan */
+.lahan{margin-top:12px}
+.lahan-bar{display:flex;height:22px;border-radius:3px;overflow:hidden;border:1px solid var(--garis)}
+.lahan-bar span{display:block}
+.lahan-bar .sawah{background:var(--padi)}
+.lahan-bar .darat{background:var(--kuning)}
+.lahan ul{list-style:none;display:grid;gap:6px;margin-top:12px}
+.lahan li{display:flex;align-items:center;gap:9px;font-size:.95rem}
+.lahan i{width:13px;height:13px;border-radius:2px;flex-shrink:0}
+.lahan .k-sawah{background:var(--padi)}
+.lahan .k-darat{background:var(--kuning)}
+figure.peta-desa img{width:100%;height:auto;border:1px solid var(--garis);border-radius:6px;background:#fff}
+figure.peta-desa figcaption{font-size:.88rem;color:var(--redup);margin-top:10px}
+[id]{scroll-margin-top:84px}

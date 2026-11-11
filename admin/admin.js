@@ -336,7 +336,7 @@ async function muatPengaturan() {
   $('#s-kades').value = p.kades || ''; $('#s-sejarah').value = p.sejarah || ''; $('#s-visi').value = p.visi || '';
   $('#s-misi').value = Array.isArray(p.misi) ? p.misi.join('\n') : '';
   $('#s-bu').value = p.batas_utara || ''; $('#s-bs').value = p.batas_selatan || ''; $('#s-bt').value = p.batas_timur || ''; $('#s-bb').value = p.batas_barat || '';
-  ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt', 'luas'].forEach(x => { $('#s-st-' + x).value = s[x] || ''; });
+  ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt', 'luas', 'sawah', 'darat'].forEach(x => { $('#s-st-' + x).value = s[x] || ''; });
   $('#s-st-tahun').value = s.tahun_data || '';
   $('#s-bd-nama').value = bd.nama || ''; $('#s-bd-url').value = bd.url || ''; $('#s-bd-ring').value = bd.ringkasan || '';
 }
@@ -346,7 +346,7 @@ $('#f-pengaturan').addEventListener('submit', e => {
     const now = new Date().toISOString();
     const v = (id) => $(id).value.trim();
     const statistik = {};
-    ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt', 'luas'].forEach(x => { statistik[x] = v('#s-st-' + x); });
+    ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt', 'luas', 'sawah', 'darat'].forEach(x => { statistik[x] = v('#s-st-' + x); });
     statistik.tahun_data = v('#s-st-tahun');
     const darurat = $('#s-darurat').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
       const i = l.lastIndexOf(':');
