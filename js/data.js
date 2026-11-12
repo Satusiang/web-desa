@@ -98,6 +98,36 @@ function terapkanPengaturan(cfg) {
   }
 }
 
+// Perbarui ringkasan dan data terstruktur halaman berita agar benar di hasil pencarian
+// dan saat tautannya dibagikan ke WhatsApp atau Facebook.
+const foto0 = (b) => safeUrl(b.foto_url) || '';
+function metaSet(sel, isi) {
+  const el = document.head.querySelector(sel);
+  if (el && isi) el.setAttribute('content', isi);
+}
+function seoArtikel(b, foto) {
+  const ringkasan = ringkas(b.isi, 160) || `Berita Desa Karang Bahagia: ${b.judul}`;
+  metaSet('meta[name="description"]', ringkasan);
+  metaSet('meta[property="og:title"]', b.judul);
+  metaSet('meta[property="og:description"]', ringkasan);
+  metaSet('meta[property="og:url"]', location.href);
+  metaSet('meta[property="og:type"]', 'article');
+  if (foto) metaSet('meta[property="og:image"]', foto);
+  const kanon = document.head.querySelector('link[rel="canonical"]');
+  if (kanon) kanon.href = location.href;
+  const ld = document.createElement('script');
+  ld.type = 'application/ld+json';
+  ld.textContent = JSON.stringify({
+    '@context': 'https://schema.org', '@type': 'NewsArticle',
+    headline: b.judul, datePublished: b.tanggal, dateModified: b.tanggal,
+    inLanguage: 'id-ID', articleSection: b.kategori || undefined,
+    image: foto || undefined, mainEntityOfPage: location.href,
+    author: { '@type': 'GovernmentOrganization', name: 'Pemerintah Desa Karang Bahagia' },
+    publisher: { '@type': 'GovernmentOrganization', name: 'Pemerintah Desa Karang Bahagia' },
+  });
+  document.head.appendChild(ld);
+}
+
 // ---------- per halaman ----------
 async function beranda(sb) {
   const [b, a, ap] = await Promise.all([
@@ -214,6 +244,7 @@ async function berita(sb) {
     box.hidden = false;
     if (!data) { box.innerHTML = '<a class="kembali" href="berita.html">Kembali ke semua berita</a><p class="empty">Berita ini tidak ditemukan. Mungkin sudah dihapus atau alamatnya salah.</p>'; return; }
     document.title = `${data.judul} – Desa Karang Bahagia`;
+    seoArtikel(data, foto0(data));
     const foto = safeUrl(data.foto_url);
     box.innerHTML = `<a class="kembali" href="berita.html">Kembali ke semua berita</a>
       <p class="kat">${esc(tanggalID(data.tanggal))}, ${esc(data.kategori || '')}</p>

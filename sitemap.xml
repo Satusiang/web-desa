@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://web-desa.karangbahagia.workers.dev/</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/profil</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/layanan</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/transparansi</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/berita</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/ekonomi</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/lapor</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/kontak</loc></url>
-  <url><loc>https://web-desa.karangbahagia.workers.dev/privasi</loc></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/profil</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/layanan</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/transparansi</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/berita</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/ekonomi</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/lapor</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/kontak</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://web-desa.karangbahagia.workers.dev/privasi</loc><lastmod>2026-11-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
