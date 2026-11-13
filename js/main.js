@@ -10,7 +10,10 @@
     ]],
     ['layanan.html', 'Layanan'],
     ['transparansi.html', 'Transparansi'],
-    ['berita.html', 'Berita'],
+    ['berita.html', 'Berita', [
+      ['berita.html', 'Berita & Agenda'],
+      ['pengumuman.html', 'Pengumuman'],
+    ]],
     ['ekonomi.html', 'Ekonomi', [
       ['bumdes.html', 'BUMDes'],
       ['kdmp.html', 'KDMP (Koperasi Desa Merah Putih)'],
@@ -58,6 +61,7 @@
         <li><a href="lapor.html">Pengaduan &amp; cek status</a></li>
         <li><a href="transparansi.html">APBDes &amp; dokumen publik</a></li></ul></div>
       <div><h4>Tautan</h4><ul>
+        <li><a href="pengumuman.html">Pengumuman desa</a></li>
         <li><a href="ekonomi.html">BUM Desa, Koperasi &amp; UMKM</a></li>
         <li><a href="kontak.html">Kontak &amp; nomor darurat</a></li>
         <li><a href="privasi.html">Kebijakan privasi</a></li>

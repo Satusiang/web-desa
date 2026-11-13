@@ -125,20 +125,21 @@ function modul(cfg) {
       reset();
       $(cfg.idEl).value = r.id;
       cfg.baca(r);
-      if (cfg.previewEl && safeUrl(r.foto_url)) $(cfg.previewEl).innerHTML = `<img src="${esc(r.foto_url)}" alt="">`;
+      if (cfg.pratinjau) cfg.pratinjau(r);
+      else if (cfg.previewEl && safeUrl(r.foto_url)) $(cfg.previewEl).innerHTML = `<img src="${esc(r.foto_url)}" alt="">`;
       if (cfg.title) $(cfg.title).textContent = cfg.judulEdit;
       form.scrollIntoView({ behavior: 'smooth' });
     } else if (confirm(`Hapus "${cfg.nama(r)}"?`)) {
       await busy(e.target, async () => {
         check(await sb.from(cfg.tabel).delete().eq('id', r.id));
-        if (r.foto_url) await hapusFile(r.foto_url);
+        if (r[cfg.kolomFile || 'foto_url']) await hapusFile(r[cfg.kolomFile || 'foto_url']);
         toast('Data dihapus');
         await muat();
       });
     }
   });
   if (cfg.resetBtn) $(cfg.resetBtn).addEventListener('click', reset);
-  if (cfg.fotoEl) previewFile($(cfg.fotoEl), $(cfg.previewEl));
+  if (cfg.fotoEl && !cfg.kolomFile) previewFile($(cfg.fotoEl), $(cfg.previewEl));
   form.addEventListener('submit', e => {
     e.preventDefault();
     busy(e.submitter || form.querySelector('button[type=submit]'), async () => {
@@ -146,10 +147,19 @@ function modul(cfg) {
       const lama = cache.find(x => x.id === id);
       const row = cfg.tulis();
       const f = cfg.fotoEl ? $(cfg.fotoEl).files[0] : null;
-      if (f) row.foto_url = await unggah(f, cfg.folder);
+      const kol = cfg.kolomFile || 'foto_url';
+      const buang = !f && cfg.hapusFileEl && $(cfg.hapusFileEl).checked;
+      if (f) {
+        // gambar dikecilkan; file lain (mis. PDF surat) diunggah apa adanya
+        row[kol] = await unggah(f, cfg.folder, { image: f.type.startsWith('image/') && f.type !== 'image/gif' });
+        if (cfg.kolomNamaFile) row[cfg.kolomNamaFile] = f.name;
+      } else if (buang) {
+        row[kol] = null;
+        if (cfg.kolomNamaFile) row[cfg.kolomNamaFile] = '';
+      }
       if (id) check(await sb.from(cfg.tabel).update(row).eq('id', id));
       else check(await sb.from(cfg.tabel).insert(row));
-      if (f && lama?.foto_url) await hapusFile(lama.foto_url);
+      if ((f || buang) && lama?.[kol]) await hapusFile(lama[kol]);
       toast(id ? 'Perubahan disimpan' : 'Data ditambahkan');
       reset();
       await muat();
@@ -168,6 +178,44 @@ const mBerita = modul({
   tulis: () => ({ judul: $('#b-judul').value.trim(), tanggal: $('#b-tanggal').value, kategori: $('#b-kat').value, isi: $('#b-isi').value, terbit: $('#b-terbit').checked }),
   item: r => `<b>${esc(r.judul)}</b><small>${esc(tanggalID(r.tanggal))} · ${esc(r.kategori)}</small><span class="badge ${r.terbit ? 'on' : 'off'}">${r.terbit ? 'Terbit' : 'Draf'}</span>`,
   nama: r => r.judul,
+});
+
+// ---------- pengumuman ----------
+const MAKS_LAMPIRAN = 10 * 1024 * 1024;
+const jenisLampiran = (nama, url) => /\.pdf($|\?)/i.test(nama || '') || /\.pdf($|\?)/i.test(url || '') ? 'PDF' : 'Foto';
+const mPengumuman = modul({
+  tabel: 'pengumuman', form: '#f-pengumuman', list: '#l-pengumuman', idEl: '#pg-id', title: '#pengumuman-title',
+  judulBaru: 'Buat pengumuman', judulEdit: 'Edit pengumuman', resetBtn: '#pg-reset', foto: false,
+  fotoEl: '#pg-file', previewEl: '#pg-lampiran', folder: 'pengumuman', kolomFile: 'file_url', kolomNamaFile: 'file_nama', hapusFileEl: '#pg-hapus-file',
+  order: [['tanggal', false], ['dibuat', false]],
+  afterReset: () => { $('#pg-tanggal').value = today(); $('#pg-tampil').checked = true; $('#pg-hapus-wrap').hidden = true; $('#pg-lampiran').innerHTML = ''; },
+  baca: r => { $('#pg-judul').value = r.judul; $('#pg-isi').value = r.isi || ''; $('#pg-tanggal').value = r.tanggal; $('#pg-sampai').value = r.berlaku_sampai || '';
+    $('#pg-penting').checked = r.penting; $('#pg-tampil').checked = r.tampil; },
+  pratinjau: r => {
+    const ada = safeUrl(r.file_url);
+    $('#pg-hapus-wrap').hidden = !ada; $('#pg-hapus-file').checked = false;
+    $('#pg-lampiran').innerHTML = ada ? `<p class="small">Lampiran saat ini: <a href="${esc(r.file_url)}" target="_blank" rel="noopener">${esc(r.file_nama || 'lihat lampiran')}</a> (${jenisLampiran(r.file_nama, r.file_url)}). Pilih file baru untuk mengganti.</p>` : '';
+  },
+  tulis: () => {
+    const f = $('#pg-file').files[0];
+    if (f && f.size > MAKS_LAMPIRAN) throw new Error('Ukuran lampiran maksimal 10 MB.');
+    if (f && !(f.type === 'application/pdf' || f.type.startsWith('image/'))) throw new Error('Lampiran harus berupa PDF atau foto (JPG/PNG).');
+    const sampai = $('#pg-sampai').value || null;
+    if (sampai && sampai < $('#pg-tanggal').value) throw new Error('Tanggal "berlaku sampai" tidak boleh sebelum tanggal pengumuman.');
+    return { judul: $('#pg-judul').value.trim(), isi: $('#pg-isi').value.trim(), tanggal: $('#pg-tanggal').value, berlaku_sampai: sampai,
+      penting: $('#pg-penting').checked, tampil: $('#pg-tampil').checked };
+  },
+  item: r => {
+    const lewat = r.berlaku_sampai && r.berlaku_sampai < today();
+    return `<b>${esc(r.judul)}</b><small>${esc(tanggalID(r.tanggal))}${r.berlaku_sampai ? ' · sampai ' + esc(tanggalID(r.berlaku_sampai)) : ''}${safeUrl(r.file_url) ? ' · 📎 ' + jenisLampiran(r.file_nama, r.file_url) : ''}</small>`
+      + (r.penting ? '<span class="badge on">Penting</span>' : '') + (!r.tampil ? '<span class="badge off">Disembunyikan</span>' : lewat ? '<span class="badge off">Arsip</span>' : '');
+  },
+  nama: r => r.judul,
+});
+$('#pg-file').addEventListener('change', e => {
+  const f = e.target.files[0];
+  $('#pg-lampiran').innerHTML = !f ? '' : f.type.startsWith('image/') ? `<img src="${URL.createObjectURL(f)}" alt="">`
+    : `<p class="small">📄 ${esc(f.name)} (${f.size < 1048576 ? Math.max(1, Math.round(f.size / 1024)) + ' KB' : (f.size / 1048576).toFixed(1) + ' MB'}) akan diunggah saat disimpan.</p>`;
 });
 
 const mAgenda = modul({
@@ -583,7 +631,6 @@ async function muatPengaturan() {
   const rows = check(await sb.from('pengaturan').select('kunci,nilai'));
   const c = Object.fromEntries(rows.map(r => [r.kunci, r.nilai || {}]));
   const k = c.kontak || {}, p = c.profil || {}, s = c.statistik || {}, pg = c.pengumuman || {}, bd = c.bumdes || {}, kd = c.kopdes || {};
-  $('#s-pg-aktif').checked = !!pg.aktif; $('#s-pg-teks').value = pg.teks || ''; $('#s-pg-link').value = pg.tautan || '';
   $('#s-wa').value = k.wa ? waLocal(k.wa).replace(/-/g, '') : ''; $('#s-telp').value = k.telp || ''; $('#s-email').value = k.email || '';
   $('#s-alamat').value = k.alamat || ''; $('#s-jam').value = k.jam || ''; $('#s-maps').value = k.maps_embed || '';
   $('#s-darurat').value = ((c.darurat || {}).daftar || []).map(d => `${d.nama}: ${d.nomor}`).join('\n');
@@ -622,7 +669,6 @@ $('#f-pengaturan').addEventListener('submit', e => {
     if (fKad) t.foto_kades = await unggah(fKad, 'tampilan');
     check(await sb.from('pengaturan').upsert([
       { kunci: 'tampilan', diperbarui: now, nilai: t },
-      { kunci: 'pengumuman', diperbarui: now, nilai: { aktif: $('#s-pg-aktif').checked, teks: v('#s-pg-teks'), tautan: v('#s-pg-link') } },
       { kunci: 'kontak', diperbarui: now, nilai: { wa: v('#s-wa'), telp: v('#s-telp'), email: v('#s-email'), alamat: v('#s-alamat'), jam: v('#s-jam'), maps_embed: v('#s-maps') } },
       { kunci: 'darurat', diperbarui: now, nilai: { daftar: darurat } },
       { kunci: 'profil', diperbarui: now, nilai: { kades: v('#s-kades'), sambutan: v('#s-sambutan'), sejarah: v('#s-sejarah'), visi: v('#s-visi'), misi: $('#s-misi').value.split('\n').map(s => s.trim()).filter(Boolean), batas_utara: v('#s-bu'), batas_selatan: v('#s-bs'), batas_timur: v('#s-bt'), batas_barat: v('#s-bb') } },
@@ -645,8 +691,8 @@ async function masukDasbor(session) {
   const ok = check(await sb.rpc('is_admin'));
   if (!ok) { show('denied'); return; }
   show('app');
-  mBerita.reset(); mPb.reset();
-  await Promise.all([muatAduan(), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), muatLembagaAman().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
+  mBerita.reset(); mPb.reset(); mPengumuman.reset();
+  await Promise.all([muatAduan(), mPengumuman.muat().catch(e => { if (!/pengumuman/i.test(e.message)) throw e; $('#banner-skema').hidden = false; $('#l-pengumuman').innerHTML = '<p class="empty">Tabel pengumuman belum ada. Jalankan schema.sql terbaru (lihat peringatan kuning di atas).</p>'; }), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), muatLembagaAman().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
     .catch(e => toast('Gagal memuat data: ' + e.message, true));
 }
 $('#f-login').addEventListener('submit', async e => {

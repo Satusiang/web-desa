@@ -409,6 +409,30 @@ table.tbl{width:100%;border-collapse:collapse;background:#fff}
   .og-kotak.utama{width:min(70vw,200px);max-width:none}
 }
 
+/* pengumuman */
+.papan li.pg-item{padding:0;background:var(--kuning-muda);border-left:4px solid var(--kuning)}
+.papan li.pg-item a{display:block;padding:12px 14px;text-decoration:none;color:var(--tinta)}
+.papan li.pg-item a:hover b{text-decoration:underline}
+.papan li.pg-item span{font-size:.86rem;color:var(--redup)}
+.papan .catatan a{color:#fff;font-weight:700}
+.pg-daftar{display:grid;border-top:1px solid var(--garis)}
+.pg-kartu{border-bottom:1px solid var(--garis)}
+.pg-kartu a{display:block;padding:18px 0;text-decoration:none;color:var(--tinta)}
+.pg-kartu .meta{font-size:.85rem;color:var(--redup)}
+.pg-kartu h3{font-size:1.15rem;margin:4px 0 6px}
+.pg-kartu a:hover h3{text-decoration:underline;text-decoration-color:var(--kuning);text-decoration-thickness:3px;text-underline-offset:3px}
+.pg-kartu p{color:var(--redup);font-size:.95rem}
+.pg-penting{background:var(--kuning);color:var(--padi-tua);font-weight:800;font-size:.75rem;padding:1px 7px;border-radius:3px}
+.pg-arsip{margin-top:28px}
+.pg-arsip summary{cursor:pointer;font-weight:700;color:var(--padi-tua);padding:8px 0}
+.pg-arsip-tanda{background:#eef1f4;color:#46535f;padding:10px 14px;border-radius:5px;margin-bottom:14px;font-size:.93rem}
+.pg-isi p{margin-bottom:12px;font-size:1.05rem}
+.lampiran{margin-top:28px;display:grid;gap:12px;justify-items:start}
+.lampiran h2{font-size:1.2rem}
+.pdf-view{width:100%;height:80vh;min-height:520px;border:1px solid var(--garis);border-radius:6px;background:#f5f7f4}
+.lampiran-foto{max-width:100%;border:1px solid var(--garis);border-radius:6px}
+@media (max-width:600px){.pdf-view{height:70vh;min-height:420px}}
+
 /* ekonomi: pintu masuk, daftar toko, koperasi */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .pintu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
