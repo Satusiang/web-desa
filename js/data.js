@@ -87,6 +87,11 @@ function terapkanPengaturan(cfg) {
     $('#foto-beranda').hidden = false;
     $('#papan').hidden = true;
   }
+  const fotoKades = safeUrl(tp.foto_kades);
+  if (fotoKades && $('#sampul-foto')) {
+    $('#sampul-foto source')?.remove();
+    $('#sampul-foto img').src = fotoKades;
+  }
   if ($('#bagian-sambutan') && p.sambutan) {
     $('#bagian-sambutan').hidden = false;
     const fk = safeUrl(tp.foto_kades);
