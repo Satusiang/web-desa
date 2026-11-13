@@ -269,7 +269,7 @@ async function muatLembagaAman() {
 
 // ---------- wilayah: Dusun -> RW -> RT dalam satu formulir ----------
 let wl = { dusun: [], idAwal: new Map(), ubah: false }; // idAwal: id baris perangkat yang dimuat -> data, untuk mendeteksi yang dihapus
-const slot = (p) => ({ id: p?.id || null, nama: p && !/^[\s\-–—.]*$/.test(p.nama || '') ? p.nama : '', foto_url: p?.foto_url || null });
+const slot = (p) => ({ file: null, preview: '', fotoBaru: '', id: p?.id || null, nama: p && !/^[\s\-–—.]*$/.test(p.nama || '') ? p.nama : '', foto_url: p?.foto_url || null });
 async function muatWilayah() {
   const [rows, set] = await Promise.all([
     sb.from('perangkat').select('*').then(check),
@@ -310,21 +310,27 @@ async function muatWilayah() {
 }
 function gambarWilayah() {
   const inp = (f, v, ph, extra = '') => `<input data-f="${f}" value="${esc(v)}" placeholder="${esc(ph)}" maxlength="80" ${extra}>`;
+  // Tombol foto bulat di samping nama: klik untuk memilih foto (tersimpan saat "Simpan wilayah", bila nama diisi)
+  const foto = (s, jenis, extra = '') => {
+    const src = s.preview || safeUrl(s.foto_url);
+    return `<label class="wle-foto${src ? ' ada' : ''}" title="${src ? 'Ganti foto' : 'Tambah foto'}">${src ? `<img src="${esc(src)}" alt="">` : '<span>+ Foto</span>'}
+      <input type="file" accept="image/*" data-foto="${jenis}" ${extra} hidden></label>`;
+  };
   $('#wl-editor').innerHTML = wl.dusun.length ? wl.dusun.map((d, i) => `<div class="wle-dusun" data-d="${i}">
     <div class="wle-baris wle-d">
       <label>Nama dusun${inp('dnama', d.nama, 'mis. Dusun ' + romawi(i + 1))}</label>
-      <label>Kepala Dusun${inp('kadus', d.kadus.nama, 'Nama Kepala Dusun')}</label>
+      ${foto(d.kadus, 'kadus')}<label>Kepala Dusun${inp('kadus', d.kadus.nama, 'Nama Kepala Dusun')}</label>
       <button type="button" class="btn danger mini" data-aksi="hapus-dusun">Hapus dusun</button>
     </div>
     <div class="wle-anak">
       ${d.rw.map((r, j) => `<div class="wle-rw" data-r="${j}">
         <div class="wle-baris">
           <label class="wle-rwno" style="flex:0 0 auto">Nomor RW<input type="number" min="1" max="999" data-f="rwno" value="${r.no}"></label>
-          <label>Ketua RW ${tiga(r.no)}${inp('ketua', r.ketua.nama, 'Nama ketua RW')}</label>
+          ${foto(r.ketua, 'ketua')}<label>Ketua RW ${tiga(r.no)}${inp('ketua', r.ketua.nama, 'Nama ketua RW')}</label>
           <button type="button" class="btn danger mini" data-aksi="hapus-rw">Hapus RW</button>
         </div>
         <div class="wle-anak">
-          ${r.rt.map((t, k) => `<div class="wle-rt"><span class="wle-tag">RT ${tiga(k + 1)}</span>${inp('rt', t.nama, 'Nama ketua RT ' + tiga(k + 1) + '/RW ' + tiga(r.no), `data-k="${k}"`)}</div>`).join('')}
+          ${r.rt.map((t, k) => `<div class="wle-rt"><span class="wle-tag">RT ${tiga(k + 1)}</span>${foto(t, 'rt', `data-k="${k}"`)}${inp('rt', t.nama, 'Nama ketua RT ' + tiga(k + 1) + '/RW ' + tiga(r.no), `data-k="${k}"`)}</div>`).join('')}
           <div class="wle-tombol"><button type="button" class="btn alt mini" data-aksi="tambah-rt">+ Tambah RT</button>
             ${r.rt.length ? '<button type="button" class="btn alt mini" data-aksi="kurangi-rt">− Hapus RT terakhir</button>' : ''}</div>
         </div>
@@ -344,7 +350,18 @@ $('#wl-editor').addEventListener('input', e => {
   if (f === 'ketua') r.ketua.nama = e.target.value;
   if (f === 'rt') r.rt[e.target.dataset.k].nama = e.target.value;
 });
-$('#wl-editor').addEventListener('change', e => { if (['rwno', 'dnama'].includes(e.target.dataset.f)) gambarWilayah(); });
+$('#wl-editor').addEventListener('change', e => {
+  if (['rwno', 'dnama'].includes(e.target.dataset.f)) gambarWilayah();
+  const jenis = e.target.dataset.foto, f = e.target.files?.[0];
+  if (!jenis || !f) return;
+  if (!f.type.startsWith('image/')) { toast('Pilih file gambar (JPG/PNG).', true); return; }
+  const d = wl.dusun[e.target.closest('[data-d]').dataset.d];
+  const r = e.target.closest('[data-r]') ? d.rw[e.target.closest('[data-r]').dataset.r] : null;
+  const s = jenis === 'kadus' ? d.kadus : jenis === 'ketua' ? r.ketua : r.rt[e.target.dataset.k];
+  if (s.preview) URL.revokeObjectURL(s.preview);
+  s.file = f; s.preview = URL.createObjectURL(f); wl.ubah = true;
+  gambarWilayah();
+});
 $('#wl-editor').addEventListener('click', e => {
   const aksi = e.target.dataset.aksi; if (!aksi) return;
   wl.ubah = true;
@@ -387,8 +404,15 @@ $('#wl-simpan').addEventListener('click', e => busy(e.target, async () => {
   const ganda = noRw.find((n, i) => noRw.indexOf(n) !== i);
   if (ganda) throw new Error(`RW ${tiga(ganda)} tercatat lebih dari sekali.`);
   // susun baris yang diinginkan
+  // unggah foto baru (hanya untuk kotak yang namanya diisi)
+  const semuaSlot = wl.dusun.flatMap(d => [d.kadus, ...d.rw.flatMap(r => [r.ketua, ...r.rt])]);
+  const fotoLama = [];
+  for (const s of semuaSlot.filter(s => s.file && s.nama.trim())) {
+    s.fotoBaru = await unggah(s.file, 'perangkat');
+    if (s.foto_url) fotoLama.push(s.foto_url);
+  }
   const target = [];
-  const tambah = (s, row) => target.push({ s, row: { ...row, nama: s.nama.trim() } });
+  const tambah = (s, row) => target.push({ s, row: { ...row, nama: s.nama.trim(), ...(s.fotoBaru ? { foto_url: s.fotoBaru } : {}) } });
   const kelRtRw = skemaLama ? { kelompok: 'lembaga' } : { kelompok: 'lembaga', lembaga: 'rt-rw' };
   wl.dusun.forEach((d, i) => {
     tambah(d.kadus, { jabatan: jabatanKadus(noDusun[i]), kelompok: 'pemerintah', urutan: 900 + noDusun[i] });
@@ -410,6 +434,7 @@ $('#wl-simpan').addEventListener('click', e => busy(e.target, async () => {
     check(await sb.from('perangkat').delete().in('id', hapus.map(p => p.id)));
     await Promise.all(hapus.filter(p => p.foto_url).map(p => hapusFile(p.foto_url)));
   }
+  await Promise.all(fotoLama.map(u => hapusFile(u))); // foto lama yang sudah diganti
   const struktur = wl.dusun.map(d => ({ nama: d.nama.trim(), rw: d.rw.map(r => ({ no: r.no, rt: r.rt.length })) }));
   check(await sb.from('pengaturan').upsert({ kunci: 'wilayah', diperbarui: new Date().toISOString(), nilai: { struktur } }));
   toast(`Wilayah disimpan: ${sisip.length} ditambah, ${ubah.length} diperbarui, ${hapus.length} dihapus.`);
