@@ -29,10 +29,28 @@
 <body data-page="beranda">
 <main>
 
+<section class="sampul" aria-labelledby="judul-sampul"><div class="wrap">
+  <div class="sampul-teks">
+    <p class="sampul-label">Website Resmi Pemerintah Desa Karang Bahagia</p>
+    <h1 id="judul-sampul">Selamat Datang di Desa Karang Bahagia</h1>
+    <p class="sampul-lokasi">Kecamatan Karangbahagia, Kabupaten Bekasi, Jawa Barat &middot; Kode pos 17535</p>
+    <blockquote data-bind="sambutan">Assalamu’alaikum warahmatullahi wabarakatuh, salam sejahtera bagi kita semua.
+Puji syukur kita panjatkan ke hadirat Tuhan Yang Maha Esa. Website ini kami hadirkan sebagai sarana keterbukaan informasi dan pelayanan bagi seluruh warga Desa Karang Bahagia: untuk mengetahui syarat layanan, penggunaan dana desa, dan kegiatan pembangunan, serta untuk menyampaikan aspirasi dan pengaduan secara langsung kepada pemerintah desa.
+Mari bersama-sama kita wujudkan Desa Karang Bahagia yang maju, transparan, dan sejahtera.</blockquote>
+    <p class="sampul-nama"><b data-bind="kades">Caum</b><span>Kepala Desa Karang Bahagia &middot; Periode 2026–2034</span></p>
+  </div>
+  <figure class="sampul-foto" id="sampul-foto">
+    <picture>
+      <source srcset="assets/kades-caum.webp" type="image/webp">
+      <img src="assets/kades-caum.jpg" width="720" height="869" alt="Caum, Kepala Desa Karang Bahagia periode 2026–2034, mengenakan seragam dinas putih" fetchpriority="high">
+    </picture>
+  </figure>
+</div></section>
+
 <section class="pembuka"><div class="wrap">
   <div>
-    <h1>Desa Karang Bahagia</h1>
-    <p class="lokasi">Kecamatan Karangbahagia, Kabupaten Bekasi, Jawa Barat &middot; Kode pos 17535</p>
+    <h2 class="judul-keperluan">Ada keperluan apa hari ini?</h2>
+    <p class="lokasi">Pilih yang Anda butuhkan. Semua panduan bisa dibaca sebelum datang ke kantor desa.</p>
     <ul class="keperluan" aria-label="Keperluan warga">
       <li><a href="layanan.html"><svg viewBox="0 0 32 32"><path d="M9 4h10l6 6v18H9z"/><path d="M19 4v6h6"/><path d="M13 16h8M13 20h8M13 24h5"/></svg><span><b>Saya mau mengurus surat</b><small>Lihat syarat SKTM, domisili, SKCK, dan lainnya sebelum ke kantor desa</small></span></a></li>
       <li><a href="lapor.html"><svg viewBox="0 0 32 32"><path d="M6 13v6h4l9 6V7l-9 6z"/><path d="M23 12c1.5 1 1.5 7 0 8"/><path d="M10 19l2 7h3l-1.5-6"/></svg><span><b>Saya mau melapor masalah</b><small>Jalan rusak, lampu mati, sampah, atau keluhan pelayanan</small></span></a></li>
@@ -54,17 +72,6 @@
     </div>
   </div>
 </div></section>
-
-<section id="bagian-sambutan" hidden>
-  <div class="wrap sambutan">
-    <div class="foto" id="foto-kades">C</div>
-    <div>
-      <h2>Sambutan Kepala Desa</h2>
-      <blockquote data-bind="sambutan"></blockquote>
-      <p class="nama"><span data-bind="kades">Caum</span><small>Kepala Desa Karang Bahagia</small></p>
-    </div>
-  </div>
-</section>
 
 <section class="bidang">
   <div class="wrap">

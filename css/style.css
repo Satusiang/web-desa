@@ -52,10 +52,38 @@ header.site{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px s
 .btn.alt:hover{border-color:var(--padi)}
 .btn.emas{background:var(--kuning);color:#3A2E00}
 
+/* beranda: sampul dengan foto kepala desa */
+.sampul{padding:0;background:var(--padi-tua);color:#fff;position:relative;overflow:hidden}
+.sampul::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 85% 30%,rgba(242,194,48,.16),transparent 45%),
+  repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 14px);pointer-events:none}
+.sampul .wrap{position:relative;display:grid;grid-template-columns:1fr auto;gap:56px;align-items:center}
+.sampul-teks{padding:48px 0 52px}
+.sampul-label{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--kuning);border-bottom:2px solid var(--kuning);padding-bottom:4px;margin-bottom:16px}
+.sampul h1{color:#fff;font-size:clamp(2rem,4.2vw,3.1rem);font-weight:800;line-height:1.05;letter-spacing:-.03em}
+.sampul-lokasi{color:#cfe0d3;margin:10px 0 20px}
+.sampul blockquote{white-space:pre-line;font-size:1rem;line-height:1.7;color:#eef5ef;max-width:62ch;border-left:3px solid var(--kuning);padding-left:18px}
+.sampul-nama{margin-top:18px;padding-left:21px}
+.sampul-nama b{display:block;font-size:1.5rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.sampul-nama span{color:var(--kuning);font-weight:600;font-size:.95rem}
+.sampul-foto{position:relative;align-self:end;margin:36px 14px 0 0}
+.sampul-foto::before{content:"";position:absolute;left:-14px;right:14px;top:22px;bottom:0;background:var(--kuning);border-radius:10px 10px 0 0}
+.sampul-foto img{position:relative;display:block;height:min(470px,64vh);width:auto;max-width:100%;object-fit:cover;object-position:top;border-radius:10px 10px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+@media (max-width:900px){
+  .sampul .wrap{grid-template-columns:1fr;gap:4px}
+  .sampul-foto{order:-1;width:min(60%,250px);justify-self:center;margin:30px 0 14px}
+  .sampul-foto img{border-radius:10px;width:100%;height:auto}
+  .sampul-label{font-size:.72rem}
+  .sampul-teks{padding:20px 0 40px}
+  .sampul-foto::before{bottom:-12px;border-radius:10px}
+  .sampul-teks{padding-bottom:40px}
+}
+@media print{.sampul{background:#fff;color:#000}.sampul h1,.sampul blockquote,.sampul-nama b{color:#000}}
+
 /* beranda: pembuka */
 .pembuka{padding:52px 0 40px;border-bottom:1px solid var(--garis)}
 .pembuka .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:start}
-.pembuka h1{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:800;line-height:1;letter-spacing:-.035em;color:var(--padi-tua)}
+.pembuka h1,.pembuka .judul-keperluan{font-size:clamp(1.9rem,3.8vw,2.6rem);font-weight:800;line-height:1;letter-spacing:-.035em;color:var(--padi-tua)}
 .pembuka .lokasi{font-size:1.05rem;color:var(--redup);margin:12px 0 30px}
 .keperluan{list-style:none;border-top:1px solid var(--garis)}
 .keperluan a{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--garis);text-decoration:none;color:var(--tinta)}
