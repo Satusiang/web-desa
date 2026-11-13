@@ -7,7 +7,9 @@ Dipakai sampai domain resmi `.desa.id` selesai diurus. Cara kerjanya sama dengan
 | Path | Isi |
 |---|---|
 | `index.html` | Beranda: pengumuman, layanan cepat, berita, agenda, angka desa, ringkasan APBDes |
-| `profil.html` | Sejarah, visi-misi, wilayah, data penduduk (agregat), perangkat desa, BPD, lembaga |
+| `sejarah.html` | Sejarah dan asal-usul desa (menu Profil → Sejarah Desa) |
+| `profil.html` | Profil desa: visi-misi, wilayah, batas, data penduduk (agregat), peta desa, lokasi kantor (menu Profil → Profil Desa) |
+| `perangkat.html` | Bagan perangkat desa, BPD, lembaga (menu Profil → Perangkat Desa) |
 | `layanan.html` | Alur dan syarat layanan surat |
 | `transparansi.html` | APBDes per tahun (grafik + tabel), kegiatan pembangunan, dokumen publik |
 | `berita.html` | Berita (detail: `berita.html?id=...`) dan agenda |
