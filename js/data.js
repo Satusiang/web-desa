@@ -27,10 +27,33 @@ function kartuAgenda(a) {
   return `<div class="ag"><div class="tgl"><b>${d}</b><small>${BLN[m - 1]}</small></div>
     <div><h4>${esc(a.judul)}</h4><p>${esc(tanggalID(a.tanggal))}${info ? ', ' + info : ''}</p>${a.keterangan ? `<p>${esc(a.keterangan)}</p>` : ''}</div></div>`;
 }
+const SILUET = '<svg class="siluet" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="17" r="9"/><path d="M7 44c1.5-10 8.5-15 17-15s15.5 5 17 15z"/></svg>';
 function kartuOrang(p) {
   const foto = safeUrl(p.foto_url);
-  return `<div class="person"><div class="avatar">${foto ? `<img src="${esc(foto)}" alt="">` : esc(inisial(p.nama))}</div>
-    <b>${esc(p.nama)}</b><small>${esc(p.jabatan)}</small></div>`;
+  const kosong = !String(p.nama || '').trim() || /^[\s\-–—.]+$/.test(p.nama);
+  const isi = foto ? `<img src="${esc(foto)}" alt="Foto ${esc(kosong ? p.jabatan : p.nama)}" loading="lazy">` : kosong ? SILUET : esc(inisial(p.nama));
+  return `<div class="person${kosong ? ' kosong' : ''}"><div class="avatar">${isi}</div>
+    <b>${kosong ? 'Belum diisi' : esc(p.nama)}</b><small>${esc(p.jabatan)}</small></div>`;
+}
+
+// Bagan susunan perangkat desa: Kepala Desa di atas, Sekretaris Desa di bawahnya,
+// lalu jajaran kepala seksi, kepala urusan, dan kepala dusun. Tingkat ditentukan dari kata di jabatan.
+const TINGKAT = [
+  { k: 'kades',  judul: '',                       cocok: /kepala\s+desa|^kades\b|^kuwu\b|^lurah\b/i },
+  { k: 'sekdes', judul: '',                       cocok: /sekretaris|sekertaris|sekdes|carik/i },
+  { k: 'kasi',   judul: 'Kepala Seksi',           cocok: /seksi|\bkasi\b/i },
+  { k: 'kaur',   judul: 'Kepala Urusan',          cocok: /urusan|\bkaur\b/i },
+  { k: 'kadus',  judul: 'Kepala Dusun',           cocok: /dusun|kadus|kewilayahan/i },
+  { k: 'lain',   judul: 'Staf dan pelaksana',     cocok: /./ },
+];
+function baganPerangkat(list) {
+  const isi = TINGKAT.map(t => ({ ...t, orang: [] }));
+  list.forEach(p => isi.find(t => t.cocok.test(String(p.jabatan || ''))).orang.push(p));
+  return `<div class="bagan">${isi.filter(t => t.orang.length).map(t => `
+    <div class="bagan-tingkat t-${t.k}${t.orang.length > 1 ? ' banyak' : ''}">
+      ${t.judul && t.orang.length > 1 ? `<p class="bagan-judul">${esc(t.judul)}</p>` : ''}
+      <div class="bagan-isi">${t.orang.map(kartuOrang).join('')}</div>
+    </div>`).join('')}</div>`;
 }
 function totalOf(arr) { return (Array.isArray(arr) ? arr : []).reduce((s, b) => s + (Number(b.nilai) || 0), 0); }
 
@@ -154,7 +177,7 @@ async function profil(sb) {
   const { data } = await sb.from('perangkat').select('*').order('urutan').order('dibuat');
   if (!data) return;
   const grup = (k) => data.filter(p => p.kelompok === k);
-  if (grup('pemerintah').length) $('#perangkat').innerHTML = grup('pemerintah').map(kartuOrang).join('');
+  if (grup('pemerintah').length) $('#perangkat').innerHTML = baganPerangkat(grup('pemerintah'));
   $('#bpd').innerHTML = grup('bpd').length ? grup('bpd').map(kartuOrang).join('') : '<p class="empty">Data BPD menyusul.</p>';
   $('#lembaga').innerHTML = grup('lembaga').length ? grup('lembaga').map(kartuOrang).join('') : '<p class="empty">Data lembaga desa menyusul.</p>';
 }
