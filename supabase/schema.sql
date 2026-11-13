@@ -64,6 +64,23 @@ create table if not exists public.perangkat (
   dibuat timestamptz not null default now()
 );
 
+-- ---------- Lembaga desa (BPD, PKK, LPM, Karang Taruna, dll.) ----------
+-- Tiap lembaga punya halaman rincian (lembaga.html?l=kode) berisi profil dan bagan pengurus.
+create table if not exists public.lembaga (
+  id uuid primary key default gen_random_uuid(),
+  kode text unique not null check (kode ~ '^[a-z0-9-]{2,40}$'),
+  nama text not null,
+  singkatan text not null default '',
+  ringkasan text not null default '',
+  profil text not null default '',      -- paragraf dipisah baris kosong; baris diawali "- " jadi daftar
+  urutan int not null default 0,
+  foto_url text,                        -- logo lembaga (opsional)
+  dibuat timestamptz not null default now()
+);
+-- Pengurus lembaga disimpan di tabel perangkat dengan kolom lembaga = kode lembaga.
+alter table public.perangkat add column if not exists lembaga text
+  references public.lembaga(kode) on update cascade on delete set null;
+
 -- ---------- Layanan (panduan surat) ----------
 create table if not exists public.layanan (
   id uuid primary key default gen_random_uuid(),
@@ -161,9 +178,9 @@ on conflict (kunci) do nothing;
 
 -- ---------- Hak akses Data API ----------
 grant usage on schema public to anon, authenticated;
-grant select on public.pengaturan, public.berita, public.agenda, public.perangkat, public.layanan,
+grant select on public.pengaturan, public.berita, public.agenda, public.perangkat, public.lembaga, public.layanan,
   public.apbdes, public.pembangunan, public.dokumen, public.umkm to anon, authenticated;
-grant insert, update, delete on public.pengaturan, public.berita, public.agenda, public.perangkat, public.layanan,
+grant insert, update, delete on public.pengaturan, public.berita, public.agenda, public.perangkat, public.lembaga, public.layanan,
   public.apbdes, public.pembangunan, public.dokumen, public.umkm to authenticated;
 -- Pengaduan: tamu tidak membaca/menulis tabel langsung, hanya lewat fungsi di bawah.
 revoke all on public.pengaduan from anon;
@@ -173,12 +190,12 @@ grant select, update, delete on public.pengaduan to authenticated;
 do $$
 declare t text;
 begin
-  foreach t in array array['pengaturan','berita','agenda','perangkat','layanan','apbdes','pembangunan','dokumen','umkm','pengaduan'] loop
+  foreach t in array array['pengaturan','berita','agenda','perangkat','lembaga','layanan','apbdes','pembangunan','dokumen','umkm','pengaduan'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists "admin kelola" on public.%I', t);
     execute format('create policy "admin kelola" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
   end loop;
-  foreach t in array array['pengaturan','agenda','perangkat','layanan','apbdes','pembangunan','dokumen'] loop
+  foreach t in array array['pengaturan','agenda','perangkat','lembaga','layanan','apbdes','pembangunan','dokumen'] loop
     execute format('drop policy if exists "baca publik" on public.%I', t);
     execute format('create policy "baca publik" on public.%I for select using (true)', t);
   end loop;
@@ -313,6 +330,19 @@ on conflict (kunci) do nothing;
 insert into public.perangkat (nama, jabatan, kelompok, urutan)
 select 'Caum', 'Kepala Desa', 'pemerintah', 1
 where not exists (select 1 from public.perangkat);
+
+-- Lembaga bawaan (boleh diubah dari admin; tidak ditimpa saat skema dijalankan ulang)
+insert into public.lembaga (kode, nama, singkatan, ringkasan, profil, urutan) values
+  ('bpd', 'Badan Permusyawaratan Desa', 'BPD', 'Wakil warga yang membahas peraturan desa bersama Kepala Desa, menampung aspirasi, dan mengawasi kinerja pemerintah desa.', E'Badan Permusyawaratan Desa (BPD) adalah lembaga yang anggotanya merupakan wakil penduduk desa berdasarkan keterwakilan wilayah dan dipilih secara demokratis.\n\nFungsi BPD:\n- Membahas dan menyepakati rancangan peraturan desa bersama Kepala Desa\n- Menampung dan menyalurkan aspirasi masyarakat desa\n- Melakukan pengawasan kinerja Kepala Desa', 1),
+  ('pkk', 'Tim Penggerak Pemberdayaan dan Kesejahteraan Keluarga', 'TP PKK', 'Menggerakkan program kesejahteraan keluarga melalui kelompok kerja (Pokja) PKK.', E'Tim Penggerak PKK desa adalah mitra pemerintah desa dalam memberdayakan keluarga. Kegiatannya dijalankan melalui kelompok kerja (Pokja).\n\nKelompok kerja:\n- Pokja I: penghayatan dan pengamalan Pancasila serta gotong royong\n- Pokja II: pendidikan, keterampilan, dan pengembangan kehidupan berkoperasi\n- Pokja III: pangan, sandang, serta perumahan dan tata laksana rumah tangga\n- Pokja IV: kesehatan, kelestarian lingkungan hidup, dan perencanaan sehat', 2),
+  ('lpm', 'Lembaga Pemberdayaan Masyarakat', 'LPM', 'Mitra pemerintah desa dalam menyusun rencana pembangunan dan menggerakkan swadaya gotong royong warga.', E'Lembaga Pemberdayaan Masyarakat (LPM) membantu pemerintah desa dalam pembangunan dan pemberdayaan masyarakat.\n\nTugas LPM:\n- Menampung dan menyalurkan aspirasi warga dalam perencanaan pembangunan\n- Menggerakkan swadaya dan gotong royong masyarakat\n- Ikut melaksanakan dan mengawasi kegiatan pembangunan desa', 3),
+  ('karang-taruna', 'Karang Taruna', 'Karang Taruna', 'Organisasi kepemudaan desa untuk pengembangan generasi muda dan kesejahteraan sosial.', E'Karang Taruna adalah organisasi sosial kemasyarakatan tempat pengembangan generasi muda desa, tumbuh atas dasar kesadaran dan tanggung jawab sosial dari, oleh, dan untuk masyarakat.\n\nKegiatan:\n- Pembinaan dan pengembangan generasi muda\n- Kegiatan sosial, olahraga, seni, dan budaya\n- Usaha ekonomi produktif pemuda', 4),
+  ('posyandu', 'Pos Pelayanan Terpadu', 'Posyandu', 'Layanan kesehatan dasar untuk ibu, bayi, balita, dan lansia yang dijalankan kader dari dan untuk warga.', E'Posyandu adalah lembaga kemasyarakatan yang membantu pemerintah desa memberikan pelayanan dasar kepada warga, terutama di bidang kesehatan.\n\nLayanan:\n- Penimbangan dan pemantauan tumbuh kembang balita\n- Imunisasi dan kesehatan ibu hamil\n- Pemeriksaan kesehatan lansia\n- Penyuluhan gizi dan kesehatan keluarga', 5),
+  ('linmas', 'Satuan Perlindungan Masyarakat', 'Satlinmas', 'Membantu menjaga ketenteraman, ketertiban, dan penanganan bencana di lingkungan desa.', E'Satuan Perlindungan Masyarakat (Satlinmas) desa beranggotakan warga yang dilatih untuk membantu menjaga ketenteraman dan ketertiban masyarakat.\n\nTugas:\n- Membantu pengamanan kegiatan masyarakat dan pemilihan umum\n- Membantu penanganan bencana dan keadaan darurat\n- Ikut menjaga keamanan dan ketertiban lingkungan', 6),
+  ('rt-rw', 'Rukun Tetangga dan Rukun Warga', 'RT/RW', 'Lembaga terdekat dengan warga: membantu pelayanan pemerintahan, pendataan, dan menjaga kerukunan lingkungan.', E'Rukun Tetangga (RT) dan Rukun Warga (RW) adalah lembaga kemasyarakatan yang paling dekat dengan warga.\n\nTugas:\n- Membantu pelayanan pemerintahan, seperti surat pengantar\n- Membantu pendataan penduduk\n- Menjaga kerukunan, keamanan, dan kebersihan lingkungan\n- Menggerakkan gotong royong warga', 7)
+on conflict (kode) do nothing;
+-- Anggota BPD lama (kelompok 'bpd') otomatis masuk lembaga BPD
+update public.perangkat set lembaga = 'bpd' where kelompok = 'bpd' and lembaga is null;
 
 insert into public.layanan (nama, syarat, keterangan, urutan)
 select * from (values

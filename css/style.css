@@ -290,6 +290,29 @@ table.tbl{width:100%;border-collapse:collapse;background:#fff}
 .umkm .btn{align-self:flex-start;margin-top:6px}
 .kat{font-size:.84rem;color:var(--redup)}
 
+/* lembaga desa */
+.lembaga-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.lembaga-kartu{display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:var(--tinta);background:#fff;border:1px solid var(--garis);border-left:4px solid var(--padi);border-radius:6px;padding:18px}
+.lembaga-kartu:hover{border-color:var(--padi);box-shadow:0 8px 20px rgba(29,68,40,.1)}
+.lembaga-kartu:hover em{text-decoration:underline}
+.lencana{flex-shrink:0;width:52px;height:52px;border-radius:50%;background:var(--padi-muda);color:var(--padi-tua);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;overflow:hidden;border:2px solid var(--kuning)}
+.lencana img{width:100%;height:100%;object-fit:cover}
+.lk-isi{display:flex;flex-direction:column;gap:3px;min-width:0}
+.lk-isi b{font-size:1.12rem;color:var(--padi-tua)}
+.lk-isi small{color:var(--redup);font-size:.84rem;line-height:1.35}
+.lk-ring{color:var(--redup);font-size:.93rem;margin-top:4px}
+.lk-isi em{font-style:normal;font-weight:700;color:var(--padi);font-size:.9rem;margin-top:6px}
+.lembaga-rinci{display:grid;grid-template-columns:minmax(260px,.8fr) 1.2fr;gap:40px;align-items:start;margin-top:18px}
+.lembaga-profil{background:var(--padi-muda);border:1px solid var(--garis);border-radius:6px;padding:22px}
+.lembaga-profil .lencana{width:64px;height:64px;font-size:1.05rem;margin-bottom:12px;background:#fff}
+.lembaga-profil h2,.lembaga-susunan h2{font-size:1.25rem;margin-bottom:10px}
+.lembaga-profil p{margin-bottom:10px}
+.bagan .t-ketua:not(.banyak) .person{width:220px}
+.bagan .t-ketua .avatar{box-shadow:0 0 0 3px var(--kuning)}
+.bagan .t-ketua .person b{font-size:1.06rem}
+@media (max-width:900px){.lembaga-rinci{grid-template-columns:1fr;gap:28px}}
+@media (max-width:600px){.lembaga-grid{grid-template-columns:1fr}.bagan .t-ketua:not(.banyak) .person{width:min(60%,220px)}}
+
 /* ekonomi: pintu masuk, daftar toko, koperasi */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .pintu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
