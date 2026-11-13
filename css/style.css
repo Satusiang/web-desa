@@ -130,6 +130,7 @@ figure.foto-desa figcaption{font-size:.85rem;color:var(--redup);padding-top:8px}
 .papan li:nth-child(even){transform:rotate(.5deg)}
 .papan li b{display:block;color:var(--padi-tua)}
 .papan .catatan{color:#cfe0d3;font-size:.84rem;margin-top:14px}
+.papan li.papan-kosong{background:transparent;box-shadow:none;transform:none;color:#cfe0d3;padding:4px 0;font-style:italic}
 
 /* bagian umum */
 section{padding:56px 0}

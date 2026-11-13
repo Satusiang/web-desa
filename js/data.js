@@ -216,13 +216,8 @@ async function beranda(sb) {
   ]);
   if (b.data?.length) $('#berita-terbaru').innerHTML = b.data.map(kartuBerita).join('');
   const pgAktif = pengumumanCache.filter(masihBerlaku).slice(0, 3);
-  if (pgAktif.length && $('#papan-isi')) {
-    $('#papan-isi').insertAdjacentHTML('afterbegin', pgAktif.map(itemPengumuman).join(''));
-    $('#papan .catatan').innerHTML = '<a href="pengumuman.html">Lihat semua pengumuman</a>';
-  }
-  if (a.data?.length && $('#papan-isi')) {
-    $('#papan-isi').insertAdjacentHTML('beforeend', a.data.slice(0, 2).map(x => `<li><b>${esc(x.judul)}</b>${esc(tanggalID(x.tanggal))}${x.tempat ? ', ' + esc(x.tempat) : ''}</li>`).join(''));
-  }
+  // Papan pengumuman hanya berisi pengumuman dari menu Admin -> Pengumuman
+  if (pgAktif.length && $('#papan-isi')) $('#papan-isi').innerHTML = pgAktif.map(itemPengumuman).join('');
   if (a.data) $('#agenda-dekat').innerHTML = a.data.length ? a.data.map(kartuAgenda).join('') : '<p class="empty">Belum ada agenda terdekat.</p>';
   const x = ap.data?.[0];
   if (x) {
