@@ -41,7 +41,8 @@ Gunakan **project Supabase baru** (terpisah dari BUM Desa, karena nama tabelnya 
 `schema.sql` aman dijalankan ulang setiap ada pembaruan; data yang sudah ada tidak terhapus.
 
 ## Deploy ke Cloudflare
-Header keamanan di `_headers`. Konfigurasi worker dibuat otomatis oleh Cloudflare saat build.
+Header keamanan di `_headers`. Konfigurasi worker ada di `wrangler.jsonc` (situs statis, tanpa build),
+termasuk blok `previews` yang dibutuhkan untuk versi pratinjau tiap branch/pull request.
 1. Cloudflare Dashboard → **Workers & Pages → Create → Import a repository** → pilih `web-desa`.
 2. Build command dikosongkan, output directory `/` (atau kosong). Klik **Deploy**.
 3. Setiap push ke branch `main` ter-deploy otomatis.

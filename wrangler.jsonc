@@ -1,0 +1,14 @@
+// Konfigurasi Cloudflare Workers untuk website desa (situs statis, tanpa build).
+// Isinya sama dengan konfigurasi yang sebelumnya dibuat otomatis oleh Cloudflare saat build,
+// ditambah blok "previews" yang dibutuhkan perintah `npx wrangler preview` untuk branch selain main.
+{
+  "name": "web-desa",
+  "compatibility_date": "2026-11-01",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "."
+  },
+  "previews": {}
+}

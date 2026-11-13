@@ -1,0 +1,5 @@
+# Berkas yang tidak ikut diunggah sebagai bagian website
+wrangler.jsonc
+.assetsignore
+.wrangler
+node_modules
