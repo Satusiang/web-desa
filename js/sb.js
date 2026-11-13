@@ -167,3 +167,54 @@ export function barisKeTeks(arr) {
 export function paragraf(teks) {
   return String(teks || '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
 }
+
+// ---------- wilayah: dusun, RW, RT (dipakai halaman publik dan admin) ----------
+const ROMAWI = { i: 1, v: 5, x: 10, l: 50 };
+export function angkaRomawi(s) {
+  s = String(s).toLowerCase();
+  if (/^\d+$/.test(s)) return Number(s);
+  let n = 0;
+  for (let i = 0; i < s.length; i++) { const a = ROMAWI[s[i]] || 0, b = ROMAWI[s[i + 1]] || 0; n += a < b ? -a : a; }
+  return n;
+}
+export function romawi(n) {
+  const t = [[50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let s = ''; for (const [v, r] of t) while (n >= v) { s += r; n -= v; }
+  return s || String(n);
+}
+export const tiga = (n) => String(n).padStart(3, '0');
+// "Kepala Dusun I", "Kadus 2" -> nomor dusun; selain itu 0
+export function nomorDusun(t) {
+  const m = String(t || '').match(/(?:dusun|kadus)\s*\.?\s*([ivxl]+|\d+)\b/i);
+  return m ? angkaRomawi(m[1]) : 0;
+}
+// "Ketua RT 001/RW 002", "KETUA RT.001/002", "Ketua RT 1 RW 2" -> {rt:1, rw:2}; "Ketua RW 002" -> {rw:2}
+export function nomorRtRw(t) {
+  const s = String(t || '');
+  const a = s.match(/\bRT\s*\.?\s*0*(\d+)\s*\/\s*(?:RW\s*\.?\s*)?0*(\d+)/i) || s.match(/\bRT\s*\.?\s*0*(\d+)\b.*?\bRW\s*\.?\s*0*(\d+)/i);
+  if (a) return { rt: Number(a[1]), rw: Number(a[2]) };
+  const w = s.match(/\bRW\s*\.?\s*0*(\d+)/i);
+  return w ? { rw: Number(w[1]) } : null;
+}
+export const jabatanKadus = (no) => `Kepala Dusun ${romawi(no)}`;
+export const jabatanRw = (rw) => `Ketua RW ${tiga(rw)}`;
+export const jabatanRt = (rt, rw) => `Ketua RT ${tiga(rt)}/RW ${tiga(rw)}`;
+// Struktur wilayah dari pengaturan: [{nama, rw:[{no, rt:jumlahRT}]}].
+// Mendukung format lama (teks "Dusun I: 001, 002"); bila kosong pakai contoh bawaan.
+export const WILAYAH_BAWAAN = [
+  { nama: 'Dusun I', rw: [{ no: 1, rt: 3 }, { no: 2, rt: 3 }] },
+  { nama: 'Dusun II', rw: [{ no: 3, rt: 3 }] },
+  { nama: 'Dusun III', rw: [{ no: 4, rt: 3 }] },
+];
+export function strukturWilayah(w) {
+  if (w && Array.isArray(w.struktur) && w.struktur.length) {
+    return w.struktur.map(d => ({ nama: String(d.nama || ''), rw: (d.rw || []).map(r => ({ no: Number(r.no) || 0, rt: Math.max(0, Number(r.rt) || 0) })).filter(r => r.no) }));
+  }
+  if (w && w.teks) {
+    return w.teks.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+      const i = l.indexOf(':');
+      return { nama: (i > 0 ? l.slice(0, i) : l).trim(), rw: (i > 0 ? (l.slice(i + 1).match(/\d+/g) || []) : []).map(n => ({ no: Number(n), rt: 3 })) };
+    });
+  }
+  return JSON.parse(JSON.stringify(WILAYAH_BAWAAN));
+}

@@ -89,3 +89,28 @@ header.site .who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:
   .admin .brand small{display:none}
   .admin .who{flex:1 1 100%;justify-content:space-between}
 }
+
+/* peringatan skema & editor wilayah */
+.banner-skema{background:#FFF6D6;border:1px solid #F2C230;border-left:5px solid #D9A916;border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:.93rem;line-height:1.6}
+.wle{display:grid;gap:14px}
+.wle-dusun{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.wle-baris{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+.wle-baris label{display:grid;gap:4px;font-weight:600;font-size:.82rem;color:var(--hijau-2);flex:1 1 200px}
+.wle input{padding:9px 10px;border:1px solid #cdd9d1;border-radius:8px;font:inherit;font-size:.93rem;width:100%;background:#fff}
+.wle input:focus{outline:2px solid var(--emas);border-color:transparent}
+.wle-d{background:var(--hijau-2);padding:12px 14px}
+.wle-d label{color:#fff}
+.wle-anak{padding:10px 12px 12px 26px;display:grid;gap:10px;position:relative}
+.wle-anak::before{content:"";position:absolute;left:12px;top:8px;bottom:14px;border-left:2px dashed #b8cbbd}
+.wle-rw{background:var(--bg);border:1px solid var(--line);border-radius:8px}
+.wle-rw>.wle-baris{padding:10px 12px}
+.wle-rw .wle-anak{padding-top:0}
+.wle-rw .wle-anak::before{border-left-style:solid}
+.wle-rt{display:flex;align-items:center;gap:8px}
+.wle-tag{flex-shrink:0;min-width:64px;text-align:center;font-weight:800;font-size:.78rem;padding:4px 6px;border-radius:5px;background:#fff;border:1px solid var(--line);color:var(--hijau-2)}
+.wle-rwno{display:grid;gap:4px;font-weight:600;font-size:.82rem;color:var(--hijau-2)}
+.wle-rwno input{width:90px}
+.wle-tombol{display:flex;gap:6px;flex-wrap:wrap}
+.btn.mini{padding:6px 10px;font-size:.8rem;border:1px solid var(--line)}
+.grup-judul{font-weight:800;color:var(--hijau-2);font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 2px}
+.grup-judul:first-child{margin-top:0}

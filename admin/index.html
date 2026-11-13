@@ -68,6 +68,11 @@
   </section>
 
   <section id="v-app" hidden>
+    <div class="banner-skema" id="banner-skema" hidden>
+      <b>Database perlu diperbarui.</b> Fitur Lembaga dan pengelompokan RT/RW belum aktif karena tabel <code>lembaga</code> belum ada.
+      Buka Supabase → <b>SQL Editor</b> → <b>New query</b>, tempel seluruh isi <code>supabase/schema.sql</code> terbaru, klik <b>Run</b>, lalu muat ulang halaman ini.
+      Data yang sudah ada tidak terhapus. Sementara itu, tab lain tetap bisa dipakai.
+    </div>
     <div class="tabs" role="tablist">
       <a class="tab-surat" href="surat.html">📄 Layanan Surat</a>
       <button data-tab="pengaduan" class="on">📣 Pengaduan <span class="count" id="cnt-aduan"></span></button>
@@ -77,6 +82,7 @@
       <button data-tab="pembangunan">🏗️ Pembangunan</button>
       <button data-tab="dokumen">📁 Dokumen</button>
       <button data-tab="perangkat">👥 Perangkat</button>
+      <button data-tab="wilayah">🏘️ Wilayah (Dusun/RW/RT)</button>
       <button data-tab="lembaga">🏛️ Lembaga</button>
       <button data-tab="layanan">📋 Syarat Layanan</button>
       <button data-tab="umkm">🛍️ UMKM</button>
@@ -205,7 +211,7 @@
           <input type="hidden" id="p-id">
           <label>Nama<input id="p-nama" required maxlength="80"></label>
           <label>Jabatan<input id="p-jabatan" required maxlength="80" placeholder="mis. Sekretaris Desa, Kepala Seksi Pemerintahan, Kepala Urusan Keuangan, Kepala Dusun I"></label>
-          <p class="muted small" style="margin-top:-6px">Bagan disusun dari jabatan. Perangkat desa: Kepala Desa, Sekretaris Desa, lalu Kepala Seksi dan Kepala Urusan; Kepala Dusun ("Kepala Dusun I") tampil di bagian Wilayah. RT/RW: kelompok Lembaga desa, lembaga RT/RW, jabatan "Ketua RW 001" atau "Ketua RT 001/RW 001". Lembaga: Pembina, Ketua, Wakil Ketua, Sekretaris dan Bendahara, lalu bidang/seksi/Pokja/kader, lalu Anggota. Angka urutan mengatur posisi kiri ke kanan.</p>
+          <p class="muted small" style="margin-top:-6px">Bagan disusun dari jabatan. Perangkat desa: Kepala Desa, Sekretaris Desa, lalu Kepala Seksi dan Kepala Urusan. Kepala Dusun, ketua RW, dan ketua RT paling mudah diisi di tab Wilayah. Lembaga: Pembina, Ketua, Wakil Ketua, Sekretaris dan Bendahara, lalu bidang/seksi/Pokja/kader, lalu Anggota. Angka urutan mengatur posisi kiri ke kanan.</p>
           <div class="row wrap-row">
             <label class="grow">Kelompok<select id="p-kelompok"><option value="pemerintah">Perangkat desa</option><option value="bpd">BPD</option><option value="lembaga">Lembaga desa</option></select></label>
             <label class="grow" id="p-lembaga-wrap" hidden>Lembaga<select id="p-lembaga"></select></label>
@@ -215,11 +221,24 @@
           <div class="preview" id="p-preview"></div>
           <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="p-reset">Batal / Baru</button></div>
         </form>
-        <div class="panel"><h2>Susunan</h2><div id="l-perangkat" class="list"></div></div>
+        <div class="panel"><h2>Susunan</h2><p class="muted small">Kepala Dusun, ketua RW, dan ketua RT lebih mudah diisi sekaligus di tab <b>Wilayah (Dusun/RW/RT)</b>. Di sini bisa menambah foto atau mengubah satu per satu.</p><div id="l-perangkat" class="list"></div></div>
       </div>
     </div>
 
     <!-- LAYANAN -->
+    <div class="tab" id="t-wilayah" hidden>
+      <div class="panel">
+        <h2>Wilayah: dusun, RW, dan RT</h2>
+        <p class="muted">Ketik nama Kepala Dusun, ketua RW, dan ketua RT di kotak yang tersedia, lalu klik <b>Simpan wilayah</b>. Jabatan dibuat otomatis. Kotak yang dikosongkan tampil sebagai "Belum diisi" di website. Foto bisa ditambahkan nanti di tab Perangkat.</p>
+        <div id="wl-editor" class="wle"><p class="empty">Memuat…</p></div>
+        <div class="row wrap-row" style="margin-top:16px">
+          <button class="btn alt" type="button" id="wl-tambah-dusun">+ Tambah dusun</button>
+          <button class="btn" type="button" id="wl-simpan">Simpan wilayah</button>
+          <a class="link" href="../perangkat.html#bagian-wilayah" target="_blank" rel="noopener">Lihat di website</a>
+        </div>
+      </div>
+    </div>
+
     <div class="tab" id="t-lembaga" hidden>
       <div class="grid-admin">
         <form id="f-lembaga" class="panel form">
@@ -319,9 +338,6 @@
           <div class="row wrap-row">
             <label class="grow">Batas timur<input id="s-bt"></label><label class="grow">Batas barat<input id="s-bb"></label>
           </div>
-          <h2 style="margin-top:12px">Pembagian wilayah (dusun dan RW)</h2>
-          <label>Satu dusun per baris, format "Nama dusun: nomor RW"<textarea id="s-wilayah" rows="4" placeholder="Dusun I: 001, 002&#10;Dusun II: 003&#10;Dusun III: 004"></textarea></label>
-          <p class="muted small" style="margin-top:-6px">Dipakai untuk bagan wilayah di halaman Perangkat Desa. Kosongkan untuk memakai contoh di atas. Kepala Dusun diisi di tab Perangkat (jabatan "Kepala Dusun I"); ketua RW dan RT diisi di tab Perangkat dengan kelompok Lembaga desa, lembaga RT/RW (jabatan "Ketua RW 001" atau "Ketua RT 001/RW 001").</p>
           <h2 style="margin-top:12px">Statistik (angka agregat saja)</h2>
           <div class="row wrap-row">
             <label class="grow">Penduduk<input id="s-st-penduduk" inputmode="numeric"></label>
