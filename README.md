@@ -14,6 +14,7 @@ Dipakai sampai domain resmi `.desa.id` selesai diurus. Cara kerjanya sama dengan
 | `layanan.html` | Alur dan syarat layanan surat |
 | `transparansi.html` | APBDes per tahun (grafik + tabel), kegiatan pembangunan, dokumen publik |
 | `berita.html` | Berita (detail: `berita.html?id=...`) dan agenda |
+| `pengumuman.html` | Pengumuman desa dengan lampiran surat (PDF/foto); rincian `pengumuman.html?id=...`. Diisi di admin → tab Pengumuman |
 | `ekonomi.html` | Pintu masuk menu Ekonomi: BUMDes, KDMP, UMKM |
 | `bumdes.html` | BUM Desa (diisi di admin → Pengaturan → BUM Desa) |
 | `kdmp.html` | Koperasi Desa Merah Putih (diisi di admin → Pengaturan → KDMP) |

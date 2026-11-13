@@ -100,7 +100,7 @@ function terapkanPengaturan(cfg) {
   setText('alamat', k.alamat);
   setText('jam', k.jam);
 
-  if (pg.aktif && pg.teks) {
+  if (!window.__PITA_BARU && pg.aktif && pg.teks) {
     const t = $('#pengumuman-teks');
     const url = safeUrl(pg.tautan);
     t.innerHTML = esc(pg.teks) + (url ? ` <a href="${esc(url)}">Baca selengkapnya</a>` : '');
@@ -206,6 +206,11 @@ async function beranda(sb) {
     sb.from('apbdes').select('*').order('tahun', { ascending: false }).limit(1),
   ]);
   if (b.data?.length) $('#berita-terbaru').innerHTML = b.data.map(kartuBerita).join('');
+  const pgAktif = pengumumanCache.filter(masihBerlaku).slice(0, 3);
+  if (pgAktif.length && $('#papan-isi')) {
+    $('#papan-isi').insertAdjacentHTML('afterbegin', pgAktif.map(itemPengumuman).join(''));
+    $('#papan .catatan').innerHTML = '<a href="pengumuman.html">Lihat semua pengumuman</a>';
+  }
   if (a.data?.length && $('#papan-isi')) {
     $('#papan-isi').insertAdjacentHTML('beforeend', a.data.slice(0, 2).map(x => `<li><b>${esc(x.judul)}</b>${esc(tanggalID(x.tanggal))}${x.tempat ? ', ' + esc(x.tempat) : ''}</li>`).join(''));
   }
@@ -569,6 +574,58 @@ async function lapor(sb) {
   if (data) $('#laporan-publik').innerHTML = data.length ? data.map(l => kartuLaporan(l, false)).join('') : '<p class="empty">Belum ada laporan yang ditampilkan.</p>';
 }
 
+// ---------- pengumuman ----------
+let pengumumanCache = [];
+const masihBerlaku = (p) => !p.berlaku_sampai || p.berlaku_sampai >= today();
+const lampiranPdf = (p) => /\.pdf($|\?)/i.test(p.file_nama || '') || /\.pdf($|\?)/i.test(p.file_url || '');
+function pasangPita() {
+  const p = pengumumanCache.find(x => x.penting && masihBerlaku(x));
+  if (!p) return;
+  $('#pengumuman-teks').innerHTML = `${esc(p.judul)} <a href="pengumuman.html?id=${encodeURIComponent(p.id)}">Baca selengkapnya</a>`;
+  $('#pengumuman').hidden = false;
+}
+function itemPengumuman(p) {
+  return `<li class="pg-item"><a href="pengumuman.html?id=${encodeURIComponent(p.id)}"><b>${esc(p.judul)}</b>
+    <span>${esc(tanggalID(p.tanggal))}${safeUrl(p.file_url) ? ` · <span class="pg-lampir">📎 ${lampiranPdf(p) ? 'Surat (PDF)' : 'Lampiran foto'}</span>` : ''}</span></a></li>`;
+}
+function kartuPengumuman(p) {
+  return `<article class="pg-kartu"><a href="pengumuman.html?id=${encodeURIComponent(p.id)}">
+    <p class="meta"><time datetime="${esc(p.tanggal)}">${esc(tanggalID(p.tanggal))}</time>${p.penting ? ' · <span class="pg-penting">Penting</span>' : ''}${safeUrl(p.file_url) ? ` · 📎 ${lampiranPdf(p) ? 'Surat (PDF)' : 'Lampiran foto'}` : ''}</p>
+    <h3>${esc(p.judul)}</h3>${p.isi ? `<p>${esc(ringkas(p.isi, 180))}</p>` : ''}</a></article>`;
+}
+function lampiranHtml(p) {
+  const url = safeUrl(p.file_url);
+  if (!url) return '';
+  const nama = p.file_nama || (lampiranPdf(p) ? 'surat.pdf' : 'lampiran');
+  if (lampiranPdf(p)) {
+    return `<div class="lampiran"><h2>Lampiran surat</h2>
+      <iframe class="pdf-view" src="${esc(url)}#view=FitH" title="Lampiran: ${esc(nama)}" loading="lazy"></iframe>
+      <p class="small muted">Surat tidak tampil di atas? Sebagian HP tidak bisa menampilkan PDF langsung. Gunakan tombol di bawah.</p>
+      <a class="btn" href="${esc(url)}" target="_blank" rel="noopener">Buka / unduh surat (PDF)</a></div>`;
+  }
+  return `<div class="lampiran"><h2>Lampiran</h2><a href="${esc(url)}" target="_blank" rel="noopener"><img class="lampiran-foto" src="${esc(url)}" alt="Lampiran: ${esc(p.judul)}" loading="lazy"></a>
+    <a class="btn alt" href="${esc(url)}" target="_blank" rel="noopener">Buka foto ukuran penuh</a></div>`;
+}
+function pengumumanHal() {
+  const id = new URLSearchParams(location.search).get('id');
+  const box = $('#isi-pengumuman');
+  if (id) {
+    const p = pengumumanCache.find(x => x.id === id);
+    if (!p) { box.innerHTML = '<a class="kembali" href="pengumuman.html">Semua pengumuman</a><p class="empty">Pengumuman ini tidak ditemukan. Mungkin sudah dihapus atau alamatnya salah.</p>'; return; }
+    document.title = `${p.judul} – Pengumuman Desa Karang Bahagia`;
+    $('.kepala-hal .jejak').innerHTML = '<a href="index.html">Beranda</a> / <a href="pengumuman.html">Pengumuman</a>';
+    $('.kepala-hal h1').textContent = p.judul;
+    $('.kepala-hal h1 + p').textContent = `Diumumkan ${tanggalID(p.tanggal)}${p.berlaku_sampai ? `, berlaku sampai ${tanggalID(p.berlaku_sampai)}` : ''}.`;
+    box.innerHTML = `<a class="kembali" href="pengumuman.html">Semua pengumuman</a>
+      ${!masihBerlaku(p) ? '<p class="pg-arsip-tanda">Pengumuman ini sudah lewat masa berlakunya.</p>' : ''}
+      <div class="pg-isi">${paragraf(p.isi) || ''}</div>${lampiranHtml(p)}`;
+    return;
+  }
+  const aktif = pengumumanCache.filter(masihBerlaku), arsip = pengumumanCache.filter(p => !masihBerlaku(p));
+  box.innerHTML = `<div class="pg-daftar">${aktif.length ? aktif.map(kartuPengumuman).join('') : '<p class="empty">Belum ada pengumuman yang berlaku saat ini.</p>'}</div>
+    ${arsip.length ? `<details class="pg-arsip"><summary>Arsip pengumuman (${arsip.length})</summary><div class="pg-daftar">${arsip.map(kartuPengumuman).join('')}</div></details>` : ''}`;
+}
+
 // ---------- bila database tidak bisa dihubungi ----------
 // Isi bawaan di HTML tetap tampil; bagian yang butuh database diberi penjelasan yang benar
 // (bukan "database belum tersambung") dan tombol untuk memuat ulang.
@@ -599,8 +656,11 @@ function gagalMuat() {
   try {
     const { data, error } = await sb.from('pengaturan').select('kunci,nilai');
     if (error) { console.warn('Gagal menghubungi database', error); gagalMuat(); return; }
+    // pengumuman aktif: pita kuning (yang penting) dan papan/halaman pengumuman
+    const pgm = await sb.from('pengumuman').select('id,judul,isi,tanggal,berlaku_sampai,file_url,file_nama,penting').order('tanggal', { ascending: false }).order('dibuat', { ascending: false });
+    if (!pgm.error) { window.__PITA_BARU = true; pengumumanCache = pgm.data || []; pasangPita(); }
     if (data) { pengaturanCache = Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])); terapkanPengaturan(pengaturanCache); }
-    const fn = { beranda, perangkat, lembaga: lembagaHal, layanan, transparansi, berita, umkm, lapor }[page];
+    const fn = { beranda, pengumuman: pengumumanHal, perangkat, lembaga: lembagaHal, layanan, transparansi, berita, umkm, lapor }[page];
     if (fn) await fn(sb);
   } catch (e) { console.warn('Gagal memuat data', e); }
 })();

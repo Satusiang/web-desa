@@ -42,6 +42,21 @@ create table if not exists public.berita (
   dibuat timestamptz not null default now()
 );
 
+-- ---------- Pengumuman (dengan lampiran surat PDF/foto) ----------
+create table if not exists public.pengumuman (
+  id uuid primary key default gen_random_uuid(),
+  judul text not null,
+  isi text not null default '',
+  tanggal date not null default current_date,
+  berlaku_sampai date,                 -- kosong = tanpa batas; lewat tanggal ini pindah ke arsip
+  file_url text,                       -- lampiran (PDF atau foto surat)
+  file_nama text not null default '',
+  penting boolean not null default false,  -- tampil juga di pita kuning paling atas website
+  tampil boolean not null default true,
+  dibuat timestamptz not null default now()
+);
+create index if not exists pengumuman_tanggal_idx on public.pengumuman (tanggal desc);
+
 -- ---------- Agenda ----------
 create table if not exists public.agenda (
   id uuid primary key default gen_random_uuid(),
@@ -181,9 +196,9 @@ on conflict (kunci) do nothing;
 
 -- ---------- Hak akses Data API ----------
 grant usage on schema public to anon, authenticated;
-grant select on public.pengaturan, public.berita, public.agenda, public.perangkat, public.lembaga, public.layanan,
+grant select on public.pengaturan, public.berita, public.pengumuman, public.agenda, public.perangkat, public.lembaga, public.layanan,
   public.apbdes, public.pembangunan, public.dokumen, public.umkm to anon, authenticated;
-grant insert, update, delete on public.pengaturan, public.berita, public.agenda, public.perangkat, public.lembaga, public.layanan,
+grant insert, update, delete on public.pengaturan, public.berita, public.pengumuman, public.agenda, public.perangkat, public.lembaga, public.layanan,
   public.apbdes, public.pembangunan, public.dokumen, public.umkm to authenticated;
 -- Pengaduan: tamu tidak membaca/menulis tabel langsung, hanya lewat fungsi di bawah.
 revoke all on public.pengaduan from anon;
@@ -193,7 +208,7 @@ grant select, update, delete on public.pengaduan to authenticated;
 do $$
 declare t text;
 begin
-  foreach t in array array['pengaturan','berita','agenda','perangkat','lembaga','layanan','apbdes','pembangunan','dokumen','umkm','pengaduan'] loop
+  foreach t in array array['pengaturan','berita','pengumuman','agenda','perangkat','lembaga','layanan','apbdes','pembangunan','dokumen','umkm','pengaduan'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists "admin kelola" on public.%I', t);
     execute format('create policy "admin kelola" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
@@ -206,6 +221,8 @@ end $$;
 
 drop policy if exists "baca publik" on public.berita;
 create policy "baca publik" on public.berita for select using (terbit = true or public.is_admin());
+drop policy if exists "baca publik" on public.pengumuman;
+create policy "baca publik" on public.pengumuman for select using (tampil = true or public.is_admin());
 drop policy if exists "baca publik" on public.umkm;
 create policy "baca publik" on public.umkm for select using (tampil = true or public.is_admin());
 

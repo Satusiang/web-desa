@@ -69,13 +69,14 @@
 
   <section id="v-app" hidden>
     <div class="banner-skema" id="banner-skema" hidden>
-      <b>Database perlu diperbarui.</b> Fitur Lembaga dan pengelompokan RT/RW belum aktif karena tabel <code>lembaga</code> belum ada.
+      <b>Database perlu diperbarui.</b> Sebagian fitur baru (Lembaga, pengelompokan RT/RW, atau Pengumuman) belum aktif karena tabelnya belum ada di database.
       Buka Supabase → <b>SQL Editor</b> → <b>New query</b>, tempel seluruh isi <code>supabase/schema.sql</code> terbaru, klik <b>Run</b>, lalu muat ulang halaman ini.
       Data yang sudah ada tidak terhapus. Sementara itu, tab lain tetap bisa dipakai.
     </div>
     <div class="tabs" role="tablist">
       <a class="tab-surat" href="surat.html">📄 Layanan Surat</a>
       <button data-tab="pengaduan" class="on">📣 Pengaduan <span class="count" id="cnt-aduan"></span></button>
+      <button data-tab="pengumuman">📢 Pengumuman</button>
       <button data-tab="berita">📰 Berita</button>
       <button data-tab="agenda">📅 Agenda</button>
       <button data-tab="apbdes">📊 APBDes</button>
@@ -102,6 +103,29 @@
     </div>
 
     <!-- BERITA -->
+    <div class="tab" id="t-pengumuman" hidden>
+      <div class="grid-admin">
+        <form id="f-pengumuman" class="panel form">
+          <h2 id="pengumuman-title">Buat pengumuman</h2>
+          <input type="hidden" id="pg-id">
+          <label>Judul pengumuman<input id="pg-judul" required maxlength="150" placeholder="mis. Pelayanan kantor desa libur tanggal 17 Agustus"></label>
+          <label>Isi pengumuman<textarea id="pg-isi" rows="6" placeholder="Tulis isi pengumuman. Pisahkan paragraf dengan baris kosong."></textarea></label>
+          <div class="row wrap-row">
+            <label class="grow">Tanggal<input type="date" id="pg-tanggal" required></label>
+            <label class="grow">Berlaku sampai (opsional)<input type="date" id="pg-sampai"></label>
+          </div>
+          <p class="muted small" style="margin-top:-6px">Setelah tanggal "berlaku sampai" lewat, pengumuman otomatis pindah ke arsip dan tidak tampil di beranda.</p>
+          <label>Lampiran surat (opsional, PDF atau foto, maks. 10 MB)<input type="file" id="pg-file" accept="application/pdf,image/*"></label>
+          <div class="preview" id="pg-lampiran"></div>
+          <label class="check" id="pg-hapus-wrap" hidden><input type="checkbox" id="pg-hapus-file"> Hapus lampiran</label>
+          <label class="check"><input type="checkbox" id="pg-penting"> Penting: tampilkan juga di pita kuning paling atas website</label>
+          <label class="check"><input type="checkbox" id="pg-tampil" checked> Tampilkan di website</label>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="pg-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Daftar pengumuman</h2><p class="muted small">Pengumuman terbaru tampil di papan pengumuman beranda dan di halaman <a href="../pengumuman.html" target="_blank" rel="noopener">Pengumuman</a>.</p><div id="l-pengumuman" class="list"></div></div>
+      </div>
+    </div>
+
     <div class="tab" id="t-berita" hidden>
       <div class="grid-admin">
         <form id="f-berita" class="panel form">
@@ -307,11 +331,8 @@
     <div class="tab" id="t-pengaturan" hidden>
       <form id="f-pengaturan" class="grid-admin">
         <div class="panel form">
-          <h2>Pengumuman (pita kuning di atas website)</h2>
-          <label class="check"><input type="checkbox" id="s-pg-aktif"> Tampilkan pengumuman</label>
-          <label>Teks pengumuman<input id="s-pg-teks" maxlength="200" placeholder="mis. Pelayanan kantor desa libur tanggal ..."></label>
-          <label>Tautan (opsional)<input id="s-pg-link" placeholder="https://..."></label>
-          <h2 style="margin-top:12px">Foto beranda</h2>
+          <p class="muted small">Pengumuman (termasuk pita kuning di atas website) sekarang diatur di tab <b>📢 Pengumuman</b>.</p>
+          <h2>Foto beranda</h2>
           <p class="muted">Foto asli desa: kantor desa, sawah, kegiatan warga. Tanpa foto, beranda menampilkan papan pengumuman.</p>
           <label>Unggah foto (mendatar)<input type="file" id="s-foto-beranda" accept="image/*"></label>
           <div class="preview" id="s-prev-beranda"></div>
