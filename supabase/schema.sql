@@ -327,12 +327,17 @@ insert into public.pengaturan (kunci, nilai) values
       jsonb_build_object('nama','Polisi','nomor','110'),
       jsonb_build_object('nama','Pemadam kebakaran','nomor','113'),
       jsonb_build_object('nama','Ambulans','nomor','119')))),
-  ('bumdes', jsonb_build_object('nama','BUM Desa Bahtera Nusantara','url','https://bahtera-nusantara.bumdes-karangbahagia.workers.dev/','ringkasan','Badan Usaha Milik Desa Karang Bahagia yang mengelola usaha pangan desa.'))
+  ('bumdes', jsonb_build_object('nama','BUM Desa Bahtera Nusantara','url','https://bahtera-nusantara.karangbahagia.workers.dev/','ringkasan','Badan Usaha Milik Desa Karang Bahagia yang mengelola usaha pangan desa.'))
 on conflict (kunci) do nothing;
 
 insert into public.perangkat (nama, jabatan, kelompok, urutan)
 select 'Caum', 'Kepala Desa', 'pemerintah', 1
 where not exists (select 1 from public.perangkat);
+
+-- Alamat website BUM Desa pindah: perbarui bila masih memakai alamat lama (isian lain dari admin tidak disentuh)
+update public.pengaturan
+set nilai = jsonb_set(nilai, '{url}', '"https://bahtera-nusantara.karangbahagia.workers.dev/"'), diperbarui = now()
+where kunci = 'bumdes' and nilai->>'url' in ('https://bahtera-nusantara.bumdes-karangbahagia.workers.dev/', 'https://bahtera-nusantara.bumdes-karangbahagia.workers.dev');
 
 -- Lembaga bawaan (boleh diubah dari admin; tidak ditimpa saat skema dijalankan ulang)
 insert into public.lembaga (kode, nama, singkatan, ringkasan, profil, urutan) values
