@@ -111,6 +111,19 @@ function terapkanPengaturan(cfg) {
   if (Array.isArray(dar) && dar.length && $('#darurat')) {
     $('#darurat').innerHTML = dar.map(d => `<a href="tel:${esc(String(d.nomor).replace(/[^\d+]/g, ''))}"><b>${esc(d.nomor)}</b><small>${esc(d.nama)}</small></a>`).join('');
   }
+  const kd = cfg.kopdes || {};
+  if ($('#kopdes')) {
+    setText('kopdes-nama', kd.nama); setText('kopdes-ringkasan', kd.ringkasan); setText('kopdes-alamat', kd.alamat);
+    if (kd.wa) document.querySelectorAll('[data-bind="kopdes-wa"]').forEach(a => {
+      a.textContent = waLocal(kd.wa) + ' (WhatsApp)'; a.href = '#'; a.classList.remove('belum');
+      a.dataset.wa = `Halo pengurus ${kd.nama || 'Koperasi Desa Merah Putih'}, saya ingin bertanya.`; a.dataset.waNo = waIntl(kd.wa);
+    });
+    const baris = (t) => String(t || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const unit = baris(kd.unit);
+    if (unit.length) $('#kopdes-unit').innerHTML = unit.map(u => `<li>${esc(u)}</li>`).join('');
+    const pengurus = baris(kd.pengurus).map(l => { const i = l.indexOf(':'); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ['', l]; });
+    if (pengurus.length) $('#kopdes-pengurus').innerHTML = pengurus.map(([j, n]) => `<dt>${esc(j || 'Pengurus')}</dt><dd>${esc(n)}</dd>`).join('');
+  }
   const bd = cfg.bumdes || {};
   if ($('#bumdes') && (bd.nama || bd.url)) {
     setText('bumdes-nama', bd.nama); setText('bumdes-ringkasan', bd.ringkasan);
@@ -182,7 +195,8 @@ async function perangkat(sb) {
   const { data } = await sb.from('perangkat').select('*').order('urutan').order('dibuat');
   if (!data) return;
   const grup = (k) => data.filter(p => p.kelompok === k);
-  if (grup('pemerintah').length) $('#perangkat').innerHTML = baganPerangkat(grup('pemerintah'));
+  if ($('#perangkat') && grup('pemerintah').length) $('#perangkat').innerHTML = baganPerangkat(grup('pemerintah'));
+  if (!$('#bpd')) return; // halaman Perangkat Desa tidak memuat BPD dan lembaga
   $('#bpd').innerHTML = grup('bpd').length ? grup('bpd').map(kartuOrang).join('') : '<p class="empty">Data BPD menyusul.</p>';
   $('#lembaga').innerHTML = grup('lembaga').length ? grup('lembaga').map(kartuOrang).join('') : '<p class="empty">Data lembaga desa menyusul.</p>';
 }
@@ -291,30 +305,42 @@ async function berita(sb) {
   if (a.data) $('#agenda-semua').innerHTML = a.data.length ? a.data.map(kartuAgenda).join('') : '<p class="empty">Belum ada agenda.</p>';
 }
 
-let umkmCache = [];
-function gambarUMKM(kat) {
-  const list = umkmCache.filter(u => kat === 'Semua' || u.kategori === kat);
+// Daftar toko dan usaha warga: nama, jenis, alamat, kontak, dengan pencarian dan filter jenis.
+let umkmCache = [], umkmKat = 'Semua';
+const normal = (t) => String(t || '').toLowerCase();
+function gambarUMKM() {
+  const q = normal($('#cari-umkm')?.value).trim();
+  const list = umkmCache.filter(u => (umkmKat === 'Semua' || u.kategori === umkmKat)
+    && (!q || [u.nama, u.alamat, u.deskripsi, u.kategori].some(x => normal(x).includes(q))));
+  $('#jumlah-umkm').textContent = umkmCache.length ? `Menampilkan ${list.length} dari ${umkmCache.length} toko dan usaha.` : '';
   $('#umkm').innerHTML = list.length ? list.map(u => {
-    const foto = safeUrl(u.foto_url);
     const wa = u.wa ? waIntl(u.wa) : '';
-    return `<div class="card"><div class="foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : 'Belum ada foto'}</div>
-      <div class="body"><span class="kat">${esc(u.kategori)}</span><h3>${esc(u.nama)}</h3><p>${esc(u.deskripsi)}</p>
-      ${u.harga ? `<span class="harga">${esc(u.harga)}</span>` : ''}${u.alamat ? `<small class="muted">${esc(u.alamat)}</small>` : ''}
-      ${wa ? `<a class="btn" href="#" data-wa="Halo ${esc(u.nama)}, saya lihat di website Desa Karang Bahagia dan ingin bertanya." data-wa-no="${esc(wa)}">Pesan via WhatsApp</a>` : ''}</div></div>`;
-  }).join('') : '<p class="empty">Belum ada UMKM yang terdaftar.</p>';
+    const arah = u.alamat ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${u.nama}, ${u.alamat}, Karang Bahagia, Bekasi`)}` : '';
+    const foto = safeUrl(u.foto_url);
+    return `<article class="toko">
+      ${foto ? `<img class="toko-foto" src="${esc(foto)}" alt="" loading="lazy">` : ''}
+      <div class="toko-isi"><span class="kat">${esc(u.kategori)}</span><h3>${esc(u.nama)}</h3>
+        ${u.alamat ? `<p class="toko-alamat">${esc(u.alamat)}</p>` : ''}
+        ${u.deskripsi ? `<p class="small muted">${esc(u.deskripsi)}</p>` : ''}${u.harga ? `<p class="small"><b>${esc(u.harga)}</b></p>` : ''}</div>
+      <div class="toko-aksi">${wa ? `<a class="btn" href="#" data-wa="Halo ${esc(u.nama)}, saya lihat di website Desa Karang Bahagia dan ingin bertanya." data-wa-no="${esc(wa)}">WhatsApp</a>` : ''}
+        ${arah ? `<a class="btn alt" href="${esc(arah)}" target="_blank" rel="noopener">Petunjuk arah</a>` : ''}</div>
+    </article>`;
+  }).join('') : `<p class="empty">${umkmCache.length ? 'Tidak ada toko yang cocok dengan pencarian.' : 'Belum ada toko yang terdaftar.'}</p>`;
 }
-async function ekonomi(sb) {
-  const { data } = await sb.from('umkm').select('*').eq('tampil', true).order('urutan').order('dibuat');
+async function umkm(sb) {
+  const { data } = await sb.from('umkm').select('*').eq('tampil', true).order('urutan').order('nama');
   if (!data) return;
   umkmCache = data;
   const kats = ['Semua', ...new Set(data.map(u => u.kategori))];
   $('#filter-umkm').innerHTML = kats.length > 2 ? kats.map((k, i) => `<button data-k="${esc(k)}" class="${i ? '' : 'on'}">${esc(k)}</button>`).join('') : '';
   $('#filter-umkm').onclick = e => {
     if (!e.target.dataset.k) return;
+    umkmKat = e.target.dataset.k;
     document.querySelectorAll('#filter-umkm button').forEach(b => b.classList.toggle('on', b === e.target));
-    gambarUMKM(e.target.dataset.k);
+    gambarUMKM();
   };
-  gambarUMKM('Semua');
+  $('#cari-umkm').addEventListener('input', gambarUMKM);
+  gambarUMKM();
 }
 
 function kartuLaporan(l, lengkap) {
@@ -386,7 +412,7 @@ function gagalMuat() {
     const { data, error } = await sb.from('pengaturan').select('kunci,nilai');
     if (error) { console.warn('Gagal menghubungi database', error); gagalMuat(); return; }
     if (data) terapkanPengaturan(Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])));
-    const fn = { beranda, perangkat, layanan, transparansi, berita, ekonomi, lapor }[page];
+    const fn = { beranda, perangkat, lembaga: perangkat, layanan, transparansi, berita, umkm, lapor }[page];
     if (fn) await fn(sb);
   } catch (e) { console.warn('Gagal memuat data', e); }
 })();
