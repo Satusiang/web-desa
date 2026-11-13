@@ -6,11 +6,16 @@
       ['sejarah.html', 'Sejarah Desa'],
       ['profil.html', 'Profil Desa'],
       ['perangkat.html', 'Perangkat Desa'],
+      ['lembaga.html', 'Lembaga Desa'],
     ]],
     ['layanan.html', 'Layanan'],
     ['transparansi.html', 'Transparansi'],
     ['berita.html', 'Berita'],
-    ['ekonomi.html', 'Ekonomi'],
+    ['ekonomi.html', 'Ekonomi', [
+      ['bumdes.html', 'BUMDes'],
+      ['kdmp.html', 'KDMP (Koperasi Desa Merah Putih)'],
+      ['umkm.html', 'UMKM'],
+    ]],
     ['lapor.html', 'Lapor'],
     ['kontak.html', 'Kontak'],
   ];
@@ -19,8 +24,8 @@
   const panah = '<svg class="panah" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>';
   function itemMenu([h, t, sub], i) {
     if (!sub) return `<li><a href="${h}" class="${aktif(h) ? 'active' : ''}"${aktif(h) ? ' aria-current="page"' : ''}>${t}</a></li>`;
-    const id = 'sub-' + i, adaAktif = sub.some(([sh]) => aktif(sh));
-    return `<li class="ada-sub"><button type="button" class="sub-btn${adaAktif ? ' active' : ''}" aria-expanded="false" aria-controls="${id}">${t}${panah}</button>
+    const id = 'sub-' + i, adaAktif = aktif(h) || sub.some(([sh]) => aktif(sh));
+    return `<li class="ada-sub${i >= MENU.length / 2 ? ' ke-kiri' : ''}"><button type="button" class="sub-btn${adaAktif ? ' active' : ''}" aria-expanded="false" aria-controls="${id}">${t}${panah}</button>
       <ul class="sub" id="${id}">${sub.map(([sh, st]) => `<li><a href="${sh}" class="${aktif(sh) ? 'active' : ''}"${aktif(sh) ? ' aria-current="page"' : ''}>${st}</a></li>`).join('')}</ul></li>`;
   }
 
@@ -53,7 +58,7 @@
         <li><a href="lapor.html">Pengaduan &amp; cek status</a></li>
         <li><a href="transparansi.html">APBDes &amp; dokumen publik</a></li></ul></div>
       <div><h4>Tautan</h4><ul>
-        <li><a href="ekonomi.html">BUM Desa &amp; UMKM</a></li>
+        <li><a href="ekonomi.html">BUM Desa, Koperasi &amp; UMKM</a></li>
         <li><a href="kontak.html">Kontak &amp; nomor darurat</a></li>
         <li><a href="privasi.html">Kebijakan privasi</a></li>
         <li><a href="admin/">Masuk petugas</a></li></ul></div>

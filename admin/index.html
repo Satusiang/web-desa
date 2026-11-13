@@ -238,23 +238,23 @@
     <div class="tab" id="t-umkm" hidden>
       <div class="grid-admin">
         <form id="f-umkm" class="panel form">
-          <h2 id="umkm-title">Tambah UMKM</h2>
+          <h2 id="umkm-title">Tambah toko / usaha</h2>
           <input type="hidden" id="u-id">
-          <label>Nama usaha<input id="u-nama" required maxlength="80"></label>
+          <label>Nama toko / usaha<input id="u-nama" required maxlength="80"></label>
           <div class="row wrap-row">
-            <label class="grow">Kategori<select id="u-kat"><option>Makanan &amp; minuman</option><option>Pertanian &amp; perikanan</option><option>Kerajinan</option><option>Jasa</option><option>Toko &amp; warung</option><option>Lainnya</option></select></label>
+            <label class="grow">Kategori<select id="u-kat"><option>Toko &amp; warung</option><option>Makanan &amp; minuman</option><option>Pertanian &amp; perikanan</option><option>Kerajinan</option><option>Jasa</option><option>Lainnya</option></select></label>
             <label>Urutan<input type="number" id="u-urutan" value="10" min="0" style="width:100px"></label>
           </div>
-          <label>Deskripsi<textarea id="u-desk" rows="3" maxlength="400"></textarea></label>
-          <label>Harga / kisaran harga<input id="u-harga" maxlength="60" placeholder="mis. Rp 15.000 – Rp 25.000"></label>
+          <label>Jualan / keterangan singkat (opsional)<textarea id="u-desk" rows="2" maxlength="400" placeholder="mis. Sembako, gas elpiji, token listrik. Buka setiap hari 06.00–21.00."></textarea></label>
+          <label>Harga / kisaran harga (opsional)<input id="u-harga" maxlength="60" placeholder="mis. Rp 15.000 – Rp 25.000"></label>
           <label>Nomor WhatsApp pemilik (dengan izin pemilik)<input id="u-wa" inputmode="tel" maxlength="20"></label>
-          <label>Alamat usaha<input id="u-alamat" maxlength="160"></label>
-          <label>Foto produk<input type="file" id="u-foto" accept="image/*"></label>
+          <label>Alamat toko<input id="u-alamat" maxlength="160" placeholder="mis. Jl. Raya Karang Bahagia No. 12, RT 002/RW 003"></label>
+          <label>Foto toko (opsional)<input type="file" id="u-foto" accept="image/*"></label>
           <div class="preview" id="u-preview"></div>
           <label class="check"><input type="checkbox" id="u-tampil" checked> Tampilkan di website</label>
           <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="u-reset">Batal / Baru</button></div>
         </form>
-        <div class="panel"><h2>Daftar UMKM</h2><div id="l-umkm" class="list"></div></div>
+        <div class="panel"><h2>Daftar toko dan usaha warga</h2><div id="l-umkm" class="list"></div></div>
       </div>
     </div>
 
@@ -322,6 +322,13 @@
           <label>Nama<input id="s-bd-nama"></label>
           <label>Alamat website<input id="s-bd-url"></label>
           <label>Ringkasan<textarea id="s-bd-ring" rows="2"></textarea></label>
+          <h2 style="margin-top:12px">Koperasi Desa Merah Putih (KDMP)</h2>
+          <label>Nama koperasi<input id="s-kd-nama" maxlength="120" placeholder="mis. Koperasi Desa Merah Putih Karang Bahagia"></label>
+          <label>Ringkasan<textarea id="s-kd-ring" rows="3" maxlength="800"></textarea></label>
+          <label>Alamat koperasi<input id="s-kd-alamat" maxlength="200"></label>
+          <label>Nomor WhatsApp koperasi<input id="s-kd-wa" inputmode="tel" maxlength="20"></label>
+          <label>Unit usaha (satu per baris)<textarea id="s-kd-unit" rows="4" placeholder="Gerai sembako&#10;Simpan pinjam&#10;Apotek desa"></textarea></label>
+          <label>Pengurus (satu per baris, format Jabatan: Nama)<textarea id="s-kd-pengurus" rows="4" placeholder="Ketua: Nama Lengkap&#10;Sekretaris: Nama Lengkap&#10;Bendahara: Nama Lengkap"></textarea></label>
         </div>
         <div class="span2"><button class="btn" type="submit">Simpan pengaturan</button></div>
       </form>

@@ -9,11 +9,15 @@ Dipakai sampai domain resmi `.desa.id` selesai diurus. Cara kerjanya sama dengan
 | `index.html` | Beranda: pengumuman, layanan cepat, berita, agenda, angka desa, ringkasan APBDes |
 | `sejarah.html` | Sejarah dan asal-usul desa (menu Profil → Sejarah Desa) |
 | `profil.html` | Profil desa: visi-misi, wilayah, batas, data penduduk (agregat), peta desa, lokasi kantor (menu Profil → Profil Desa) |
-| `perangkat.html` | Bagan perangkat desa, BPD, lembaga (menu Profil → Perangkat Desa) |
+| `perangkat.html` | Bagan perangkat desa (menu Profil → Perangkat Desa) |
+| `lembaga.html` | BPD dan lembaga kemasyarakatan desa (menu Profil → Lembaga Desa) |
 | `layanan.html` | Alur dan syarat layanan surat |
 | `transparansi.html` | APBDes per tahun (grafik + tabel), kegiatan pembangunan, dokumen publik |
 | `berita.html` | Berita (detail: `berita.html?id=...`) dan agenda |
-| `ekonomi.html` | BUM Desa dan katalog UMKM |
+| `ekonomi.html` | Pintu masuk menu Ekonomi: BUMDes, KDMP, UMKM |
+| `bumdes.html` | BUM Desa (diisi di admin → Pengaturan → BUM Desa) |
+| `kdmp.html` | Koperasi Desa Merah Putih (diisi di admin → Pengaturan → KDMP) |
+| `umkm.html` | Daftar toko dan usaha warga dengan pencarian (diisi di admin → tab UMKM) |
 | `lapor.html` | Pengaduan warga dengan nomor tiket, cek status, laporan yang sudah ditindaklanjuti |
 | `kontak.html` | Kontak kantor desa, nomor darurat, peta |
 | `privasi.html` | Kebijakan privasi |
