@@ -74,8 +74,16 @@
     const el = e.target.closest('[data-wa]');
     if (!el) return;
     e.preventDefault();
-    const nomor = el.dataset.waNo || window.WA_DESA;
-    if (!nomor) { window.toast('Nomor WhatsApp kantor desa belum diisi.'); return; }
+    let simpanan = '';
+    try { simpanan = localStorage.getItem('desa_wa') || ''; } catch { /* boleh gagal */ }
+    // Nomor terakhir yang berhasil dimuat dipakai bila server desa sedang tidak bisa dihubungi.
+    const nomor = el.dataset.waNo || window.WA_DESA || (window.DESA_GAGAL ? simpanan : '');
+    if (!nomor) {
+      window.toast(window.DESA_GAGAL
+        ? 'Nomor WhatsApp kantor desa belum bisa dimuat. Periksa koneksi internet lalu muat ulang halaman.'
+        : 'Nomor WhatsApp kantor desa belum diisi.');
+      return;
+    }
     const a = document.createElement('a');
     a.href = `https://wa.me/${nomor}?text=${encodeURIComponent(el.dataset.wa || '')}`;
     a.target = '_blank'; a.rel = 'noopener'; a.click();

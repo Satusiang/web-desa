@@ -1,4 +1,4 @@
-import { getClient, isConfigured, tanggalWIB, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks } from '../js/sb.js';
+import { getClient, isConfigured, pesanGalat, tanggalWIB, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks } from '../js/sb.js';
 
 const $ = (s) => document.querySelector(s);
 const BUCKET = 'media';
@@ -392,7 +392,7 @@ $('#f-login').addEventListener('submit', async e => {
   const btn = $('#f-login button'); btn.disabled = true;
   const { data, error } = await sb.auth.signInWithPassword({ email: $('#l-email').value.trim(), password: $('#l-pass').value });
   btn.disabled = false;
-  if (error) { $('#l-err').textContent = error.message === 'Invalid login credentials' ? 'Email atau password salah.' : error.message; return; }
+  if (error) { $('#l-err').textContent = error.message === 'Invalid login credentials' ? 'Email atau password salah.' : pesanError(error); return; }
   await masukDasbor(data.session);
 });
 $('#btn-logout').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
@@ -407,7 +407,7 @@ function pesanError(err) {
   const code = err?.code || '';
   if (PESAN_ERROR[code]) return PESAN_ERROR[code];
   if (/rate limit/i.test(err?.message || '')) return PESAN_ERROR.over_email_send_rate_limit;
-  return err?.message || String(err);
+  return pesanGalat(err);
 }
 $('#to-forgot').addEventListener('click', e => { e.preventDefault(); $('#fg-email').value = $('#l-email').value; show('forgot'); });
 $('#to-login').addEventListener('click', e => { e.preventDefault(); show('login'); });
@@ -439,7 +439,12 @@ $('#f-reset').addEventListener('submit', async e => {
   const errDesc = hash.get('error_description') || query.get('error_description');
   const errCode = hash.get('error_code') || query.get('error_code');
   try { sb = await getClient(); }
-  catch (e) { show('noconfig'); $('#v-noconfig p').textContent = 'Gagal memuat Supabase: ' + e.message; return; }
+  catch (e) {
+    show('noconfig');
+    $('#v-noconfig h1').textContent = 'Tidak dapat terhubung ke server';
+    $('#v-noconfig p').textContent = 'Halaman admin gagal memuat penghubung database. Periksa koneksi internet, lalu muat ulang halaman ini.';
+    return;
+  }
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'PASSWORD_RECOVERY') { modeReset = true; $('#rs-who').textContent = session?.user?.email || ''; show('reset'); }
   });

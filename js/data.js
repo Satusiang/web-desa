@@ -1,6 +1,6 @@
 // Mengisi halaman publik dengan data dari Supabase.
 // Jika Supabase belum dikonfigurasi atau gagal dihubungi, isi bawaan di HTML tetap tampil.
-import { getClient, tanggalWIB, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf } from './sb.js';
+import { getClient, tanggalWIB, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf, pesanGalat } from './sb.js';
 
 const $ = (s) => document.querySelector(s);
 const page = document.body.dataset.page;
@@ -39,6 +39,7 @@ function terapkanPengaturan(cfg) {
   const k = cfg.kontak || {}, p = cfg.profil || {}, s = cfg.statistik || {}, pg = cfg.pengumuman || {};
   if (k.wa) {
     window.WA_DESA = waIntl(k.wa);
+    try { localStorage.setItem('desa_wa', window.WA_DESA); } catch { /* boleh gagal */ }
     $('#wa-float')?.removeAttribute('hidden');
     document.querySelectorAll('[data-bind="wa"]').forEach(a => { a.textContent = waLocal(k.wa); a.href = `https://wa.me/${window.WA_DESA}`; a.classList.remove('belum'); });
   }
@@ -297,7 +298,7 @@ function kartuLaporan(l, lengkap) {
 }
 async function lapor(sb) {
   $('#lapor-off')?.setAttribute('hidden', '');
-  $('#f-lapor').hidden = false; $('#f-cek').hidden = false;
+  $('#f-lapor').hidden = false; $('#f-cek').hidden = false; $('#ck-hasil').innerHTML = '';
   $('#f-lapor').addEventListener('submit', async e => {
     e.preventDefault();
     if ($('#lp-web').value) return; // isian jebakan robot spam
@@ -308,7 +309,7 @@ async function lapor(sb) {
       p_isi: $('#lp-isi').value, p_lokasi: $('#lp-lokasi').value,
     });
     btn.disabled = false;
-    if (error) { $('#lp-err').textContent = 'Gagal mengirim: ' + error.message; return; }
+    if (error) { $('#lp-err').textContent = 'Gagal mengirim: ' + pesanGalat(error); return; }
     $('#f-lapor').reset();
     $('#lp-hasil').innerHTML = `<div class="tiket">Laporan sudah kami terima. Catat atau foto nomor tiket ini untuk mengecek tindak lanjutnya:<b>${esc(data)}</b></div>`;
     $('#ck-tiket').value = data;
@@ -317,21 +318,45 @@ async function lapor(sb) {
     e.preventDefault();
     const { data, error } = await sb.rpc('cek_pengaduan', { p_tiket: $('#ck-tiket').value });
     const r = data?.[0];
-    $('#ck-hasil').innerHTML = error ? `<p class="err">${esc(error.message)}</p>`
+    $('#ck-hasil').innerHTML = error ? `<p class="err">${esc(pesanGalat(error))}</p>`
       : r ? kartuLaporan({ ...r, isi: '' }, true) + `<p class="small muted">Terakhir diperbarui ${esc(tanggalWIB(r.diperbarui))}</p>`
       : '<p class="err">Nomor tiket tidak ditemukan. Periksa penulisannya.</p>';
   });
-  const { data } = await sb.rpc('laporan_publik');
+  const { data, error } = await sb.rpc('laporan_publik');
+  if (error) $('#laporan-publik').innerHTML = `<p class="err">Daftar laporan gagal dimuat. ${esc(pesanGalat(error))}</p>`;
   if (data) $('#laporan-publik').innerHTML = data.length ? data.map(l => kartuLaporan(l, false)).join('') : '<p class="empty">Belum ada laporan yang ditampilkan.</p>';
+}
+
+// ---------- bila database tidak bisa dihubungi ----------
+// Isi bawaan di HTML tetap tampil; bagian yang butuh database diberi penjelasan yang benar
+// (bukan "database belum tersambung") dan tombol untuk memuat ulang.
+function gagalMuat() {
+  window.DESA_GAGAL = true;
+  const ulang = '<button type="button" class="btn alt" data-muat-ulang style="margin-top:10px">Muat ulang halaman</button>';
+  const off = $('#lapor-off');
+  if (off) off.innerHTML = 'Formulir pengaduan gagal dimuat karena website tidak dapat terhubung ke server desa. '
+    + 'Periksa koneksi internet lalu muat ulang halaman. Bisa juga menyampaikan laporan lewat '
+    + '<a href="#" data-wa="Halo petugas Desa Karang Bahagia, saya ingin menyampaikan laporan:">WhatsApp kantor desa</a>.<br>' + ulang;
+  const ck = $('#ck-hasil');
+  if (ck) ck.innerHTML = '<p class="muted">Cek status belum bisa dipakai karena website tidak dapat terhubung ke server desa. '
+    + 'Muat ulang halaman setelah koneksi internet normal.</p>';
+  document.querySelectorAll('[data-muat-ulang]').forEach(b => b.addEventListener('click', () => location.reload()));
 }
 
 // ---------- jalankan ----------
 (async () => {
   let sb;
-  try { sb = await getClient(); } catch (e) { console.warn('Supabase gagal dimuat', e); }
-  if (!sb) return;
+  try { sb = await getClient(); } catch (e) { console.warn('Supabase gagal dimuat', e); gagalMuat(); return; }
+  if (!sb) { // database belum dikonfigurasi di js/config.js
+    const off = $('#lapor-off');
+    if (off) off.innerHTML = 'Formulir pengaduan aktif setelah database website tersambung. Sementara itu, sampaikan laporan lewat '
+      + '<a href="#" data-wa="Halo petugas Desa Karang Bahagia, saya ingin menyampaikan laporan:">WhatsApp kantor desa</a>.';
+    if ($('#ck-hasil')) $('#ck-hasil').innerHTML = '';
+    return;
+  }
   try {
-    const { data } = await sb.from('pengaturan').select('kunci,nilai');
+    const { data, error } = await sb.from('pengaturan').select('kunci,nilai');
+    if (error) { console.warn('Gagal menghubungi database', error); gagalMuat(); return; }
     if (data) terapkanPengaturan(Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])));
     const fn = { beranda, profil, layanan, transparansi, berita, ekonomi, lapor }[page];
     if (fn) await fn(sb);

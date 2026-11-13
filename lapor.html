@@ -34,13 +34,13 @@
   <div class="wrap dua">
     <div class="card">
       <h3>Buat laporan</h3>
-      <p id="lapor-off" class="muted">Formulir pengaduan aktif setelah database website tersambung. Sementara itu, sampaikan laporan lewat <a href="#" data-wa="Halo petugas Desa Karang Bahagia, saya ingin menyampaikan laporan:">WhatsApp kantor desa</a>.</p>
+      <p id="lapor-off" class="muted">Memuat formulir pengaduan… Bila tidak muncul, sampaikan laporan lewat <a href="#" data-wa="Halo petugas Desa Karang Bahagia, saya ingin menyampaikan laporan:">WhatsApp kantor desa</a>.</p>
       <form class="form" id="f-lapor" hidden>
         <label>Kategori
           <select id="lp-kat" required>
             <option value="">Pilih kategori</option><option>Jalan &amp; jembatan</option><option>Drainase &amp; banjir</option><option>Penerangan jalan</option><option>Sampah &amp; lingkungan</option><option>Keamanan &amp; ketertiban</option><option>Sosial &amp; bantuan</option><option>Pelayanan desa</option><option>Permohonan informasi publik</option><option>Lainnya</option>
           </select></label>
-        <label>Isi laporan<textarea id="lp-isi" rows="5" maxlength="2000" required placeholder="Jelaskan masalahnya: apa yang terjadi dan sejak kapan."></textarea></label>
+        <label>Isi laporan<textarea id="lp-isi" rows="5" minlength="10" maxlength="2000" required placeholder="Jelaskan masalahnya: apa yang terjadi dan sejak kapan."></textarea></label>
         <label>Lokasi<input id="lp-lokasi" maxlength="200" placeholder="mis. Jalan depan masjid, RT 002/RW 003"></label>
         <label>Nama (boleh dikosongkan)<input id="lp-nama" maxlength="80"></label>
         <label>Nomor HP (boleh dikosongkan, hanya dilihat petugas)<input id="lp-kontak" maxlength="40" inputmode="tel"></label>
@@ -58,7 +58,7 @@
           <label>Nomor tiket<input id="ck-tiket" required placeholder="LP-261110-AB12" style="text-transform:uppercase"></label>
           <button class="btn alt" type="submit">Cek status</button>
         </form>
-        <div id="ck-hasil" style="margin-top:12px"></div>
+        <div id="ck-hasil" style="margin-top:12px"><p class="muted">Memuat…</p></div>
       </div>
     </div>
   </div>

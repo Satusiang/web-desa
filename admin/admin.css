@@ -79,3 +79,13 @@ header.site .who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:
 #t-pengaduan select#a-filter{padding:10px 12px;border:1px solid #cdd9d1;border-radius:10px;font:inherit;font-weight:400}
 .grid-3{grid-template-columns:repeat(3,1fr)}
 @media (max-width:900px){.grid-3{grid-template-columns:1fr}}
+/* Kepala halaman admin di HP: email dipotong rapi, tombol Keluar tetap terlihat */
+.admin .nav .brand{min-width:0}
+.admin .who{min-width:0}
+.admin .who span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin .who .btn{flex-shrink:0}
+@media (max-width:640px){
+  .admin .nav{height:auto;min-height:68px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap;gap:8px 16px}
+  .admin .brand small{display:none}
+  .admin .who{flex:1 1 100%;justify-content:space-between}
+}

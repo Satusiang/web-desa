@@ -21,6 +21,8 @@ Dipakai sampai domain resmi `.desa.id` selesai diurus. Cara kerjanya sama dengan
 
 File pendukung: `css/style.css`, `js/config.js` (alamat & kunci Supabase), `js/main.js` (header, menu, footer),
 `js/data.js` (mengisi halaman dari database), `js/sb.js` (penghubung Supabase), `supabase/schema.sql`.
+Pustaka Supabase disimpan di `js/vendor/` dengan versi terkunci supaya website tidak bergantung pada CDN luar.
+Untuk memperbarui versinya, ganti berkas di `js/vendor/` dan ubah `SUPABASE_VERSI` di `js/sb.js`.
 
 Selama `js/config.js` masih kosong, website menampilkan isi bawaan dan mode admin belum aktif.
 Layanan Surat tetap bisa dipakai tanpa database.
@@ -56,7 +58,9 @@ Header keamanan di `_headers`. Konfigurasi worker dibuat otomatis oleh Cloudflar
 - Tahap berikutnya: database penduduk dan Layanan Surat dipindah ke server lokal di kantor desa.
 
 ## Pengaduan
-Pengaduan dibatasi maksimal 20 laporan per 10 menit dan laporan kembar ditolak. Ada juga isian jebakan untuk robot spam.
+Anti-spam pengaduan: tiap pengirim maksimal 3 laporan per 10 menit dan 10 laporan per hari (dikenali dari kode acak
+alamat IP, alamat aslinya tidak disimpan), seluruh website maksimal 60 laporan per 10 menit, laporan kembar ditolak
+selama sehari, dan ada isian jebakan untuk robot spam. Setelah memperbarui `schema.sql`, jalankan ulang di SQL Editor.
 Kategori "Permohonan informasi publik" dipakai untuk permintaan informasi sesuai UU KIP.
 Warga mengirim laporan tanpa login lewat fungsi `kirim_pengaduan`; nama dan nomor HP hanya terlihat petugas.
 Petugas mengubah status, menulis tanggapan, dan memilih laporan mana yang tampil publik di tab **Pengaduan**.
