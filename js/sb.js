@@ -218,3 +218,19 @@ export function strukturWilayah(w) {
   }
   return JSON.parse(JSON.stringify(WILAYAH_BAWAAN));
 }
+
+// Ambil link Google Maps dari isian (boleh berupa teks "Bagikan" dari aplikasi Maps yang memuat link).
+// Hasil: URL https Google Maps yang valid, atau '' bila tidak valid.
+export function linkMaps(input) {
+  const m = String(input || '').match(/https?:\/\/[^\s"'<>]+/i);
+  if (!m) return '';
+  try {
+    const u = new URL(m[0]);
+    const h = u.hostname.toLowerCase();
+    const ok = h === 'maps.app.goo.gl' || (h === 'goo.gl' && u.pathname.startsWith('/maps'))
+      || /^maps\.google\.[a-z.]+$/.test(h) || (/(^|\.)google\.[a-z.]+$/.test(h) && u.pathname.startsWith('/maps'));
+    if (!ok) return '';
+    u.protocol = 'https:';
+    return u.href;
+  } catch { return ''; }
+}

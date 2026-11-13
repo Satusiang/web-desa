@@ -291,6 +291,9 @@
           <label>Harga / kisaran harga (opsional)<input id="u-harga" maxlength="60" placeholder="mis. Rp 15.000 – Rp 25.000"></label>
           <label>Nomor WhatsApp pemilik (dengan izin pemilik)<input id="u-wa" inputmode="tel" maxlength="20"></label>
           <label>Alamat toko<input id="u-alamat" maxlength="160" placeholder="mis. Jl. Raya Karang Bahagia No. 12, RT 002/RW 003"></label>
+          <label>Link Google Maps untuk petunjuk arah (opsional)<input id="u-maps" maxlength="500" inputmode="url" placeholder="mis. https://maps.app.goo.gl/…"></label>
+          <p class="muted small" style="margin-top:-6px">Cara mengambil: buka Google Maps, cari atau tandai lokasi toko, ketuk <b>Bagikan</b>, lalu <b>Salin link</b> dan tempel di sini. Bila kosong, tombol "Petunjuk arah" mencari berdasarkan nama dan alamat toko.</p>
+          <p class="err" id="u-maps-err"></p>
           <label>Foto toko (opsional)<input type="file" id="u-foto" accept="image/*"></label>
           <div class="preview" id="u-preview"></div>
           <label class="check"><input type="checkbox" id="u-tampil" checked> Tampilkan di website</label>

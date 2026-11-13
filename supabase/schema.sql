@@ -142,6 +142,9 @@ create table if not exists public.umkm (
   dibuat timestamptz not null default now()
 );
 
+-- Link Google Maps toko untuk tombol "Petunjuk arah" (opsional)
+alter table public.umkm add column if not exists maps_url text not null default '';
+
 -- ---------- Pengaduan warga ----------
 create table if not exists public.pengaduan (
   id uuid primary key default gen_random_uuid(),
