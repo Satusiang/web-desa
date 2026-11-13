@@ -1,6 +1,7 @@
 // Mengisi halaman publik dengan data dari Supabase.
 // Jika Supabase belum dikonfigurasi atau gagal dihubungi, isi bawaan di HTML tetap tampil.
-import { getClient, tanggalWIB, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf, pesanGalat } from './sb.js';
+import { getClient, tanggalWIB, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf, pesanGalat,
+  nomorDusun, nomorRtRw, romawi, tiga, jabatanKadus, strukturWilayah } from './sb.js';
 
 const $ = (s) => document.querySelector(s);
 const page = document.body.dataset.page;
@@ -212,76 +213,40 @@ async function perangkat(sb) {
   if ($('#wilayah')) $('#wilayah').innerHTML = baganWilayah(data);
 }
 
-// ---------- wilayah: dusun, RW, RT ----------
-// Pembagian dusun diisi di admin (Pengaturan -> Pembagian wilayah), satu dusun per baris: "Dusun I: 001, 002".
-const WILAYAH_BAWAAN = 'Dusun I: 001, 002\nDusun II: 003\nDusun III: 004';
+// ---------- wilayah: dusun, RW, RT (pohon: Dusun -> RW -> RT) ----------
 let pengaturanCache = {};
-const ROMAWI = { i: 1, v: 5, x: 10 };
-function angkaRomawi(s) {
-  s = String(s).toLowerCase();
-  if (/^\d+$/.test(s)) return Number(s);
-  let n = 0;
-  for (let i = 0; i < s.length; i++) { const a = ROMAWI[s[i]], b = ROMAWI[s[i + 1]] || 0; n += a < b ? -a : a; }
-  return n;
-}
-const nomorDusun = (t) => { const m = String(t || '').match(/(?:dusun|kadus)\s*\.?\s*([ivx]+|\d+)\b/i); return m ? angkaRomawi(m[1]) : 0; };
-// "Ketua RT 001/RW 002", "KETUA RT.001/002" -> {rt:1, rw:2}; "Ketua RW 002" -> {rw:2}
-function nomorRtRw(t) {
-  const s = String(t || '');
-  const rt = s.match(/\bRT\s*\.?\s*0*(\d+)\s*\/\s*(?:RW\s*\.?\s*)?0*(\d+)/i);
-  if (rt) return { rt: Number(rt[1]), rw: Number(rt[2]) };
-  const rt2 = s.match(/\bRT\s*\.?\s*0*(\d+)\b.*?\bRW\s*\.?\s*0*(\d+)/i);
-  if (rt2) return { rt: Number(rt2[1]), rw: Number(rt2[2]) };
-  const rw = s.match(/\bRW\s*\.?\s*0*(\d+)/i);
-  return rw ? { rw: Number(rw[1]) } : null;
-}
-function pembagianWilayah() {
-  const teks = (pengaturanCache.wilayah || {}).teks || WILAYAH_BAWAAN;
-  return teks.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
-    const i = l.indexOf(':');
-    const nama = (i > 0 ? l.slice(0, i) : l).trim();
-    const rw = i > 0 ? (l.slice(i + 1).match(/\d+/g) || []).map(Number) : [];
-    return { nama, nomor: nomorDusun(nama) || 0, rw };
-  });
-}
-const tiga = (n) => String(n).padStart(3, '0');
-function orangKecil(p, jabatan) {
-  const foto = safeUrl(p?.foto_url);
-  const kosong = !p || !String(p.nama || '').trim() || /^[\s\-–—.]+$/.test(p.nama);
-  return `<div class="wl-orang${kosong ? ' kosong' : ''}"><span class="wl-ava">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : kosong ? SILUET : esc(inisial(p.nama))}</span>
-    <span><b>${kosong ? 'Belum diisi' : esc(p.nama)}</b><small>${esc(jabatan)}</small></span></div>`;
-}
+const kosongNama = (p) => !p || /^[\s\-–—.]*$/.test(p.nama || '');
 function baganWilayah(semua) {
-  const dusun = pembagianWilayah();
+  const struktur = strukturWilayah(pengaturanCache.wilayah);
   const kadus = semua.filter(p => p.kelompok === 'pemerintah' && nomorDusun(p.jabatan));
   const rtrw = semua.filter(p => p.lembaga === 'rt-rw' || (p.kelompok === 'lembaga' && nomorRtRw(p.jabatan)));
-  const peta = new Map(); // rw -> {ketua, rt: Map(rt -> orang)}
-  const lain = [];
-  rtrw.forEach(p => {
-    const n = nomorRtRw(p.jabatan);
-    if (!n) { lain.push(p); return; }
-    if (!peta.has(n.rw)) peta.set(n.rw, { ketua: null, rt: new Map() });
-    const w = peta.get(n.rw);
-    if (n.rt) { if (!w.rt.has(n.rt)) w.rt.set(n.rt, p); } else if (!w.ketua) w.ketua = p;
-  });
-  const kartuRw = (no) => {
-    const w = peta.get(no) || { ketua: null, rt: new Map() };
-    const rts = [...w.rt.entries()].sort((a, b) => a[0] - b[0]);
-    return `<div class="wl-rw" id="rw-${tiga(no)}"><div class="wl-rw-kepala"><span class="wl-label">RW ${tiga(no)}</span>${orangKecil(w.ketua, 'Ketua RW ' + tiga(no))}</div>
-      ${rts.length ? `<ul class="wl-rt">${rts.map(([rt, p]) => `<li><span class="wl-label kecil">RT ${tiga(rt)}</span><span class="wl-nama${/^[\s\-–—.]*$/.test(p.nama || '') ? ' kosong' : ''}">${/^[\s\-–—.]*$/.test(p.nama || '') ? 'Belum diisi' : esc(p.nama)}</span></li>`).join('')}</ul>`
-        : '<p class="small muted wl-kosong">Data RT belum diisi.</p>'}</div>`;
+  const cariRw = (rw) => rtrw.find(p => { const n = nomorRtRw(p.jabatan); return n && n.rw === rw && !n.rt; });
+  const cariRt = (rt, rw) => rtrw.find(p => { const n = nomorRtRw(p.jabatan); return n && n.rw === rw && n.rt === rt; });
+  const nama = (p) => kosongNama(p) ? '<span class="ph-kosong">Belum diisi</span>' : esc(p.nama);
+  const simpulRt = (rt, rw) => `<div class="ph-rt"><div class="ph-simpul ph-t"><span class="ph-label">RT ${tiga(rt)}</span><span class="ph-nama">${nama(cariRt(rt, rw))}</span></div></div>`;
+  const simpulRw = (w) => {
+    // RT yang tercatat di data tapi melebihi jumlah RT di struktur tetap ditampilkan
+    const ekstra = rtrw.map(p => nomorRtRw(p.jabatan)).filter(n => n && n.rw === w.no && n.rt > w.rt).map(n => n.rt);
+    const daftar = [...new Set([...Array.from({ length: w.rt }, (_, i) => i + 1), ...ekstra])].sort((a, b) => a - b);
+    return `<div class="ph-rw" id="rw-${tiga(w.no)}"><div class="ph-simpul ph-w"><span class="ph-label">RW ${tiga(w.no)}</span><span class="ph-nama">${nama(cariRw(w.no))}</span><small>Ketua RW</small></div>
+      ${daftar.length ? `<div class="ph-cabang">${daftar.map(rt => simpulRt(rt, w.no)).join('')}</div>` : ''}</div>`;
   };
-  const dipakai = new Set(dusun.flatMap(d => d.rw));
-  const sisa = [...peta.keys()].filter(n => !dipakai.has(n)).sort((a, b) => a - b);
-  const blok = dusun.map((d, i) => {
-    const kd = kadus.find(p => nomorDusun(p.jabatan) === (d.nomor || i + 1));
-    return `<div class="wl-dusun"><div class="wl-kadus"><span class="wl-judul">${esc(d.nama)}</span>${orangKecil(kd, kd ? kd.jabatan : 'Kepala ' + d.nama)}</div>
-      <div class="wl-rw-daftar">${d.rw.length ? d.rw.map(kartuRw).join('') : '<p class="small muted">Belum ada RW yang dicatat untuk dusun ini.</p>'}</div></div>`;
+  const blok = struktur.map((d, i) => {
+    const no = nomorDusun(d.nama) || i + 1;
+    const kd = kadus.find(p => nomorDusun(p.jabatan) === no);
+    const foto = safeUrl(kd?.foto_url);
+    return `<div class="ph-dusun"><div class="ph-simpul ph-d"><span class="ph-label">${esc(d.nama || 'Dusun ' + romawi(no))}</span>
+        <span class="wl-ava">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : kosongNama(kd) ? SILUET : esc(inisial(kd.nama))}</span>
+        <span class="ph-nama">${nama(kd)}</span><small>${esc(jabatanKadus(no))}</small></div>
+      ${d.rw.length ? `<div class="ph-cabang ph-koordinasi">${d.rw.map(simpulRw).join('')}</div>` : ''}</div>`;
   }).join('');
-  const kadusLepas = kadus.filter(p => !dusun.some((d, i) => (d.nomor || i + 1) === nomorDusun(p.jabatan)));
-  return `<div class="wilayah">${blok}
-    ${sisa.length ? `<div class="wl-dusun"><div class="wl-kadus"><span class="wl-judul">RW lainnya</span></div><div class="wl-rw-daftar">${sisa.map(kartuRw).join('')}</div></div>` : ''}</div>
-    ${kadusLepas.length || lain.length ? `<div class="team" style="margin-top:24px">${[...kadusLepas, ...lain].map(kartuOrang).join('')}</div>` : ''}
+  const dipakai = new Set(struktur.flatMap(d => d.rw.map(r => r.no)));
+  const rwSisa = [...new Set(rtrw.map(p => nomorRtRw(p.jabatan)?.rw).filter(n => n && !dipakai.has(n)))].sort((a, b) => a - b);
+  const lain = rtrw.filter(p => !nomorRtRw(p.jabatan));
+  return `<div class="pohon">${blok}
+    ${rwSisa.length ? `<div class="ph-dusun"><div class="ph-simpul ph-d"><span class="ph-label">RW lainnya</span><small>Belum dimasukkan ke dusun</small></div>
+      <div class="ph-cabang">${rwSisa.map(no => simpulRw({ no, rt: 0 })).join('')}</div></div>` : ''}</div>
+    ${lain.length ? `<div class="team" style="margin-top:24px">${lain.map(kartuOrang).join('')}</div>` : ''}
     <p class="small muted" style="margin-top:14px">Garis putus-putus menandakan koordinasi: Kepala Dusun adalah perangkat desa, sedangkan RT dan RW adalah lembaga kemasyarakatan yang dipilih warga.</p>`;
 }
 

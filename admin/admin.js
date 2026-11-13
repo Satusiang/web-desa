@@ -1,4 +1,5 @@
-import { getClient, isConfigured, pesanGalat, tanggalWIB, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks } from '../js/sb.js';
+import { getClient, isConfigured, pesanGalat, tanggalWIB, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks,
+  nomorDusun, nomorRtRw, romawi, tiga, jabatanKadus, jabatanRw, jabatanRt, strukturWilayah } from '../js/sb.js';
 
 const $ = (s) => document.querySelector(s);
 const BUCKET = 'media';
@@ -90,8 +91,10 @@ function modul(cfg) {
     let q = sb.from(cfg.tabel).select('*');
     for (const [k, asc] of cfg.order) q = q.order(k, { ascending: asc });
     cache = check(await q);
+    if (cfg.urut) cache = cfg.urut(cache);
     cfg.setelahMuat?.(cache);
-    $(cfg.list).innerHTML = cache.length ? cache.map(r => `<div class="item">${cfg.foto === false ? '' : thumb(r.foto_url)}
+    let grupLalu = null;
+    $(cfg.list).innerHTML = cache.length ? cache.map(r => `${cfg.grup && cfg.grup(r) !== grupLalu ? `<p class="grup-judul">${esc(grupLalu = cfg.grup(r))}</p>` : ''}<div class="item">${cfg.foto === false ? '' : thumb(r.foto_url)}
       <div class="meta">${cfg.item(r)}</div>
       <div class="acts"><button class="btn alt small" data-edit="${r.id}">Edit</button>
       <button class="btn danger small" data-del="${r.id}">Hapus</button></div></div>`).join('') : '<p class="empty">Belum ada data.</p>';
@@ -181,12 +184,24 @@ const mPerangkat = modul({
   tulis: () => {
     const kelompok = $('#p-kelompok').value;
     const lembaga = kelompok === 'bpd' ? 'bpd' : kelompok === 'lembaga' ? ($('#p-lembaga').value || null) : null;
-    return { nama: $('#p-nama').value.trim(), jabatan: $('#p-jabatan').value.trim(), kelompok, lembaga, urutan: parseInt($('#p-urutan').value, 10) || 0 };
+    const row = { nama: $('#p-nama').value.trim(), jabatan: $('#p-jabatan').value.trim(), kelompok, urutan: parseInt($('#p-urutan').value, 10) || 0 };
+    if (!skemaLama) row.lembaga = lembaga; // kolom lembaga baru ada setelah schema.sql terbaru dijalankan
+    return row;
   },
+  urut: rows => rows.map(r => [grupPerangkat(r), r]).sort((a, b) => a[0][0] - b[0][0] || a[0][1].localeCompare(b[0][1]) || (a[1].urutan - b[1].urutan)).map(x => x[1]),
+  grup: r => grupPerangkat(r)[1],
+  setelahMuat: () => { if (!wl.ubah) muatWilayah().catch(e => toast('Gagal memuat wilayah: ' + e.message, true)); },
   item: r => `<b>${esc(r.nama)}</b><small>${esc(r.jabatan)} · ${r.kelompok === 'pemerintah' ? 'Perangkat desa' : esc(namaLembaga(r.lembaga) || ({ bpd: 'BPD', lembaga: 'Lembaga (belum dipilih)' })[r.kelompok])} · urutan ${r.urutan}</small>`,
   nama: r => r.nama,
 });
 
+let skemaLama = false; // true bila tabel lembaga belum ada (schema.sql terbaru belum dijalankan)
+function grupPerangkat(r) {
+  if (r.kelompok === 'pemerintah') return nomorDusun(r.jabatan) ? [2, 'Wilayah: Kepala Dusun'] : [1, 'Perangkat desa'];
+  if (r.lembaga === 'rt-rw' || nomorRtRw(r.jabatan)) return [3, 'Wilayah: ketua RW dan RT'];
+  if (r.kelompok === 'bpd' || r.lembaga === 'bpd') return [4, 'BPD'];
+  return [5, 'Lembaga: ' + (namaLembaga(r.lembaga) || 'belum dipilih')];
+}
 // ---------- lembaga ----------
 let lembagaCache = [];
 const namaLembaga = (kode) => { const l = lembagaCache.find(x => x.kode === kode); return l ? (l.singkatan || l.nama) : ''; };
@@ -196,8 +211,9 @@ function aturPilihanLembaga(pilih) {
   const kel = $('#p-kelompok').value;
   $('#p-lembaga-wrap').hidden = kel !== 'lembaga';
   const sekarang = pilih !== undefined ? pilih : $('#p-lembaga').value;
-  $('#p-lembaga').innerHTML = lembagaCache.filter(l => l.kode !== 'bpd')
-    .map(l => `<option value="${esc(l.kode)}">${esc(l.singkatan || l.nama)}</option>`).join('');
+  const pilihan = lembagaCache.filter(l => l.kode !== 'bpd');
+  $('#p-lembaga').innerHTML = pilihan.length ? pilihan.map(l => `<option value="${esc(l.kode)}">${esc(l.singkatan || l.nama)}</option>`).join('')
+    : `<option value="" disabled selected>${skemaLama ? 'Jalankan schema.sql terbaru dulu' : 'Belum ada lembaga'}</option>`;
   if (sekarang && lembagaCache.some(l => l.kode === sekarang)) $('#p-lembaga').value = sekarang;
 }
 $('#p-kelompok').addEventListener('change', () => aturPilihanLembaga());
@@ -222,6 +238,166 @@ const mLembaga = modul({
   setelahMuat: (rows) => { lembagaCache = rows; aturPilihanLembaga(); },
 });
 
+async function muatLembagaAman() {
+  try { await mLembaga.muat(); skemaLama = false; }
+  catch (e) {
+    if (!/lembaga/i.test(e.message || '')) throw e;
+    skemaLama = true; lembagaCache = [];
+    $('#banner-skema').hidden = false;
+    $('#l-lembaga').innerHTML = '<p class="empty">Tabel lembaga belum ada. Jalankan schema.sql terbaru (lihat peringatan kuning di atas).</p>';
+    aturPilihanLembaga();
+  }
+}
+
+// ---------- wilayah: Dusun -> RW -> RT dalam satu formulir ----------
+let wl = { dusun: [], idAwal: new Map(), ubah: false }; // idAwal: id baris perangkat yang dimuat -> data, untuk mendeteksi yang dihapus
+const slot = (p) => ({ id: p?.id || null, nama: p && !/^[\s\-–—.]*$/.test(p.nama || '') ? p.nama : '', foto_url: p?.foto_url || null });
+async function muatWilayah() {
+  const [rows, set] = await Promise.all([
+    sb.from('perangkat').select('*').then(check),
+    sb.from('pengaturan').select('nilai').eq('kunci', 'wilayah').then(check),
+  ]);
+  const struktur = strukturWilayah(set[0]?.nilai);
+  const kadus = rows.filter(p => p.kelompok === 'pemerintah' && nomorDusun(p.jabatan));
+  const rtrw = rows.filter(p => p.kelompok !== 'pemerintah' && nomorRtRw(p.jabatan));
+  const n = (p) => nomorRtRw(p.jabatan);
+  wl.idAwal = new Map([...kadus, ...rtrw].map(p => [p.id, p]));
+  wl.ubah = false;
+  const dipakai = new Set();
+  wl.dusun = struktur.map((d, i) => {
+    const no = nomorDusun(d.nama) || i + 1;
+    return {
+      nama: d.nama || 'Dusun ' + romawi(no),
+      kadus: slot(kadus.find(p => nomorDusun(p.jabatan) === no)),
+      rw: d.rw.map(r => {
+        dipakai.add(r.no);
+        const rts = rtrw.filter(p => n(p).rw === r.no && n(p).rt);
+        const jml = Math.max(r.rt, ...rts.map(p => n(p).rt), 0);
+        return { no: r.no, ketua: slot(rtrw.find(p => n(p).rw === r.no && !n(p).rt)),
+          rt: Array.from({ length: jml }, (_, k) => slot(rts.find(p => n(p).rt === k + 1))) };
+      }),
+    };
+  });
+  // RW yang ada di data tapi belum masuk dusun mana pun: ditaruh di dusun terakhir agar tidak hilang
+  const sisa = [...new Set(rtrw.map(p => n(p).rw))].filter(no => !dipakai.has(no)).sort((a, b) => a - b);
+  if (sisa.length) {
+    if (!wl.dusun.length) wl.dusun.push({ nama: 'Dusun I', kadus: slot(null), rw: [] });
+    sisa.forEach(no => {
+      const rts = rtrw.filter(p => n(p).rw === no && n(p).rt);
+      wl.dusun[wl.dusun.length - 1].rw.push({ no, ketua: slot(rtrw.find(p => n(p).rw === no && !n(p).rt)),
+        rt: Array.from({ length: Math.max(0, ...rts.map(p => n(p).rt)) }, (_, k) => slot(rts.find(p => n(p).rt === k + 1))) });
+    });
+  }
+  gambarWilayah();
+}
+function gambarWilayah() {
+  const inp = (f, v, ph, extra = '') => `<input data-f="${f}" value="${esc(v)}" placeholder="${esc(ph)}" maxlength="80" ${extra}>`;
+  $('#wl-editor').innerHTML = wl.dusun.length ? wl.dusun.map((d, i) => `<div class="wle-dusun" data-d="${i}">
+    <div class="wle-baris wle-d">
+      <label>Nama dusun${inp('dnama', d.nama, 'mis. Dusun ' + romawi(i + 1))}</label>
+      <label>Kepala Dusun${inp('kadus', d.kadus.nama, 'Nama Kepala Dusun')}</label>
+      <button type="button" class="btn danger mini" data-aksi="hapus-dusun">Hapus dusun</button>
+    </div>
+    <div class="wle-anak">
+      ${d.rw.map((r, j) => `<div class="wle-rw" data-r="${j}">
+        <div class="wle-baris">
+          <label class="wle-rwno" style="flex:0 0 auto">Nomor RW<input type="number" min="1" max="999" data-f="rwno" value="${r.no}"></label>
+          <label>Ketua RW ${tiga(r.no)}${inp('ketua', r.ketua.nama, 'Nama ketua RW')}</label>
+          <button type="button" class="btn danger mini" data-aksi="hapus-rw">Hapus RW</button>
+        </div>
+        <div class="wle-anak">
+          ${r.rt.map((t, k) => `<div class="wle-rt"><span class="wle-tag">RT ${tiga(k + 1)}</span>${inp('rt', t.nama, 'Nama ketua RT ' + tiga(k + 1) + '/RW ' + tiga(r.no), `data-k="${k}"`)}</div>`).join('')}
+          <div class="wle-tombol"><button type="button" class="btn alt mini" data-aksi="tambah-rt">+ Tambah RT</button>
+            ${r.rt.length ? '<button type="button" class="btn alt mini" data-aksi="kurangi-rt">− Hapus RT terakhir</button>' : ''}</div>
+        </div>
+      </div>`).join('')}
+      <div class="wle-tombol"><button type="button" class="btn alt mini" data-aksi="tambah-rw">+ Tambah RW di ${esc(d.nama || 'dusun ini')}</button></div>
+    </div>
+  </div>`).join('') : '<p class="empty">Belum ada dusun. Klik "+ Tambah dusun".</p>';
+}
+$('#wl-editor').addEventListener('input', e => {
+  const f = e.target.dataset.f; if (!f) return;
+  wl.ubah = true;
+  const d = wl.dusun[e.target.closest('[data-d]').dataset.d];
+  const r = e.target.closest('[data-r]') ? d.rw[e.target.closest('[data-r]').dataset.r] : null;
+  if (f === 'dnama') d.nama = e.target.value;
+  if (f === 'kadus') d.kadus.nama = e.target.value;
+  if (f === 'rwno') r.no = parseInt(e.target.value, 10) || 0;
+  if (f === 'ketua') r.ketua.nama = e.target.value;
+  if (f === 'rt') r.rt[e.target.dataset.k].nama = e.target.value;
+});
+$('#wl-editor').addEventListener('change', e => { if (['rwno', 'dnama'].includes(e.target.dataset.f)) gambarWilayah(); });
+$('#wl-editor').addEventListener('click', e => {
+  const aksi = e.target.dataset.aksi; if (!aksi) return;
+  wl.ubah = true;
+  const di = +e.target.closest('[data-d]').dataset.d, d = wl.dusun[di];
+  const rj = e.target.closest('[data-r]') ? +e.target.closest('[data-r]').dataset.r : -1, r = d.rw[rj];
+  const isi = (s) => s.nama.trim();
+  if (aksi === 'hapus-dusun') {
+    const terisi = [d.kadus, ...d.rw.flatMap(x => [x.ketua, ...x.rt])].filter(isi).length;
+    if (!confirm(`Hapus ${d.nama}${terisi ? ` beserta ${terisi} nama di dalamnya` : ''}? Perubahan baru tersimpan setelah klik "Simpan wilayah".`)) return;
+    wl.dusun.splice(di, 1);
+  }
+  if (aksi === 'tambah-rw') {
+    const semua = wl.dusun.flatMap(x => x.rw.map(y => y.no));
+    d.rw.push({ no: Math.max(0, ...semua) + 1, ketua: slot(null), rt: [slot(null), slot(null), slot(null)] });
+  }
+  if (aksi === 'hapus-rw') {
+    if (!confirm(`Hapus RW ${tiga(r.no)} beserta RT-nya? Perubahan baru tersimpan setelah klik "Simpan wilayah".`)) return;
+    d.rw.splice(rj, 1);
+  }
+  if (aksi === 'tambah-rt') r.rt.push(slot(null));
+  if (aksi === 'kurangi-rt') {
+    const t = r.rt[r.rt.length - 1];
+    if (isi(t) && !confirm(`Hapus RT ${tiga(r.rt.length)} (${t.nama})?`)) return;
+    r.rt.pop();
+  }
+  gambarWilayah();
+});
+$('#wl-tambah-dusun').addEventListener('click', () => {
+  const no = Math.max(0, ...wl.dusun.map((d, i) => nomorDusun(d.nama) || i + 1)) + 1;
+  wl.dusun.push({ nama: 'Dusun ' + romawi(no), kadus: slot(null), rw: [] });
+  wl.ubah = true;
+  gambarWilayah();
+});
+$('#wl-simpan').addEventListener('click', e => busy(e.target, async () => {
+  // periksa isian
+  const noDusun = wl.dusun.map((d, i) => nomorDusun(d.nama) || i + 1);
+  if (new Set(noDusun).size !== noDusun.length) throw new Error('Ada nama dusun dengan nomor yang sama. Pakai nama berbeda, mis. Dusun I, Dusun II.');
+  const noRw = wl.dusun.flatMap(d => d.rw.map(r => r.no));
+  if (noRw.some(n => !n || n < 1)) throw new Error('Nomor RW harus diisi angka 1 atau lebih.');
+  const ganda = noRw.find((n, i) => noRw.indexOf(n) !== i);
+  if (ganda) throw new Error(`RW ${tiga(ganda)} tercatat lebih dari sekali.`);
+  // susun baris yang diinginkan
+  const target = [];
+  const tambah = (s, row) => target.push({ s, row: { ...row, nama: s.nama.trim() } });
+  const kelRtRw = skemaLama ? { kelompok: 'lembaga' } : { kelompok: 'lembaga', lembaga: 'rt-rw' };
+  wl.dusun.forEach((d, i) => {
+    tambah(d.kadus, { jabatan: jabatanKadus(noDusun[i]), kelompok: 'pemerintah', urutan: 900 + noDusun[i] });
+    d.rw.forEach(r => {
+      tambah(r.ketua, { jabatan: jabatanRw(r.no), ...kelRtRw, urutan: r.no * 100 });
+      r.rt.forEach((t, k) => tambah(t, { jabatan: jabatanRt(k + 1, r.no), ...kelRtRw, urutan: r.no * 100 + k + 1 }));
+    });
+  });
+  const dipakai = new Set(target.map(x => x.s.id).filter(Boolean));
+  const hapus = [...wl.idAwal.values()].filter(p => !dipakai.has(p.id))
+    .concat(target.filter(x => x.s.id && !x.row.nama).map(x => wl.idAwal.get(x.s.id)).filter(Boolean));
+  if (hapus.length && !confirm(`${hapus.length} nama akan dihapus dari susunan:\n${hapus.map(p => `• ${p.nama} (${p.jabatan})`).join('\n')}\n\nLanjutkan?`)) return;
+  const sisip = target.filter(x => !x.s.id && x.row.nama).map(x => x.row);
+  const beda = (x) => { const lama = wl.idAwal.get(x.s.id) || {}; return Object.keys(x.row).some(k => (lama[k] ?? null) !== (x.row[k] ?? null)); };
+  const ubah = target.filter(x => x.s.id && x.row.nama && beda(x));
+  if (sisip.length) check(await sb.from('perangkat').insert(sisip));
+  await Promise.all(ubah.map(x => sb.from('perangkat').update(x.row).eq('id', x.s.id).then(check)));
+  if (hapus.length) {
+    check(await sb.from('perangkat').delete().in('id', hapus.map(p => p.id)));
+    await Promise.all(hapus.filter(p => p.foto_url).map(p => hapusFile(p.foto_url)));
+  }
+  const struktur = wl.dusun.map(d => ({ nama: d.nama.trim(), rw: d.rw.map(r => ({ no: r.no, rt: r.rt.length })) }));
+  check(await sb.from('pengaturan').upsert({ kunci: 'wilayah', diperbarui: new Date().toISOString(), nilai: { struktur } }));
+  toast(`Wilayah disimpan: ${sisip.length} ditambah, ${ubah.length} diperbarui, ${hapus.length} dihapus.`);
+  await Promise.all([muatWilayah(), mPerangkat.muat()]);
+}));
+
 const mLayanan = modul({
   tabel: 'layanan', form: '#f-layanan', list: '#l-layanan', idEl: '#ly-id', title: '#layanan-title',
   judulBaru: 'Tambah layanan', judulEdit: 'Edit layanan', resetBtn: '#ly-reset', foto: false,
@@ -234,7 +410,7 @@ const mLayanan = modul({
 
 const mUmkm = modul({
   tabel: 'umkm', form: '#f-umkm', list: '#l-umkm', idEl: '#u-id', title: '#umkm-title',
-  judulBaru: 'Tambah UMKM', judulEdit: 'Edit UMKM', resetBtn: '#u-reset',
+  judulBaru: 'Tambah toko / usaha', judulEdit: 'Edit toko / usaha', resetBtn: '#u-reset',
   fotoEl: '#u-foto', previewEl: '#u-preview', folder: 'umkm',
   order: [['urutan', true], ['dibuat', true]],
   afterReset: () => { $('#u-tampil').checked = true; },
@@ -363,7 +539,7 @@ previewFile($('#s-foto-beranda'), $('#s-prev-beranda'));
 async function muatPengaturan() {
   const rows = check(await sb.from('pengaturan').select('kunci,nilai'));
   const c = Object.fromEntries(rows.map(r => [r.kunci, r.nilai || {}]));
-  const k = c.kontak || {}, p = c.profil || {}, s = c.statistik || {}, pg = c.pengumuman || {}, bd = c.bumdes || {}, kd = c.kopdes || {}, wl = c.wilayah || {};
+  const k = c.kontak || {}, p = c.profil || {}, s = c.statistik || {}, pg = c.pengumuman || {}, bd = c.bumdes || {}, kd = c.kopdes || {};
   $('#s-pg-aktif').checked = !!pg.aktif; $('#s-pg-teks').value = pg.teks || ''; $('#s-pg-link').value = pg.tautan || '';
   $('#s-wa').value = k.wa ? waLocal(k.wa).replace(/-/g, '') : ''; $('#s-telp').value = k.telp || ''; $('#s-email').value = k.email || '';
   $('#s-alamat').value = k.alamat || ''; $('#s-jam').value = k.jam || ''; $('#s-maps').value = k.maps_embed || '';
@@ -381,7 +557,6 @@ async function muatPengaturan() {
   $('#s-st-tahun').value = s.tahun_data || '';
   $('#s-bd-nama').value = bd.nama || ''; $('#s-bd-url').value = bd.url || ''; $('#s-bd-ring').value = bd.ringkasan || '';
   $('#s-kd-nama').value = kd.nama || ''; $('#s-kd-ring').value = kd.ringkasan || ''; $('#s-kd-alamat').value = kd.alamat || '';
-  $('#s-wilayah').value = wl.teks || '';
   $('#s-kd-wa').value = kd.wa || ''; $('#s-kd-unit').value = kd.unit || ''; $('#s-kd-pengurus').value = kd.pengurus || '';
 }
 $('#f-pengaturan').addEventListener('submit', e => {
@@ -410,7 +585,6 @@ $('#f-pengaturan').addEventListener('submit', e => {
       { kunci: 'profil', diperbarui: now, nilai: { kades: v('#s-kades'), sambutan: v('#s-sambutan'), sejarah: v('#s-sejarah'), visi: v('#s-visi'), misi: $('#s-misi').value.split('\n').map(s => s.trim()).filter(Boolean), batas_utara: v('#s-bu'), batas_selatan: v('#s-bs'), batas_timur: v('#s-bt'), batas_barat: v('#s-bb') } },
       { kunci: 'statistik', diperbarui: now, nilai: statistik },
       { kunci: 'bumdes', diperbarui: now, nilai: { nama: v('#s-bd-nama'), url: v('#s-bd-url'), ringkasan: v('#s-bd-ring') } },
-      { kunci: 'wilayah', diperbarui: now, nilai: { teks: $('#s-wilayah').value.trim() } },
       { kunci: 'kopdes', diperbarui: now, nilai: { nama: v('#s-kd-nama'), ringkasan: v('#s-kd-ring'), alamat: v('#s-kd-alamat'), wa: v('#s-kd-wa'), unit: v('#s-kd-unit'), pengurus: v('#s-kd-pengurus') } },
     ]));
     if ((fBer || $('#s-hapus-beranda').checked) && lamaBer) await hapusFile(lamaBer);
@@ -429,7 +603,7 @@ async function masukDasbor(session) {
   if (!ok) { show('denied'); return; }
   show('app');
   mBerita.reset(); mPb.reset();
-  await Promise.all([muatAduan(), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), mLembaga.muat().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
+  await Promise.all([muatAduan(), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), muatLembagaAman().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
     .catch(e => toast('Gagal memuat data: ' + e.message, true));
 }
 $('#f-login').addEventListener('submit', async e => {
