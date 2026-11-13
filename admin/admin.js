@@ -90,6 +90,7 @@ function modul(cfg) {
     let q = sb.from(cfg.tabel).select('*');
     for (const [k, asc] of cfg.order) q = q.order(k, { ascending: asc });
     cache = check(await q);
+    cfg.setelahMuat?.(cache);
     $(cfg.list).innerHTML = cache.length ? cache.map(r => `<div class="item">${cfg.foto === false ? '' : thumb(r.foto_url)}
       <div class="meta">${cfg.item(r)}</div>
       <div class="acts"><button class="btn alt small" data-edit="${r.id}">Edit</button>
@@ -175,10 +176,50 @@ const mPerangkat = modul({
   judulBaru: 'Tambah orang', judulEdit: 'Edit data', resetBtn: '#p-reset',
   fotoEl: '#p-foto', previewEl: '#p-preview', folder: 'perangkat',
   order: [['kelompok', false], ['urutan', true]],
-  baca: r => { $('#p-nama').value = r.nama; $('#p-jabatan').value = r.jabatan; $('#p-kelompok').value = r.kelompok; $('#p-urutan').value = r.urutan; },
-  tulis: () => ({ nama: $('#p-nama').value.trim(), jabatan: $('#p-jabatan').value.trim(), kelompok: $('#p-kelompok').value, urutan: parseInt($('#p-urutan').value, 10) || 0 }),
-  item: r => `<b>${esc(r.nama)}</b><small>${esc(r.jabatan)} · ${({ pemerintah: 'Perangkat desa', bpd: 'BPD', lembaga: 'Lembaga' })[r.kelompok]} · urutan ${r.urutan}</small>`,
+  afterReset: () => aturPilihanLembaga(),
+  baca: r => { $('#p-nama').value = r.nama; $('#p-jabatan').value = r.jabatan; $('#p-kelompok').value = r.kelompok; $('#p-urutan').value = r.urutan; aturPilihanLembaga(r.lembaga); },
+  tulis: () => {
+    const kelompok = $('#p-kelompok').value;
+    const lembaga = kelompok === 'bpd' ? 'bpd' : kelompok === 'lembaga' ? ($('#p-lembaga').value || null) : null;
+    return { nama: $('#p-nama').value.trim(), jabatan: $('#p-jabatan').value.trim(), kelompok, lembaga, urutan: parseInt($('#p-urutan').value, 10) || 0 };
+  },
+  item: r => `<b>${esc(r.nama)}</b><small>${esc(r.jabatan)} · ${r.kelompok === 'pemerintah' ? 'Perangkat desa' : esc(namaLembaga(r.lembaga) || ({ bpd: 'BPD', lembaga: 'Lembaga (belum dipilih)' })[r.kelompok])} · urutan ${r.urutan}</small>`,
   nama: r => r.nama,
+});
+
+// ---------- lembaga ----------
+let lembagaCache = [];
+const namaLembaga = (kode) => { const l = lembagaCache.find(x => x.kode === kode); return l ? (l.singkatan || l.nama) : ''; };
+const kodeDari = (t) => String(t || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'lembaga';
+function aturPilihanLembaga(pilih) {
+  const kel = $('#p-kelompok').value;
+  $('#p-lembaga-wrap').hidden = kel !== 'lembaga';
+  const sekarang = pilih !== undefined ? pilih : $('#p-lembaga').value;
+  $('#p-lembaga').innerHTML = lembagaCache.filter(l => l.kode !== 'bpd')
+    .map(l => `<option value="${esc(l.kode)}">${esc(l.singkatan || l.nama)}</option>`).join('');
+  if (sekarang && lembagaCache.some(l => l.kode === sekarang)) $('#p-lembaga').value = sekarang;
+}
+$('#p-kelompok').addEventListener('change', () => aturPilihanLembaga());
+const mLembaga = modul({
+  tabel: 'lembaga', form: '#f-lembaga', list: '#l-lembaga', idEl: '#lb-id', title: '#lembaga-title',
+  judulBaru: 'Tambah lembaga', judulEdit: 'Edit lembaga', resetBtn: '#lb-reset',
+  fotoEl: '#lb-foto', previewEl: '#lb-preview', folder: 'lembaga',
+  order: [['urutan', true], ['nama', true]],
+  baca: r => { $('#lb-nama').value = r.nama; $('#lb-singkatan').value = r.singkatan; $('#lb-urutan').value = r.urutan; $('#lb-ringkasan').value = r.ringkasan; $('#lb-profil').value = r.profil; },
+  tulis: () => {
+    const row = { nama: $('#lb-nama').value.trim(), singkatan: $('#lb-singkatan').value.trim(), urutan: parseInt($('#lb-urutan').value, 10) || 0,
+      ringkasan: $('#lb-ringkasan').value.trim(), profil: $('#lb-profil').value.trim() };
+    if (!$('#lb-id').value) { // kode alamat dibuat sekali saat lembaga ditambahkan
+      let kode = kodeDari(row.singkatan || row.nama), n = 2;
+      while (lembagaCache.some(l => l.kode === kode)) kode = `${kodeDari(row.singkatan || row.nama).slice(0, 36)}-${n++}`;
+      row.kode = kode;
+    }
+    return row;
+  },
+  item: r => `<b>${esc(r.singkatan || r.nama)}</b><small>${esc(r.nama)} · alamat: lembaga?l=${esc(r.kode)} · urutan ${r.urutan}</small>`,
+  nama: r => r.nama,
+  setelahMuat: (rows) => { lembagaCache = rows; aturPilihanLembaga(); },
 });
 
 const mLayanan = modul({
@@ -386,7 +427,7 @@ async function masukDasbor(session) {
   if (!ok) { show('denied'); return; }
   show('app');
   mBerita.reset(); mPb.reset();
-  await Promise.all([muatAduan(), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), mPerangkat.muat(), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
+  await Promise.all([muatAduan(), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), mLembaga.muat().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
     .catch(e => toast('Gagal memuat data: ' + e.message, true));
 }
 $('#f-login').addEventListener('submit', async e => {

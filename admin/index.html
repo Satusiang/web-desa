@@ -77,6 +77,7 @@
       <button data-tab="pembangunan">🏗️ Pembangunan</button>
       <button data-tab="dokumen">📁 Dokumen</button>
       <button data-tab="perangkat">👥 Perangkat</button>
+      <button data-tab="lembaga">🏛️ Lembaga</button>
       <button data-tab="layanan">📋 Syarat Layanan</button>
       <button data-tab="umkm">🛍️ UMKM</button>
       <button data-tab="pengaturan">⚙️ Pengaturan</button>
@@ -204,9 +205,10 @@
           <input type="hidden" id="p-id">
           <label>Nama<input id="p-nama" required maxlength="80"></label>
           <label>Jabatan<input id="p-jabatan" required maxlength="80" placeholder="mis. Sekretaris Desa, Kepala Seksi Pemerintahan, Kepala Urusan Keuangan, Kepala Dusun I"></label>
-          <p class="muted small" style="margin-top:-6px">Bagan perangkat desa disusun dari jabatan: Kepala Desa paling atas, lalu Sekretaris Desa, lalu Kepala Seksi, Kepala Urusan, dan Kepala Dusun. Angka urutan mengatur posisi kiri ke kanan.</p>
+          <p class="muted small" style="margin-top:-6px">Bagan disusun dari jabatan. Perangkat desa: Kepala Desa, Sekretaris Desa, lalu Kepala Seksi, Kepala Urusan, dan Kepala Dusun. Lembaga: Pembina, Ketua, Wakil Ketua, Sekretaris dan Bendahara, lalu bidang/seksi/Pokja/kader, lalu Anggota. Angka urutan mengatur posisi kiri ke kanan.</p>
           <div class="row wrap-row">
             <label class="grow">Kelompok<select id="p-kelompok"><option value="pemerintah">Perangkat desa</option><option value="bpd">BPD</option><option value="lembaga">Lembaga desa</option></select></label>
+            <label class="grow" id="p-lembaga-wrap" hidden>Lembaga<select id="p-lembaga"></select></label>
             <label>Urutan<input type="number" id="p-urutan" value="10" min="0" style="width:100px"></label>
           </div>
           <label>Foto (opsional)<input type="file" id="p-foto" accept="image/*"></label>
@@ -218,6 +220,27 @@
     </div>
 
     <!-- LAYANAN -->
+    <div class="tab" id="t-lembaga" hidden>
+      <div class="grid-admin">
+        <form id="f-lembaga" class="panel form">
+          <h2 id="lembaga-title">Tambah lembaga</h2>
+          <input type="hidden" id="lb-id">
+          <label>Nama lengkap<input id="lb-nama" required maxlength="120" placeholder="mis. Lembaga Pemberdayaan Masyarakat"></label>
+          <div class="row wrap-row">
+            <label class="grow">Singkatan<input id="lb-singkatan" maxlength="30" placeholder="mis. LPM"></label>
+            <label>Urutan<input type="number" id="lb-urutan" value="10" min="0" style="width:100px"></label>
+          </div>
+          <label>Keterangan singkat (tampil di kartu)<textarea id="lb-ringkasan" rows="2" maxlength="300"></textarea></label>
+          <label>Profil lengkap<textarea id="lb-profil" rows="8" placeholder="Paragraf dipisah baris kosong.&#10;&#10;Tugas:&#10;- Baris yang diawali tanda minus menjadi daftar&#10;- Contoh tugas kedua"></textarea></label>
+          <label>Logo (opsional)<input type="file" id="lb-foto" accept="image/*"></label>
+          <div class="preview" id="lb-preview"></div>
+          <p class="muted small">Pengurus tiap lembaga diisi di tab <b>Perangkat</b>: pilih kelompok "Lembaga desa" (atau "BPD"), lalu pilih lembaganya.</p>
+          <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="lb-reset">Batal / Baru</button></div>
+        </form>
+        <div class="panel"><h2>Daftar lembaga</h2><div id="l-lembaga" class="list"></div></div>
+      </div>
+    </div>
+
     <div class="tab" id="t-layanan" hidden>
       <div class="grid-admin">
         <form id="f-layanan" class="panel form">

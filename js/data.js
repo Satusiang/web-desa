@@ -46,9 +46,21 @@ const TINGKAT = [
   { k: 'kadus',  judul: 'Kepala Dusun',           cocok: /dusun|kadus|kewilayahan/i },
   { k: 'lain',   judul: 'Staf dan pelaksana',     cocok: /./ },
 ];
-function baganPerangkat(list) {
-  const isi = TINGKAT.map(t => ({ ...t, orang: [] }));
+// Bagan pengurus lembaga. Urutan di bawah = urutan pencocokan jabatan; "urut" = urutan tampil dari atas.
+// ("Ketua Pokja I" masuk bidang, bukan ketua, karena bidang dicocokkan lebih dulu.)
+const TINGKAT_LEMBAGA = [
+  { k: 'pembina', urut: 0, judul: 'Pembina dan penasihat', cocok: /pembina|penasihat|penasehat|pelindung/i },
+  { k: 'wakil',   urut: 2, judul: 'Wakil Ketua',             cocok: /wakil/i },
+  { k: 'bidang',  urut: 4, judul: 'Bidang, seksi, dan kader', cocok: /seksi|bidang|pokja|koordinator|kader|divisi|departemen/i },
+  { k: 'sekben',  urut: 3, judul: 'Sekretaris dan Bendahara', cocok: /sekretaris|sekertaris|bendahara/i },
+  { k: 'ketua',   urut: 1, judul: 'Ketua',                   cocok: /ketua|kepala|komandan|kasatlinmas/i },
+  { k: 'anggota', urut: 5, judul: 'Anggota',                 cocok: /anggota/i },
+  { k: 'lain',    urut: 6, judul: 'Pengurus lainnya',        cocok: /./ },
+];
+function baganPerangkat(list, tingkat = TINGKAT) {
+  const isi = tingkat.map((t, i) => ({ urut: i, ...t, orang: [] }));
   list.forEach(p => isi.find(t => t.cocok.test(String(p.jabatan || ''))).orang.push(p));
+  isi.sort((a, b) => a.urut - b.urut);
   return `<div class="bagan">${isi.filter(t => t.orang.length).map(t => `
     <div class="bagan-tingkat t-${t.k}${t.orang.length > 1 ? ' banyak' : ''}">
       ${t.judul && t.orang.length > 1 ? `<p class="bagan-judul">${esc(t.judul)}</p>` : ''}
@@ -196,10 +208,125 @@ async function perangkat(sb) {
   if (!data) return;
   const grup = (k) => data.filter(p => p.kelompok === k);
   if ($('#perangkat') && grup('pemerintah').length) $('#perangkat').innerHTML = baganPerangkat(grup('pemerintah'));
-  if (!$('#bpd')) return; // halaman Perangkat Desa tidak memuat BPD dan lembaga
-  $('#bpd').innerHTML = grup('bpd').length ? grup('bpd').map(kartuOrang).join('') : '<p class="empty">Data BPD menyusul.</p>';
-  $('#lembaga').innerHTML = grup('lembaga').length ? grup('lembaga').map(kartuOrang).join('') : '<p class="empty">Data lembaga desa menyusul.</p>';
 }
+
+// ---------- lembaga desa: daftar kartu dan halaman rincian (lembaga.html?l=kode) ----------
+// Isi bawaan sama dengan data awal di supabase/schema.sql, dipakai bila database belum bisa dihubungi.
+const LEMBAGA_BAWAAN = [
+  {
+  "kode": "bpd",
+  "nama": "Badan Permusyawaratan Desa",
+  "singkatan": "BPD",
+  "ringkasan": "Wakil warga yang membahas peraturan desa bersama Kepala Desa, menampung aspirasi, dan mengawasi kinerja pemerintah desa.",
+  "profil": "Badan Permusyawaratan Desa (BPD) adalah lembaga yang anggotanya merupakan wakil penduduk desa berdasarkan keterwakilan wilayah dan dipilih secara demokratis.\n\nFungsi BPD:\n- Membahas dan menyepakati rancangan peraturan desa bersama Kepala Desa\n- Menampung dan menyalurkan aspirasi masyarakat desa\n- Melakukan pengawasan kinerja Kepala Desa",
+  "urutan": 1
+  },
+  {
+  "kode": "pkk",
+  "nama": "Tim Penggerak Pemberdayaan dan Kesejahteraan Keluarga",
+  "singkatan": "TP PKK",
+  "ringkasan": "Menggerakkan program kesejahteraan keluarga melalui kelompok kerja (Pokja) PKK.",
+  "profil": "Tim Penggerak PKK desa adalah mitra pemerintah desa dalam memberdayakan keluarga. Kegiatannya dijalankan melalui kelompok kerja (Pokja).\n\nKelompok kerja:\n- Pokja I: penghayatan dan pengamalan Pancasila serta gotong royong\n- Pokja II: pendidikan, keterampilan, dan pengembangan kehidupan berkoperasi\n- Pokja III: pangan, sandang, serta perumahan dan tata laksana rumah tangga\n- Pokja IV: kesehatan, kelestarian lingkungan hidup, dan perencanaan sehat",
+  "urutan": 2
+  },
+  {
+  "kode": "lpm",
+  "nama": "Lembaga Pemberdayaan Masyarakat",
+  "singkatan": "LPM",
+  "ringkasan": "Mitra pemerintah desa dalam menyusun rencana pembangunan dan menggerakkan swadaya gotong royong warga.",
+  "profil": "Lembaga Pemberdayaan Masyarakat (LPM) membantu pemerintah desa dalam pembangunan dan pemberdayaan masyarakat.\n\nTugas LPM:\n- Menampung dan menyalurkan aspirasi warga dalam perencanaan pembangunan\n- Menggerakkan swadaya dan gotong royong masyarakat\n- Ikut melaksanakan dan mengawasi kegiatan pembangunan desa",
+  "urutan": 3
+  },
+  {
+  "kode": "karang-taruna",
+  "nama": "Karang Taruna",
+  "singkatan": "Karang Taruna",
+  "ringkasan": "Organisasi kepemudaan desa untuk pengembangan generasi muda dan kesejahteraan sosial.",
+  "profil": "Karang Taruna adalah organisasi sosial kemasyarakatan tempat pengembangan generasi muda desa, tumbuh atas dasar kesadaran dan tanggung jawab sosial dari, oleh, dan untuk masyarakat.\n\nKegiatan:\n- Pembinaan dan pengembangan generasi muda\n- Kegiatan sosial, olahraga, seni, dan budaya\n- Usaha ekonomi produktif pemuda",
+  "urutan": 4
+  },
+  {
+  "kode": "posyandu",
+  "nama": "Pos Pelayanan Terpadu",
+  "singkatan": "Posyandu",
+  "ringkasan": "Layanan kesehatan dasar untuk ibu, bayi, balita, dan lansia yang dijalankan kader dari dan untuk warga.",
+  "profil": "Posyandu adalah lembaga kemasyarakatan yang membantu pemerintah desa memberikan pelayanan dasar kepada warga, terutama di bidang kesehatan.\n\nLayanan:\n- Penimbangan dan pemantauan tumbuh kembang balita\n- Imunisasi dan kesehatan ibu hamil\n- Pemeriksaan kesehatan lansia\n- Penyuluhan gizi dan kesehatan keluarga",
+  "urutan": 5
+  },
+  {
+  "kode": "linmas",
+  "nama": "Satuan Perlindungan Masyarakat",
+  "singkatan": "Satlinmas",
+  "ringkasan": "Membantu menjaga ketenteraman, ketertiban, dan penanganan bencana di lingkungan desa.",
+  "profil": "Satuan Perlindungan Masyarakat (Satlinmas) desa beranggotakan warga yang dilatih untuk membantu menjaga ketenteraman dan ketertiban masyarakat.\n\nTugas:\n- Membantu pengamanan kegiatan masyarakat dan pemilihan umum\n- Membantu penanganan bencana dan keadaan darurat\n- Ikut menjaga keamanan dan ketertiban lingkungan",
+  "urutan": 6
+  },
+  {
+  "kode": "rt-rw",
+  "nama": "Rukun Tetangga dan Rukun Warga",
+  "singkatan": "RT/RW",
+  "ringkasan": "Lembaga terdekat dengan warga: membantu pelayanan pemerintahan, pendataan, dan menjaga kerukunan lingkungan.",
+  "profil": "Rukun Tetangga (RT) dan Rukun Warga (RW) adalah lembaga kemasyarakatan yang paling dekat dengan warga.\n\nTugas:\n- Membantu pelayanan pemerintahan, seperti surat pengantar\n- Membantu pendataan penduduk\n- Menjaga kerukunan, keamanan, dan kebersihan lingkungan\n- Menggerakkan gotong royong warga",
+  "urutan": 7
+  }
+  ];
+// Teks profil: paragraf dipisah baris kosong; baris yang diawali "- " menjadi daftar.
+function teksProfil(t) {
+  return String(t || '').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).map(b => {
+    const baris = b.split('\n').map(x => x.trim()).filter(Boolean);
+    const awal = [], daftar = [];
+    baris.forEach(x => (x.startsWith('- ') ? daftar : (daftar.length ? daftar : awal)).push(x.replace(/^- /, '')));
+    return (awal.length ? `<p>${awal.map(esc).join('<br>')}</p>` : '') + (daftar.length ? `<ul class="daftar-titik">${daftar.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '');
+  }).join('');
+}
+const lencana = (l) => {
+  const logo = safeUrl(l.foto_url);
+  const s = l.singkatan || l.nama;
+  // Singkatan huruf besar yang pendek (BPD, PKK, RT/RW) ditampilkan utuh; selain itu inisial.
+  const caps = (s.match(/[A-Z][A-Z/]{1,4}/g) || []).sort((a, b) => b.length - a.length)[0];
+  return `<span class="lencana">${logo ? `<img src="${esc(logo)}" alt="">` : esc(caps || inisial(s).slice(0, 3))}</span>`;
+};
+function pengurusLembaga(orang, kode) {
+  return orang.filter(p => p.lembaga === kode || (kode === 'bpd' && !p.lembaga && p.kelompok === 'bpd'));
+}
+function tampilLembaga(daftar, orang, dariDb) {
+  const kode = new URLSearchParams(location.search).get('l');
+  const l = kode && daftar.find(x => x.kode === kode);
+  const jejak = $('.kepala-hal .jejak'), h1 = $('.kepala-hal h1'), sub = $('.kepala-hal h1 + p');
+  if (l) {
+    const nama = l.singkatan && l.singkatan !== l.nama ? `${l.nama} (${l.singkatan})` : l.nama;
+    document.title = `${l.singkatan || l.nama} – Lembaga Desa Karang Bahagia`;
+    jejak.innerHTML = `<a href="index.html">Beranda</a> / <a href="profil.html">Profil</a> / <a href="lembaga.html">Lembaga Desa</a> / ${esc(l.singkatan || l.nama)}`;
+    h1.textContent = nama; sub.textContent = l.ringkasan || '';
+    const pengurus = pengurusLembaga(orang, l.kode);
+    $('#isi-lembaga').innerHTML = `<a class="kembali" href="lembaga.html">Semua lembaga desa</a>
+      <div class="lembaga-rinci">
+        <div class="lembaga-profil">${lencana(l)}<h2>Profil</h2>${teksProfil(l.profil) || '<p class="empty">Profil lembaga belum diisi.</p>'}</div>
+        <div class="lembaga-susunan"><h2>Susunan pengurus</h2>
+          ${pengurus.length ? baganPerangkat(pengurus, TINGKAT_LEMBAGA) : `<p class="empty">${dariDb ? 'Susunan pengurus belum diisi.' : 'Memuat susunan pengurus…'}</p>`}</div>
+      </div>`;
+    return;
+  }
+  if (kode && dariDb) { $('#isi-lembaga').innerHTML = '<a class="kembali" href="lembaga.html">Semua lembaga desa</a><p class="empty">Lembaga ini tidak ditemukan.</p>'; return; }
+  const lain = orang.filter(p => p.kelompok !== 'pemerintah' && !p.lembaga && p.kelompok !== 'bpd');
+  $('#isi-lembaga').innerHTML = `<div class="lembaga-grid">${daftar.map(x => {
+    const n = pengurusLembaga(orang, x.kode).length;
+    return `<a class="lembaga-kartu" href="lembaga.html?l=${encodeURIComponent(x.kode)}">${lencana(x)}
+      <span class="lk-isi"><b>${esc(x.singkatan || x.nama)}</b>${x.singkatan && x.singkatan !== x.nama ? `<small>${esc(x.nama)}</small>` : ''}
+      <span class="lk-ring">${esc(x.ringkasan)}</span>
+      <em>${n ? `${n} pengurus · ` : ''}Lihat profil dan susunan &rarr;</em></span></a>`;
+  }).join('')}</div>
+  ${lain.length ? `<h2 style="margin-top:40px">Pengurus lembaga lainnya</h2><div class="team">${lain.map(kartuOrang).join('')}</div>` : ''}`;
+}
+async function lembagaHal(sb) {
+  const [l, p] = await Promise.all([
+    sb.from('lembaga').select('*').order('urutan').order('nama'),
+    sb.from('perangkat').select('*').neq('kelompok', 'pemerintah').order('urutan').order('dibuat'),
+  ]);
+  if (l.error && p.error) return;
+  tampilLembaga(l.data?.length ? l.data : LEMBAGA_BAWAAN, p.data || [], true);
+}
+if (page === 'lembaga') tampilLembaga(LEMBAGA_BAWAAN, [], false);
 
 async function layanan(sb) {
   const { data } = await sb.from('layanan').select('*').order('urutan').order('dibuat');
@@ -412,7 +539,7 @@ function gagalMuat() {
     const { data, error } = await sb.from('pengaturan').select('kunci,nilai');
     if (error) { console.warn('Gagal menghubungi database', error); gagalMuat(); return; }
     if (data) terapkanPengaturan(Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])));
-    const fn = { beranda, perangkat, lembaga: perangkat, layanan, transparansi, berita, umkm, lapor }[page];
+    const fn = { beranda, perangkat, lembaga: lembagaHal, layanan, transparansi, berita, umkm, lapor }[page];
     if (fn) await fn(sb);
   } catch (e) { console.warn('Gagal memuat data', e); }
 })();
