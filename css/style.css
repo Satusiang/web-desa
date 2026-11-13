@@ -86,13 +86,17 @@ header.site{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px s
 .sampul-foto::before{content:"";position:absolute;left:-14px;right:14px;top:22px;bottom:0;background:var(--kuning);border-radius:10px 10px 0 0}
 .sampul-foto img{position:relative;display:block;height:min(470px,64vh);width:auto;max-width:100%;object-fit:cover;object-position:top;border-radius:10px 10px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
 @media (max-width:900px){
-  .sampul .wrap{grid-template-columns:1fr;gap:4px}
-  .sampul-foto{order:-1;width:min(60%,250px);justify-self:center;margin:30px 0 14px}
+  /* HP: judul dan alamat dulu, lalu foto Kepala Desa, lalu sambutan */
+  .sampul .wrap{grid-template-columns:1fr;gap:0;padding-top:30px;padding-bottom:40px}
+  .sampul-teks{display:contents}
+  .sampul-label{order:1;justify-self:start;font-size:.72rem}
+  .sampul h1{order:2}
+  .sampul-lokasi{order:3;margin-bottom:0}
+  .sampul-foto{order:4;width:min(60%,250px);justify-self:center;margin:26px 0 34px}
+  .sampul blockquote{order:5}
+  .sampul-nama{order:6}
   .sampul-foto img{border-radius:10px;width:100%;height:auto}
-  .sampul-label{font-size:.72rem}
-  .sampul-teks{padding:20px 0 40px}
   .sampul-foto::before{bottom:-12px;border-radius:10px}
-  .sampul-teks{padding-bottom:40px}
 }
 @media print{.sampul{background:#fff;color:#000}.sampul h1,.sampul blockquote,.sampul-nama b{color:#000}}
 
