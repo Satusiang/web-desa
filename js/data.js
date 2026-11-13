@@ -113,8 +113,7 @@ function terapkanPengaturan(cfg) {
     $('#foto-beranda img').src = fb;
     $('#foto-beranda img').alt = tp.keterangan_foto || 'Desa Karang Bahagia';
     $('#foto-beranda figcaption').textContent = tp.keterangan_foto || '';
-    $('#foto-beranda').hidden = false;
-    $('#papan').hidden = true;
+    $('#foto-beranda').hidden = false; // tampil di atas papan pengumuman
   }
   const fotoKades = safeUrl(tp.foto_kades);
   if (fotoKades && $('#sampul-foto')) {
@@ -202,7 +201,7 @@ function seoArtikel(b, foto) {
 // ---------- per halaman ----------
 async function beranda(sb) {
   const [b, a, ap] = await Promise.all([
-    sb.from('berita').select('id,judul,isi,kategori,tanggal,foto_url').eq('terbit', true).order('tanggal', { ascending: false }).limit(3),
+    sb.from('berita').select('id,judul,isi,kategori,tanggal,foto_url').eq('terbit', true).order('tanggal', { ascending: false }).limit(4),
     sb.from('agenda').select('*').gte('tanggal', today()).order('tanggal').limit(4),
     sb.from('apbdes').select('*').order('tahun', { ascending: false }).limit(1),
   ]);

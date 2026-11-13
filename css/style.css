@@ -97,8 +97,15 @@ header.site{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px s
 @media print{.sampul{background:#fff;color:#000}.sampul h1,.sampul blockquote,.sampul-nama b{color:#000}}
 
 /* beranda: pembuka */
-.pembuka{padding:52px 0 40px;border-bottom:1px solid var(--garis)}
-.pembuka .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:start}
+/* beranda: kabar terkini (kiri) + papan pengumuman (kanan) */
+.beranda-kabar .wrap{display:grid;grid-template-columns:1.55fr 1fr;gap:44px;align-items:start}
+.beranda-kabar #sisi-pembuka{display:grid;gap:18px}
+.beranda-kabar .news.daftar article a{grid-template-columns:140px 1fr}
+.beranda-kabar .news.daftar .img.kosong{display:block;background:var(--padi-muda) url(../assets/logo-bekasi.png) center/34px no-repeat;opacity:.85}
+/* beranda: pilihan keperluan warga */
+.pembuka .keperluan{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px;border-top:0}
+.pembuka .keperluan a{height:100%;background:#fff;border:1px solid var(--garis);border-radius:6px;padding:14px 16px}
+.pembuka .keperluan a:hover{border-color:var(--padi);background:#fff;box-shadow:0 6px 16px rgba(29,68,40,.08)}
 .pembuka h1,.pembuka .judul-keperluan{font-size:clamp(1.9rem,3.8vw,2.6rem);font-weight:800;line-height:1;letter-spacing:-.035em;color:var(--padi-tua)}
 .pembuka .lokasi{font-size:1.05rem;color:var(--redup);margin:12px 0 30px}
 .keperluan{list-style:none;border-top:1px solid var(--garis)}
@@ -483,9 +490,8 @@ footer.site .copy{border-top:1px solid rgba(255,255,255,.15);margin-top:26px;pad
 #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--padi-tua);color:#fff;padding:12px 18px;border-radius:6px;font-size:.93rem;z-index:99;max-width:90vw;text-align:center;display:none}
 
 @media (max-width:900px){
-  .pembuka .wrap,.dua,footer.site .cols,.sambutan{grid-template-columns:1fr}
+  .pembuka .wrap,.dua,footer.site .cols,.sambutan,.beranda-kabar .wrap{grid-template-columns:1fr}
   .pembuka .wrap{gap:30px}
-  .pembuka{padding-top:34px}
   .sambutan .foto{width:140px}
   .news,.umkm,.proyek{grid-template-columns:1fr 1fr}
   .team{grid-template-columns:1fr 1fr 1fr}
@@ -507,7 +513,7 @@ footer.site .copy{border-top:1px solid rgba(255,255,255,.15);margin-top:26px;pad
 @media (max-width:600px){
   body{font-size:16px}
   .news,.umkm,.proyek{grid-template-columns:1fr}
-  .news.daftar article a{grid-template-columns:100px 1fr;gap:14px}
+  .news.daftar article a,.beranda-kabar .news.daftar article a{grid-template-columns:100px 1fr;gap:14px}
   .team{grid-template-columns:1fr 1fr}
   .apb-ringkas{grid-template-columns:1fr}
   .apb-ringkas div + div{border-left:0;padding-left:0;border-top:1px solid var(--garis)}
