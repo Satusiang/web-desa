@@ -1,7 +1,12 @@
 // Header, menu, footer, dan tombol WhatsApp yang sama di semua halaman.
 (function () {
+  // Item ketiga (opsional) = sub-menu: tampil sebagai menu tarik-turun.
   const MENU = [
-    ['profil.html', 'Profil'],
+    ['profil.html', 'Profil', [
+      ['sejarah.html', 'Sejarah Desa'],
+      ['profil.html', 'Profil Desa'],
+      ['perangkat.html', 'Perangkat Desa'],
+    ]],
     ['layanan.html', 'Layanan'],
     ['transparansi.html', 'Transparansi'],
     ['berita.html', 'Berita'],
@@ -10,6 +15,14 @@
     ['kontak.html', 'Kontak'],
   ];
   const page = document.body.dataset.page || '';
+  const aktif = (h) => h.startsWith(page + '.');
+  const panah = '<svg class="panah" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>';
+  function itemMenu([h, t, sub], i) {
+    if (!sub) return `<li><a href="${h}" class="${aktif(h) ? 'active' : ''}"${aktif(h) ? ' aria-current="page"' : ''}>${t}</a></li>`;
+    const id = 'sub-' + i, adaAktif = sub.some(([sh]) => aktif(sh));
+    return `<li class="ada-sub"><button type="button" class="sub-btn${adaAktif ? ' active' : ''}" aria-expanded="false" aria-controls="${id}">${t}${panah}</button>
+      <ul class="sub" id="${id}">${sub.map(([sh, st]) => `<li><a href="${sh}" class="${aktif(sh) ? 'active' : ''}"${aktif(sh) ? ' aria-current="page"' : ''}>${st}</a></li>`).join('')}</ul></li>`;
+  }
 
   const hdr = document.createElement('div');
   hdr.innerHTML = `
@@ -18,7 +31,7 @@
     <div class="wrap nav">
       <a class="brand" href="index.html"><img src="assets/logo-bekasi.png" alt="Logo Kabupaten Bekasi">
         <span><b>Desa Karang Bahagia</b><small>Kabupaten Bekasi</small></span></a>
-      <ul id="menu">${MENU.map(([h, t]) => `<li><a href="${h}" class="${h.startsWith(page + '.') ? 'active' : ''}">${t}</a></li>`).join('')}</ul>
+      <ul id="menu">${MENU.map(itemMenu).join('')}</ul>
       <button class="menu-btn" aria-controls="menu">Menu</button>
     </div>
   </header>`;
@@ -68,6 +81,22 @@
   const mb = document.querySelector('.menu-btn');
   mb.setAttribute('aria-expanded', 'false');
   mb.addEventListener('click', () => { const o = document.getElementById('menu').classList.toggle('open'); mb.setAttribute('aria-expanded', String(o)); });
+
+  // Sub-menu: buka/tutup dengan klik atau Enter; tutup dengan Esc atau klik di luar.
+  const tutupSub = (kecuali) => document.querySelectorAll('.ada-sub.open').forEach(li => {
+    if (li === kecuali) return;
+    li.classList.remove('open'); li.querySelector('.sub-btn').setAttribute('aria-expanded', 'false');
+  });
+  document.querySelectorAll('.sub-btn').forEach(b => b.addEventListener('click', () => {
+    const li = b.parentElement, buka = !li.classList.contains('open');
+    tutupSub(li); li.classList.toggle('open', buka); b.setAttribute('aria-expanded', String(buka));
+  }));
+  document.addEventListener('click', e => { if (!e.target.closest('.ada-sub')) tutupSub(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const li = document.querySelector('.ada-sub.open');
+    if (li) { tutupSub(); li.querySelector('.sub-btn').focus(); }
+  });
 
   // Elemen dengan data-wa="pesan" membuka WhatsApp kantor desa (nomor dari pengaturan admin)
   document.addEventListener('click', e => {

@@ -178,7 +178,7 @@ async function beranda(sb) {
   }
 }
 
-async function profil(sb) {
+async function perangkat(sb) {
   const { data } = await sb.from('perangkat').select('*').order('urutan').order('dibuat');
   if (!data) return;
   const grup = (k) => data.filter(p => p.kelompok === k);
@@ -386,7 +386,7 @@ function gagalMuat() {
     const { data, error } = await sb.from('pengaturan').select('kunci,nilai');
     if (error) { console.warn('Gagal menghubungi database', error); gagalMuat(); return; }
     if (data) terapkanPengaturan(Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])));
-    const fn = { beranda, profil, layanan, transparansi, berita, ekonomi, lapor }[page];
+    const fn = { beranda, perangkat, layanan, transparansi, berita, ekonomi, lapor }[page];
     if (fn) await fn(sb);
   } catch (e) { console.warn('Gagal memuat data', e); }
 })();
