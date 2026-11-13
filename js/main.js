@@ -91,6 +91,17 @@
   mb.setAttribute('aria-expanded', 'false');
   mb.addEventListener('click', () => { const o = document.getElementById('menu').classList.toggle('open'); mb.setAttribute('aria-expanded', String(o)); });
 
+  // Sambutan Kepala Desa di beranda: di HP dilipat ±3 baris dengan tombol "Baca sambutan lengkap"
+  const sambutan = document.querySelector('.sampul blockquote'), tombolSambutan = document.querySelector('.sampul-lengkap');
+  if (sambutan && tombolSambutan && matchMedia('(max-width:900px)').matches) {
+    sambutan.classList.add('terlipat');
+    tombolSambutan.addEventListener('click', () => {
+      const buka = sambutan.classList.toggle('terlipat') === false;
+      tombolSambutan.setAttribute('aria-expanded', String(buka));
+      tombolSambutan.textContent = buka ? 'Tutup sambutan' : 'Baca sambutan lengkap';
+    });
+  }
+
   // Sub-menu: buka/tutup dengan klik atau Enter; tutup dengan Esc atau klik di luar.
   const tutupSub = (kecuali) => document.querySelectorAll('.ada-sub.open').forEach(li => {
     if (li === kecuali) return;

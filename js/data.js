@@ -19,7 +19,7 @@ function kartuBerita(b) {
   const foto = safeUrl(b.foto_url);
   return `<article><a href="berita.html?id=${encodeURIComponent(b.id)}">
     <div class="img${foto ? '' : ' kosong'}">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : ''}</div>
-    <div><p class="meta"><time datetime="${esc(b.tanggal)}">${esc(tanggalID(b.tanggal))}</time>, ${esc(b.kategori || '')}</p>
+    <div><p class="meta"><time datetime="${esc(b.tanggal)}">${esc(tanggalID(b.tanggal))}</time>${b.kategori ? ' · ' + esc(b.kategori) : ''}</p>
     <h3>${esc(b.judul)}</h3><p>${esc(ringkas(b.isi))}</p></div></a></article>`;
 }
 function kartuAgenda(a) {
