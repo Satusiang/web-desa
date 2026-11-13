@@ -313,6 +313,40 @@ table.tbl{width:100%;border-collapse:collapse;background:#fff}
 @media (max-width:900px){.lembaga-rinci{grid-template-columns:1fr;gap:28px}}
 @media (max-width:600px){.lembaga-grid{grid-template-columns:1fr}.bagan .t-ketua:not(.banyak) .person{width:min(60%,220px)}}
 
+/* wilayah: dusun, RW, RT */
+.wilayah{display:grid;gap:18px}
+.wl-dusun{display:grid;grid-template-columns:230px 1fr;gap:0;background:#fff;border:1px solid var(--garis);border-radius:6px;overflow:hidden}
+.wl-kadus{background:var(--padi-tua);color:#fff;padding:18px;display:flex;flex-direction:column;gap:12px}
+.wl-judul{font-weight:800;font-size:1.15rem;color:var(--kuning)}
+.wl-kadus .wl-orang b{color:#fff}.wl-kadus .wl-orang small{color:#cfe0d3}
+.wl-kadus .wl-orang.kosong b{color:#E3ECE4;font-style:italic}
+#bagian-wilayah{scroll-margin-top:68px}
+.wl-rw-daftar{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;padding:18px 18px 18px 30px;position:relative}
+.wl-rw-daftar::before{content:"";position:absolute;left:14px;top:18px;bottom:18px;border-left:2px dashed var(--padi)}
+.wl-rw{border:1px solid var(--garis);border-radius:6px;padding:12px;background:var(--padi-muda);scroll-margin-top:90px}
+.wl-rw:target{outline:3px solid var(--kuning)}
+.wl-rw-kepala{display:flex;flex-direction:column;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--garis)}
+.wl-label{display:inline-block;align-self:flex-start;background:var(--padi);color:#fff;font-weight:800;font-size:.8rem;letter-spacing:.03em;padding:2px 8px;border-radius:3px}
+.wl-label.kecil{background:#fff;color:var(--padi-tua);border:1px solid var(--garis);min-width:62px;text-align:center}
+.wl-orang{display:flex;align-items:center;gap:10px;min-width:0}
+.wl-orang b{display:block;color:var(--padi-tua);line-height:1.25}
+.wl-orang small{display:block;color:var(--redup);font-size:.82rem;line-height:1.3}
+.wl-orang.kosong b{color:var(--redup);font-weight:600}
+.wl-ava{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:#fff;border:2px solid var(--kuning);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--padi);overflow:hidden}
+.wl-ava img{width:100%;height:100%;object-fit:cover}
+.wl-ava .siluet{width:60%;height:60%;fill:#C9D6C5}
+.wl-kadus .wl-ava{width:56px;height:56px}
+.wl-rt{list-style:none;display:grid;gap:6px;margin-top:10px}
+.wl-rt li{display:flex;align-items:center;gap:10px;font-size:.93rem}
+.wl-nama.kosong{color:var(--redup)}
+.wl-kosong{margin-top:8px}
+@media (max-width:700px){
+  .wl-dusun{grid-template-columns:1fr}
+  .wl-kadus{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .wl-rw-daftar{grid-template-columns:1fr;padding:14px 14px 14px 26px}
+  .wl-rw-daftar::before{left:12px}
+}
+
 /* ekonomi: pintu masuk, daftar toko, koperasi */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .pintu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
