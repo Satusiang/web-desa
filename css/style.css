@@ -168,6 +168,15 @@ section{padding:56px 0}
 .angka.dua-kolom div:nth-child(2n){border-right:0}
 .angka.dua-kolom div:nth-child(n+3){border-top:1px solid var(--garis)}
 .angka.dua-kolom div:nth-child(odd){padding-left:0}
+.angka.tiga-kolom{grid-template-columns:repeat(3,1fr)}
+.angka.tiga-kolom div:first-child{padding-left:0}
+@media (max-width:600px){
+  .angka.tiga-kolom>div,.angka.tiga-kolom>div:nth-child(n){padding-left:12px;border-top:0;border-right:1px solid var(--garis)}
+  .angka.tiga-kolom>div:first-child{padding-left:0}
+  .angka.tiga-kolom>div:last-child{border-right:0}
+  .angka.tiga-kolom small{font-size:.8rem}
+}
+.angka-judul{font-size:1rem;color:var(--padi-tua);margin:22px 0 8px}
 .angka.dua-kolom div:nth-child(even){padding-left:18px}
 
 /* berita */

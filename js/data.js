@@ -131,7 +131,10 @@ function terapkanPengaturan(cfg) {
     document.querySelectorAll('[data-bind="misi"]').forEach(el => { el.innerHTML = p.misi.map(m => `<li>${esc(m)}</li>`).join(''); });
   }
   const fmt = (v) => (v === '' || v == null) ? '' : (isFinite(Number(String(v).replace(/\./g, ''))) ? Number(String(v).replace(/\./g, '')).toLocaleString('id-ID') : v);
-  ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt'].forEach(x => setText('st-' + x, fmt(s[x])));
+  // Jumlah dusun/RW/RT: dari Statistik; bila kosong, dihitung dari susunan di menu Wilayah
+  const wl = cfg.wilayah?.struktur?.length ? strukturWilayah(cfg.wilayah) : null;
+  const hitung = wl ? { dusun: wl.length, rw: wl.reduce((n, d) => n + d.rw.length, 0), rt: wl.reduce((n, d) => n + d.rw.reduce((m, r) => m + r.rt, 0), 0) } : {};
+  ['penduduk', 'kk', 'laki', 'perempuan', 'dusun', 'rw', 'rt'].forEach(x => setText('st-' + x, fmt(s[x]) || (hitung[x] ? String(hitung[x]) : '')));
   ['luas', 'sawah', 'darat'].forEach(x => setText('st-' + x, s[x]));
   if (s.tahun_data) setText('st-tahun', `Data Pemerintah Desa Karang Bahagia, tahun ${s.tahun_data}.`);
 
