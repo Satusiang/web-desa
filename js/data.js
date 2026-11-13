@@ -206,8 +206,83 @@ async function beranda(sb) {
 async function perangkat(sb) {
   const { data } = await sb.from('perangkat').select('*').order('urutan').order('dibuat');
   if (!data) return;
-  const grup = (k) => data.filter(p => p.kelompok === k);
-  if ($('#perangkat') && grup('pemerintah').length) $('#perangkat').innerHTML = baganPerangkat(grup('pemerintah'));
+  // Kepala Dusun tampil di bagian Wilayah, bukan di bagan atas, supaya tidak dobel.
+  const pemerintah = data.filter(p => p.kelompok === 'pemerintah' && !nomorDusun(p.jabatan));
+  if ($('#perangkat') && pemerintah.length) $('#perangkat').innerHTML = baganPerangkat(pemerintah);
+  if ($('#wilayah')) $('#wilayah').innerHTML = baganWilayah(data);
+}
+
+// ---------- wilayah: dusun, RW, RT ----------
+// Pembagian dusun diisi di admin (Pengaturan -> Pembagian wilayah), satu dusun per baris: "Dusun I: 001, 002".
+const WILAYAH_BAWAAN = 'Dusun I: 001, 002\nDusun II: 003\nDusun III: 004';
+let pengaturanCache = {};
+const ROMAWI = { i: 1, v: 5, x: 10 };
+function angkaRomawi(s) {
+  s = String(s).toLowerCase();
+  if (/^\d+$/.test(s)) return Number(s);
+  let n = 0;
+  for (let i = 0; i < s.length; i++) { const a = ROMAWI[s[i]], b = ROMAWI[s[i + 1]] || 0; n += a < b ? -a : a; }
+  return n;
+}
+const nomorDusun = (t) => { const m = String(t || '').match(/(?:dusun|kadus)\s*\.?\s*([ivx]+|\d+)\b/i); return m ? angkaRomawi(m[1]) : 0; };
+// "Ketua RT 001/RW 002", "KETUA RT.001/002" -> {rt:1, rw:2}; "Ketua RW 002" -> {rw:2}
+function nomorRtRw(t) {
+  const s = String(t || '');
+  const rt = s.match(/\bRT\s*\.?\s*0*(\d+)\s*\/\s*(?:RW\s*\.?\s*)?0*(\d+)/i);
+  if (rt) return { rt: Number(rt[1]), rw: Number(rt[2]) };
+  const rt2 = s.match(/\bRT\s*\.?\s*0*(\d+)\b.*?\bRW\s*\.?\s*0*(\d+)/i);
+  if (rt2) return { rt: Number(rt2[1]), rw: Number(rt2[2]) };
+  const rw = s.match(/\bRW\s*\.?\s*0*(\d+)/i);
+  return rw ? { rw: Number(rw[1]) } : null;
+}
+function pembagianWilayah() {
+  const teks = (pengaturanCache.wilayah || {}).teks || WILAYAH_BAWAAN;
+  return teks.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const i = l.indexOf(':');
+    const nama = (i > 0 ? l.slice(0, i) : l).trim();
+    const rw = i > 0 ? (l.slice(i + 1).match(/\d+/g) || []).map(Number) : [];
+    return { nama, nomor: nomorDusun(nama) || 0, rw };
+  });
+}
+const tiga = (n) => String(n).padStart(3, '0');
+function orangKecil(p, jabatan) {
+  const foto = safeUrl(p?.foto_url);
+  const kosong = !p || !String(p.nama || '').trim() || /^[\s\-–—.]+$/.test(p.nama);
+  return `<div class="wl-orang${kosong ? ' kosong' : ''}"><span class="wl-ava">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : kosong ? SILUET : esc(inisial(p.nama))}</span>
+    <span><b>${kosong ? 'Belum diisi' : esc(p.nama)}</b><small>${esc(jabatan)}</small></span></div>`;
+}
+function baganWilayah(semua) {
+  const dusun = pembagianWilayah();
+  const kadus = semua.filter(p => p.kelompok === 'pemerintah' && nomorDusun(p.jabatan));
+  const rtrw = semua.filter(p => p.lembaga === 'rt-rw' || (p.kelompok === 'lembaga' && nomorRtRw(p.jabatan)));
+  const peta = new Map(); // rw -> {ketua, rt: Map(rt -> orang)}
+  const lain = [];
+  rtrw.forEach(p => {
+    const n = nomorRtRw(p.jabatan);
+    if (!n) { lain.push(p); return; }
+    if (!peta.has(n.rw)) peta.set(n.rw, { ketua: null, rt: new Map() });
+    const w = peta.get(n.rw);
+    if (n.rt) { if (!w.rt.has(n.rt)) w.rt.set(n.rt, p); } else if (!w.ketua) w.ketua = p;
+  });
+  const kartuRw = (no) => {
+    const w = peta.get(no) || { ketua: null, rt: new Map() };
+    const rts = [...w.rt.entries()].sort((a, b) => a[0] - b[0]);
+    return `<div class="wl-rw" id="rw-${tiga(no)}"><div class="wl-rw-kepala"><span class="wl-label">RW ${tiga(no)}</span>${orangKecil(w.ketua, 'Ketua RW ' + tiga(no))}</div>
+      ${rts.length ? `<ul class="wl-rt">${rts.map(([rt, p]) => `<li><span class="wl-label kecil">RT ${tiga(rt)}</span><span class="wl-nama${/^[\s\-–—.]*$/.test(p.nama || '') ? ' kosong' : ''}">${/^[\s\-–—.]*$/.test(p.nama || '') ? 'Belum diisi' : esc(p.nama)}</span></li>`).join('')}</ul>`
+        : '<p class="small muted wl-kosong">Data RT belum diisi.</p>'}</div>`;
+  };
+  const dipakai = new Set(dusun.flatMap(d => d.rw));
+  const sisa = [...peta.keys()].filter(n => !dipakai.has(n)).sort((a, b) => a - b);
+  const blok = dusun.map((d, i) => {
+    const kd = kadus.find(p => nomorDusun(p.jabatan) === (d.nomor || i + 1));
+    return `<div class="wl-dusun"><div class="wl-kadus"><span class="wl-judul">${esc(d.nama)}</span>${orangKecil(kd, kd ? kd.jabatan : 'Kepala ' + d.nama)}</div>
+      <div class="wl-rw-daftar">${d.rw.length ? d.rw.map(kartuRw).join('') : '<p class="small muted">Belum ada RW yang dicatat untuk dusun ini.</p>'}</div></div>`;
+  }).join('');
+  const kadusLepas = kadus.filter(p => !dusun.some((d, i) => (d.nomor || i + 1) === nomorDusun(p.jabatan)));
+  return `<div class="wilayah">${blok}
+    ${sisa.length ? `<div class="wl-dusun"><div class="wl-kadus"><span class="wl-judul">RW lainnya</span></div><div class="wl-rw-daftar">${sisa.map(kartuRw).join('')}</div></div>` : ''}</div>
+    ${kadusLepas.length || lain.length ? `<div class="team" style="margin-top:24px">${[...kadusLepas, ...lain].map(kartuOrang).join('')}</div>` : ''}
+    <p class="small muted" style="margin-top:14px">Garis putus-putus menandakan koordinasi: Kepala Dusun adalah perangkat desa, sedangkan RT dan RW adalah lembaga kemasyarakatan yang dipilih warga.</p>`;
 }
 
 // ---------- lembaga desa: daftar kartu dan halaman rincian (lembaga.html?l=kode) ----------
@@ -287,7 +362,8 @@ const lencana = (l) => {
   return `<span class="lencana">${logo ? `<img src="${esc(logo)}" alt="">` : esc(caps || inisial(s).slice(0, 3))}</span>`;
 };
 function pengurusLembaga(orang, kode) {
-  return orang.filter(p => p.lembaga === kode || (kode === 'bpd' && !p.lembaga && p.kelompok === 'bpd'));
+  return orang.filter(p => p.lembaga === kode || (kode === 'bpd' && !p.lembaga && p.kelompok === 'bpd')
+    || (kode === 'rt-rw' && !p.lembaga && p.kelompok === 'lembaga' && nomorRtRw(p.jabatan)));
 }
 function tampilLembaga(daftar, orang, dariDb) {
   const kode = new URLSearchParams(location.search).get('l');
@@ -303,12 +379,13 @@ function tampilLembaga(daftar, orang, dariDb) {
       <div class="lembaga-rinci">
         <div class="lembaga-profil">${lencana(l)}<h2>Profil</h2>${teksProfil(l.profil) || '<p class="empty">Profil lembaga belum diisi.</p>'}</div>
         <div class="lembaga-susunan"><h2>Susunan pengurus</h2>
-          ${pengurus.length ? baganPerangkat(pengurus, TINGKAT_LEMBAGA) : `<p class="empty">${dariDb ? 'Susunan pengurus belum diisi.' : 'Memuat susunan pengurus…'}</p>`}</div>
+          ${l.kode === 'rt-rw' && dariDb ? baganWilayah(orang) + '<p class="small" style="margin-top:8px"><a href="perangkat.html#wilayah">Lihat juga di halaman Perangkat Desa</a></p>'
+            : pengurus.length ? baganPerangkat(pengurus, TINGKAT_LEMBAGA) : `<p class="empty">${dariDb ? 'Susunan pengurus belum diisi.' : 'Memuat susunan pengurus…'}</p>`}</div>
       </div>`;
     return;
   }
   if (kode && dariDb) { $('#isi-lembaga').innerHTML = '<a class="kembali" href="lembaga.html">Semua lembaga desa</a><p class="empty">Lembaga ini tidak ditemukan.</p>'; return; }
-  const lain = orang.filter(p => p.kelompok !== 'pemerintah' && !p.lembaga && p.kelompok !== 'bpd');
+  const lain = orang.filter(p => p.kelompok === 'lembaga' && !p.lembaga && !nomorRtRw(p.jabatan));
   $('#isi-lembaga').innerHTML = `<div class="lembaga-grid">${daftar.map(x => {
     const n = pengurusLembaga(orang, x.kode).length;
     return `<a class="lembaga-kartu" href="lembaga.html?l=${encodeURIComponent(x.kode)}">${lencana(x)}
@@ -321,7 +398,7 @@ function tampilLembaga(daftar, orang, dariDb) {
 async function lembagaHal(sb) {
   const [l, p] = await Promise.all([
     sb.from('lembaga').select('*').order('urutan').order('nama'),
-    sb.from('perangkat').select('*').neq('kelompok', 'pemerintah').order('urutan').order('dibuat'),
+    sb.from('perangkat').select('*').order('urutan').order('dibuat'),
   ]);
   if (l.error && p.error) return;
   tampilLembaga(l.data?.length ? l.data : LEMBAGA_BAWAAN, p.data || [], true);
@@ -538,7 +615,7 @@ function gagalMuat() {
   try {
     const { data, error } = await sb.from('pengaturan').select('kunci,nilai');
     if (error) { console.warn('Gagal menghubungi database', error); gagalMuat(); return; }
-    if (data) terapkanPengaturan(Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])));
+    if (data) { pengaturanCache = Object.fromEntries(data.map(r => [r.kunci, r.nilai || {}])); terapkanPengaturan(pengaturanCache); }
     const fn = { beranda, perangkat, lembaga: lembagaHal, layanan, transparansi, berita, umkm, lapor }[page];
     if (fn) await fn(sb);
   } catch (e) { console.warn('Gagal memuat data', e); }

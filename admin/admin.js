@@ -363,7 +363,7 @@ previewFile($('#s-foto-beranda'), $('#s-prev-beranda'));
 async function muatPengaturan() {
   const rows = check(await sb.from('pengaturan').select('kunci,nilai'));
   const c = Object.fromEntries(rows.map(r => [r.kunci, r.nilai || {}]));
-  const k = c.kontak || {}, p = c.profil || {}, s = c.statistik || {}, pg = c.pengumuman || {}, bd = c.bumdes || {}, kd = c.kopdes || {};
+  const k = c.kontak || {}, p = c.profil || {}, s = c.statistik || {}, pg = c.pengumuman || {}, bd = c.bumdes || {}, kd = c.kopdes || {}, wl = c.wilayah || {};
   $('#s-pg-aktif').checked = !!pg.aktif; $('#s-pg-teks').value = pg.teks || ''; $('#s-pg-link').value = pg.tautan || '';
   $('#s-wa').value = k.wa ? waLocal(k.wa).replace(/-/g, '') : ''; $('#s-telp').value = k.telp || ''; $('#s-email').value = k.email || '';
   $('#s-alamat').value = k.alamat || ''; $('#s-jam').value = k.jam || ''; $('#s-maps').value = k.maps_embed || '';
@@ -381,6 +381,7 @@ async function muatPengaturan() {
   $('#s-st-tahun').value = s.tahun_data || '';
   $('#s-bd-nama').value = bd.nama || ''; $('#s-bd-url').value = bd.url || ''; $('#s-bd-ring').value = bd.ringkasan || '';
   $('#s-kd-nama').value = kd.nama || ''; $('#s-kd-ring').value = kd.ringkasan || ''; $('#s-kd-alamat').value = kd.alamat || '';
+  $('#s-wilayah').value = wl.teks || '';
   $('#s-kd-wa').value = kd.wa || ''; $('#s-kd-unit').value = kd.unit || ''; $('#s-kd-pengurus').value = kd.pengurus || '';
 }
 $('#f-pengaturan').addEventListener('submit', e => {
@@ -409,6 +410,7 @@ $('#f-pengaturan').addEventListener('submit', e => {
       { kunci: 'profil', diperbarui: now, nilai: { kades: v('#s-kades'), sambutan: v('#s-sambutan'), sejarah: v('#s-sejarah'), visi: v('#s-visi'), misi: $('#s-misi').value.split('\n').map(s => s.trim()).filter(Boolean), batas_utara: v('#s-bu'), batas_selatan: v('#s-bs'), batas_timur: v('#s-bt'), batas_barat: v('#s-bb') } },
       { kunci: 'statistik', diperbarui: now, nilai: statistik },
       { kunci: 'bumdes', diperbarui: now, nilai: { nama: v('#s-bd-nama'), url: v('#s-bd-url'), ringkasan: v('#s-bd-ring') } },
+      { kunci: 'wilayah', diperbarui: now, nilai: { teks: $('#s-wilayah').value.trim() } },
       { kunci: 'kopdes', diperbarui: now, nilai: { nama: v('#s-kd-nama'), ringkasan: v('#s-kd-ring'), alamat: v('#s-kd-alamat'), wa: v('#s-kd-wa'), unit: v('#s-kd-unit'), pengurus: v('#s-kd-pengurus') } },
     ]));
     if ((fBer || $('#s-hapus-beranda').checked) && lamaBer) await hapusFile(lamaBer);

@@ -9,7 +9,7 @@ Dipakai sampai domain resmi `.desa.id` selesai diurus. Cara kerjanya sama dengan
 | `index.html` | Beranda: pengumuman, layanan cepat, berita, agenda, angka desa, ringkasan APBDes |
 | `sejarah.html` | Sejarah dan asal-usul desa (menu Profil → Sejarah Desa) |
 | `profil.html` | Profil desa: visi-misi, wilayah, batas, data penduduk (agregat), peta desa, lokasi kantor (menu Profil → Profil Desa) |
-| `perangkat.html` | Bagan perangkat desa (menu Profil → Perangkat Desa) |
+| `perangkat.html` | Bagan perangkat desa dan bagan wilayah dusun → RW → RT (menu Profil → Perangkat Desa). Pembagian RW per dusun diatur di admin → Pengaturan → Pembagian wilayah |
 | `lembaga.html` | Daftar lembaga desa (BPD, PKK, LPM, dll.); klik untuk profil dan bagan pengurus (`lembaga.html?l=kode`). Lembaga diatur di admin → tab Lembaga, pengurusnya di tab Perangkat |
 | `layanan.html` | Alur dan syarat layanan surat |
 | `transparansi.html` | APBDes per tahun (grafik + tabel), kegiatan pembangunan, dokumen publik |

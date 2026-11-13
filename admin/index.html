@@ -205,7 +205,7 @@
           <input type="hidden" id="p-id">
           <label>Nama<input id="p-nama" required maxlength="80"></label>
           <label>Jabatan<input id="p-jabatan" required maxlength="80" placeholder="mis. Sekretaris Desa, Kepala Seksi Pemerintahan, Kepala Urusan Keuangan, Kepala Dusun I"></label>
-          <p class="muted small" style="margin-top:-6px">Bagan disusun dari jabatan. Perangkat desa: Kepala Desa, Sekretaris Desa, lalu Kepala Seksi, Kepala Urusan, dan Kepala Dusun. Lembaga: Pembina, Ketua, Wakil Ketua, Sekretaris dan Bendahara, lalu bidang/seksi/Pokja/kader, lalu Anggota. Angka urutan mengatur posisi kiri ke kanan.</p>
+          <p class="muted small" style="margin-top:-6px">Bagan disusun dari jabatan. Perangkat desa: Kepala Desa, Sekretaris Desa, lalu Kepala Seksi dan Kepala Urusan; Kepala Dusun ("Kepala Dusun I") tampil di bagian Wilayah. RT/RW: kelompok Lembaga desa, lembaga RT/RW, jabatan "Ketua RW 001" atau "Ketua RT 001/RW 001". Lembaga: Pembina, Ketua, Wakil Ketua, Sekretaris dan Bendahara, lalu bidang/seksi/Pokja/kader, lalu Anggota. Angka urutan mengatur posisi kiri ke kanan.</p>
           <div class="row wrap-row">
             <label class="grow">Kelompok<select id="p-kelompok"><option value="pemerintah">Perangkat desa</option><option value="bpd">BPD</option><option value="lembaga">Lembaga desa</option></select></label>
             <label class="grow" id="p-lembaga-wrap" hidden>Lembaga<select id="p-lembaga"></select></label>
@@ -319,6 +319,9 @@
           <div class="row wrap-row">
             <label class="grow">Batas timur<input id="s-bt"></label><label class="grow">Batas barat<input id="s-bb"></label>
           </div>
+          <h2 style="margin-top:12px">Pembagian wilayah (dusun dan RW)</h2>
+          <label>Satu dusun per baris, format "Nama dusun: nomor RW"<textarea id="s-wilayah" rows="4" placeholder="Dusun I: 001, 002&#10;Dusun II: 003&#10;Dusun III: 004"></textarea></label>
+          <p class="muted small" style="margin-top:-6px">Dipakai untuk bagan wilayah di halaman Perangkat Desa. Kosongkan untuk memakai contoh di atas. Kepala Dusun diisi di tab Perangkat (jabatan "Kepala Dusun I"); ketua RW dan RT diisi di tab Perangkat dengan kelompok Lembaga desa, lembaga RT/RW (jabatan "Ketua RW 001" atau "Ketua RT 001/RW 001").</p>
           <h2 style="margin-top:12px">Statistik (angka agregat saja)</h2>
           <div class="row wrap-row">
             <label class="grow">Penduduk<input id="s-st-penduduk" inputmode="numeric"></label>
