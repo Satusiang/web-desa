@@ -139,3 +139,5 @@ header.site .who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:
 .judul-tab h1{color:var(--hijau-2);font-size:1.4rem;line-height:1.2}
 .judul-tab p{margin:0}
 @media (max-width:600px){.menu-grid{gap:10px}.menu-grid>.kartu-menu{width:calc(50% - 5px);padding:16px 10px}.kartu-menu small{font-size:.8rem}}
+.btn.small{min-height:36px}
+.btn.mini{min-height:32px}
