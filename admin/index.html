@@ -71,27 +71,34 @@
     <div class="banner-skema" id="banner-skema" hidden>
       <b>Database perlu diperbarui.</b> Sebagian fitur baru (Lembaga, pengelompokan RT/RW, atau Pengumuman) belum aktif karena tabelnya belum ada di database.
       Buka Supabase → <b>SQL Editor</b> → <b>New query</b>, tempel seluruh isi <code>supabase/schema.sql</code> terbaru, klik <b>Run</b>, lalu muat ulang halaman ini.
-      Data yang sudah ada tidak terhapus. Sementara itu, tab lain tetap bisa dipakai.
+      Data yang sudah ada tidak terhapus. Sementara itu, menu lain tetap bisa dipakai.
     </div>
-    <div class="tabs" role="tablist">
-      <a class="tab-surat" href="surat.html">📄 Layanan Surat</a>
-      <button data-tab="pengaduan" class="on">📣 Pengaduan <span class="count" id="cnt-aduan"></span></button>
-      <button data-tab="pengumuman">📢 Pengumuman</button>
-      <button data-tab="berita">📰 Berita</button>
-      <button data-tab="agenda">📅 Agenda</button>
-      <button data-tab="apbdes">📊 APBDes</button>
-      <button data-tab="pembangunan">🏗️ Pembangunan</button>
-      <button data-tab="dokumen">📁 Dokumen</button>
-      <button data-tab="perangkat">👥 Perangkat</button>
-      <button data-tab="wilayah">🏘️ Wilayah (Dusun/RW/RT)</button>
-      <button data-tab="lembaga">🏛️ Lembaga</button>
-      <button data-tab="layanan">📋 Syarat Layanan</button>
-      <button data-tab="umkm">🛍️ UMKM</button>
-      <button data-tab="pengaturan">⚙️ Pengaturan</button>
+    <nav class="menu-admin" id="menu-admin" aria-label="Menu admin">
+      <div class="menu-kepala"><h1>Menu admin</h1><p class="muted">Pilih bagian yang ingin dikelola.</p></div>
+      <div class="menu-grid">
+        <a class="kartu-menu" href="surat.html"><span class="ikon w-oranye"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span><b>Layanan Surat</b><small>Buat &amp; cetak surat</small></a>
+        <button type="button" class="kartu-menu" data-tab="pengaduan"><span class="ikon w-bata"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></span><b>Pengaduan</b><small>Laporan warga</small><span class="count" id="cnt-aduan"></span></button>
+        <button type="button" class="kartu-menu" data-tab="pengumuman"><span class="ikon w-oranye"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><b>Pengumuman</b><small>Info &amp; surat edaran</small></button>
+        <button type="button" class="kartu-menu" data-tab="berita"><span class="ikon w-biru"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 16h3"/></svg></span><b>Berita</b><small>Kabar kegiatan desa</small></button>
+        <button type="button" class="kartu-menu" data-tab="agenda"><span class="ikon w-biru"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3"/></svg></span><b>Agenda</b><small>Jadwal kegiatan</small></button>
+        <button type="button" class="kartu-menu" data-tab="apbdes"><span class="ikon w-hijau"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1.1 1.7 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg></span><b>APBDes</b><small>Anggaran desa</small></button>
+        <button type="button" class="kartu-menu" data-tab="pembangunan"><span class="ikon w-hijau"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M6 21l3-12h6l3 12M7.5 15h9"/><path d="M10 9V5h4v4"/></svg></span><b>Pembangunan</b><small>Kegiatan fisik</small></button>
+        <button type="button" class="kartu-menu" data-tab="dokumen"><span class="ikon w-hijau"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><b>Dokumen</b><small>Dokumen publik (PPID)</small></button>
+        <button type="button" class="kartu-menu" data-tab="perangkat"><span class="ikon w-teal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg></span><b>Perangkat</b><small>Susunan &amp; foto pengurus</small></button>
+        <button type="button" class="kartu-menu" data-tab="wilayah"><span class="ikon w-teal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></span><b>Wilayah</b><small>Dusun, RW, dan RT</small></button>
+        <button type="button" class="kartu-menu" data-tab="lembaga"><span class="ikon w-teal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M4 10h16M12 3l8 5H4z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/></svg></span><b>Lembaga</b><small>BPD, PKK, dan lainnya</small></button>
+        <button type="button" class="kartu-menu" data-tab="layanan"><span class="ikon w-teal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="m9 12 2 2 4-4"/></svg></span><b>Syarat Layanan</b><small>Panduan mengurus surat</small></button>
+        <button type="button" class="kartu-menu" data-tab="umkm"><span class="ikon w-hijau-muda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 12a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 9z"/><path d="M5 12v8h14v-8M10 20v-5h4v5"/></svg></span><b>UMKM</b><small>Toko &amp; usaha warga</small></button>
+        <button type="button" class="kartu-menu" data-tab="pengaturan"><span class="ikon w-abu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><b>Pengaturan</b><small>Profil, kontak, tampilan</small></button>
+      </div>
+    </nav>
+    <div class="judul-tab" id="judul-tab" hidden>
+      <button type="button" class="btn alt small" id="kembali-menu">&larr; Semua menu</button>
+      <div><h1 id="judul-tab-teks"></h1><p class="muted" id="judul-tab-ket"></p></div>
     </div>
 
     <!-- PENGADUAN -->
-    <div class="tab" id="t-pengaduan">
+    <div class="tab" id="t-pengaduan" hidden>
       <div class="panel">
         <h2>Pengaduan warga</h2>
         <div class="row wrap-row">
@@ -245,7 +252,7 @@
           <div class="preview" id="p-preview"></div>
           <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="p-reset">Batal / Baru</button></div>
         </form>
-        <div class="panel"><h2>Susunan</h2><p class="muted small">Kepala Dusun, ketua RW, dan ketua RT lebih mudah diisi sekaligus di tab <b>Wilayah (Dusun/RW/RT)</b>. Di sini bisa menambah foto atau mengubah satu per satu.</p><div id="l-perangkat" class="list"></div></div>
+        <div class="panel"><h2>Susunan</h2><p class="muted small">Kepala Dusun, ketua RW, dan ketua RT lebih mudah diisi sekaligus di menu <b>Wilayah</b>. Di sini bisa menambah foto atau mengubah satu per satu.</p><div id="l-perangkat" class="list"></div></div>
       </div>
     </div>
 
@@ -277,7 +284,7 @@
           <label>Profil lengkap<textarea id="lb-profil" rows="8" placeholder="Paragraf dipisah baris kosong.&#10;&#10;Tugas:&#10;- Baris yang diawali tanda minus menjadi daftar&#10;- Contoh tugas kedua"></textarea></label>
           <label>Logo (opsional)<input type="file" id="lb-foto" accept="image/*"></label>
           <div class="preview" id="lb-preview"></div>
-          <p class="muted small">Pengurus tiap lembaga diisi di tab <b>Perangkat</b>: pilih kelompok "Lembaga desa" (atau "BPD"), lalu pilih lembaganya.</p>
+          <p class="muted small">Pengurus tiap lembaga diisi di menu <b>Perangkat</b>: pilih kelompok "Lembaga desa" (atau "BPD"), lalu pilih lembaganya.</p>
           <div class="row"><button class="btn" type="submit">Simpan</button><button class="btn alt" type="button" id="lb-reset">Batal / Baru</button></div>
         </form>
         <div class="panel"><h2>Daftar lembaga</h2><div id="l-lembaga" class="list"></div></div>
@@ -331,7 +338,7 @@
     <div class="tab" id="t-pengaturan" hidden>
       <form id="f-pengaturan" class="grid-admin">
         <div class="panel form">
-          <p class="muted small">Pengumuman (termasuk pita kuning di atas website) sekarang diatur di tab <b>📢 Pengumuman</b>.</p>
+          <p class="muted small">Pengumuman (termasuk pita kuning di atas website) sekarang diatur di menu <b>Pengumuman</b>.</p>
           <h2>Foto beranda</h2>
           <p class="muted">Foto asli desa: kantor desa, sawah, kegiatan warga. Tanpa foto, beranda menampilkan papan pengumuman.</p>
           <label>Unggah foto (mendatar)<input type="file" id="s-foto-beranda" accept="image/*"></label>
