@@ -203,7 +203,8 @@
           <h2 id="perangkat-title">Tambah orang</h2>
           <input type="hidden" id="p-id">
           <label>Nama<input id="p-nama" required maxlength="80"></label>
-          <label>Jabatan<input id="p-jabatan" required maxlength="80" placeholder="mis. Sekretaris Desa, Ketua BPD, Ketua PKK"></label>
+          <label>Jabatan<input id="p-jabatan" required maxlength="80" placeholder="mis. Sekretaris Desa, Kepala Seksi Pemerintahan, Kepala Urusan Keuangan, Kepala Dusun I"></label>
+          <p class="muted small" style="margin-top:-6px">Bagan perangkat desa disusun dari jabatan: Kepala Desa paling atas, lalu Sekretaris Desa, lalu Kepala Seksi, Kepala Urusan, dan Kepala Dusun. Angka urutan mengatur posisi kiri ke kanan.</p>
           <div class="row wrap-row">
             <label class="grow">Kelompok<select id="p-kelompok"><option value="pemerintah">Perangkat desa</option><option value="bpd">BPD</option><option value="lembaga">Lembaga desa</option></select></label>
             <label>Urutan<input type="number" id="p-urutan" value="10" min="0" style="width:100px"></label>

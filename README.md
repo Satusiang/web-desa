@@ -21,6 +21,8 @@ Dipakai sampai domain resmi `.desa.id` selesai diurus. Cara kerjanya sama dengan
 
 File pendukung: `css/style.css`, `js/config.js` (alamat & kunci Supabase), `js/main.js` (header, menu, footer),
 `js/data.js` (mengisi halaman dari database), `js/sb.js` (penghubung Supabase), `supabase/schema.sql`.
+Pustaka Supabase disimpan di `js/vendor/` dengan versi terkunci supaya website tidak bergantung pada CDN luar.
+Untuk memperbarui versinya, ganti berkas di `js/vendor/` dan ubah `SUPABASE_VERSI` di `js/sb.js`.
 
 Selama `js/config.js` masih kosong, website menampilkan isi bawaan dan mode admin belum aktif.
 Layanan Surat tetap bisa dipakai tanpa database.
@@ -39,7 +41,8 @@ Gunakan **project Supabase baru** (terpisah dari BUM Desa, karena nama tabelnya 
 `schema.sql` aman dijalankan ulang setiap ada pembaruan; data yang sudah ada tidak terhapus.
 
 ## Deploy ke Cloudflare
-Header keamanan di `_headers`. Konfigurasi worker dibuat otomatis oleh Cloudflare saat build.
+Header keamanan di `_headers`. Konfigurasi worker ada di `wrangler.jsonc` (situs statis, tanpa build),
+termasuk blok `previews` yang dibutuhkan untuk versi pratinjau tiap branch/pull request.
 1. Cloudflare Dashboard → **Workers & Pages → Create → Import a repository** → pilih `web-desa`.
 2. Build command dikosongkan, output directory `/` (atau kosong). Klik **Deploy**.
 3. Setiap push ke branch `main` ter-deploy otomatis.
@@ -56,7 +59,9 @@ Header keamanan di `_headers`. Konfigurasi worker dibuat otomatis oleh Cloudflar
 - Tahap berikutnya: database penduduk dan Layanan Surat dipindah ke server lokal di kantor desa.
 
 ## Pengaduan
-Pengaduan dibatasi maksimal 20 laporan per 10 menit dan laporan kembar ditolak. Ada juga isian jebakan untuk robot spam.
+Anti-spam pengaduan: tiap pengirim maksimal 3 laporan per 10 menit dan 10 laporan per hari (dikenali dari kode acak
+alamat IP, alamat aslinya tidak disimpan), seluruh website maksimal 60 laporan per 10 menit, laporan kembar ditolak
+selama sehari, dan ada isian jebakan untuk robot spam. Setelah memperbarui `schema.sql`, jalankan ulang di SQL Editor.
 Kategori "Permohonan informasi publik" dipakai untuk permintaan informasi sesuai UU KIP.
 Warga mengirim laporan tanpa login lewat fungsi `kirim_pengaduan`; nama dan nomor HP hanya terlihat petugas.
 Petugas mengubah status, menulis tanggapan, dan memilih laporan mana yang tampil publik di tab **Pengaduan**.

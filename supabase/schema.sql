@@ -143,6 +143,22 @@ create table if not exists public.pengaduan (
 
 create index if not exists pengaduan_dibuat_idx on public.pengaduan (dibuat desc);
 
+-- Sidik pengirim: kode acak dari alamat internet (IP) pengirim, untuk membatasi spam per pengirim.
+-- Alamat IP aslinya tidak disimpan, dan sidik tidak pernah ditampilkan di website.
+alter table public.pengaduan add column if not exists sidik text not null default '';
+create index if not exists pengaduan_sidik_idx on public.pengaduan (sidik, dibuat desc);
+
+-- Garam rahasia untuk sidik, dibuat acak sekali. Tidak bisa dibaca dari website.
+create table if not exists public.rahasia (
+  kunci text primary key,
+  nilai text not null
+);
+alter table public.rahasia enable row level security;
+revoke all on public.rahasia from anon, authenticated;
+insert into public.rahasia (kunci, nilai)
+values ('garam_sidik', md5(random()::text || clock_timestamp()::text) || md5(random()::text))
+on conflict (kunci) do nothing;
+
 -- ---------- Hak akses Data API ----------
 grant usage on schema public to anon, authenticated;
 grant select on public.pengaturan, public.berita, public.agenda, public.perangkat, public.layanan,
@@ -174,29 +190,65 @@ drop policy if exists "baca publik" on public.umkm;
 create policy "baca publik" on public.umkm for select using (tampil = true or public.is_admin());
 
 -- ---------- Fungsi pengaduan untuk publik ----------
+-- Sidik pengirim dari header permintaan. Supabase berada di belakang Cloudflare,
+-- jadi cf-connecting-ip berisi alamat asli pengirim dan tidak bisa dipalsukan.
+create or replace function public.sidik_pengirim()
+returns text language plpgsql stable security definer set search_path = public as $$
+declare h json; ip text;
+begin
+  begin
+    h := coalesce(nullif(current_setting('request.headers', true), ''), '{}')::json;
+  exception when others then h := '{}'::json;
+  end;
+  ip := trim(coalesce(nullif(h->>'cf-connecting-ip', ''), nullif(h->>'x-real-ip', ''),
+                      nullif(split_part(coalesce(h->>'x-forwarded-for', ''), ',', 1), ''), ''));
+  if ip = '' then return ''; end if;
+  return md5((select nilai from public.rahasia where kunci = 'garam_sidik') || ':' || ip);
+end $$;
+revoke all on function public.sidik_pengirim() from public, anon, authenticated;
+
 -- Kirim pengaduan, hasilnya nomor tiket.
+-- Anti-spam:
+--   * per pengirim: maksimal 3 laporan per 10 menit dan 10 laporan per hari;
+--   * seluruh website: maksimal 60 laporan per 10 menit (pengaman terakhir bila banjir spam);
+--   * laporan kembar (isi sama, beda huruf besar/kecil atau spasi) ditolak selama 1 hari.
 create or replace function public.kirim_pengaduan(p_nama text, p_kontak text, p_kategori text, p_isi text, p_lokasi text)
 returns text language plpgsql security definer set search_path = public as $$
-declare t text;
+declare t text; s text; isi_norm text;
 begin
   if coalesce(trim(p_isi), '') = '' or length(p_isi) > 2000 then raise exception 'Isi laporan wajib diisi (maks 2000 karakter)'; end if;
+  if length(trim(p_isi)) < 10 then raise exception 'Isi laporan terlalu pendek. Jelaskan masalahnya sedikit lebih lengkap.'; end if;
   if coalesce(trim(p_kategori), '') = '' or length(p_kategori) > 40 then raise exception 'Kategori tidak valid'; end if;
   if length(coalesce(p_nama,'')) > 80 or length(coalesce(p_kontak,'')) > 40 or length(coalesce(p_lokasi,'')) > 200 then
     raise exception 'Isian terlalu panjang';
   end if;
-  -- Anti-spam: batasi jumlah laporan masuk dan tolak laporan kembar
-  if (select count(*) from public.pengaduan where dibuat > now() - interval '10 minutes') >= 20 then
+
+  s := public.sidik_pengirim();
+  if s <> '' then
+    if (select count(*) from public.pengaduan where sidik = s and dibuat > now() - interval '10 minutes') >= 3 then
+      raise exception 'Anda sudah mengirim beberapa laporan dalam waktu singkat. Coba lagi 10 menit lagi.';
+    end if;
+    if (select count(*) from public.pengaduan where sidik = s and dibuat > now() - interval '1 day') >= 10 then
+      raise exception 'Batas laporan hari ini dari perangkat Anda sudah tercapai. Coba lagi besok atau hubungi kantor desa.';
+    end if;
+  end if;
+  if (select count(*) from public.pengaduan where dibuat > now() - interval '10 minutes') >= 60 then
     raise exception 'Terlalu banyak laporan masuk. Coba lagi beberapa menit lagi.';
   end if;
-  if exists (select 1 from public.pengaduan where isi = trim(p_isi) and dibuat > now() - interval '1 day') then
+
+  isi_norm := lower(regexp_replace(trim(p_isi), '\s+', ' ', 'g'));
+  if exists (select 1 from public.pengaduan
+             where dibuat > now() - interval '1 day'
+               and lower(regexp_replace(isi, '\s+', ' ', 'g')) = isi_norm) then
     raise exception 'Laporan yang sama sudah kami terima hari ini.';
   end if;
+
   loop
     t := 'LP-' || to_char(now() at time zone 'Asia/Jakarta', 'YYMMDD') || '-' || upper(substr(md5(random()::text), 1, 4));
     exit when not exists (select 1 from public.pengaduan where tiket = t);
   end loop;
-  insert into public.pengaduan (tiket, nama, kontak, kategori, isi, lokasi)
-  values (t, coalesce(trim(p_nama),''), coalesce(trim(p_kontak),''), trim(p_kategori), trim(p_isi), coalesce(trim(p_lokasi),''));
+  insert into public.pengaduan (tiket, nama, kontak, kategori, isi, lokasi, sidik)
+  values (t, coalesce(trim(p_nama),''), coalesce(trim(p_kontak),''), trim(p_kategori), trim(p_isi), coalesce(trim(p_lokasi),''), s);
   return t;
 end $$;
 

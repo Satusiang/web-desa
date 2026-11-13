@@ -1,5 +1,10 @@
 // Penghubung ke Supabase, dipakai halaman publik dan halaman admin.
-const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// Pustaka Supabase disimpan di website sendiri (js/vendor/) dengan versi terkunci,
+// jadi website tidak bergantung pada CDN luar. CDN hanya dipakai bila berkas lokal gagal dimuat.
+// Untuk memperbarui: ganti berkas di js/vendor/ dan ubah SUPABASE_VERSI di bawah.
+const SUPABASE_VERSI = '2.118.0';
+const SUPABASE_LOKAL = new URL(`./vendor/supabase-${SUPABASE_VERSI}.js`, import.meta.url).href;
+const SUPABASE_CDN = `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@${SUPABASE_VERSI}/dist/umd/supabase.js`;
 
 let clientPromise = null;
 
@@ -8,15 +13,40 @@ export function isConfigured() {
   return Boolean(window.__SB_MOCK || (c.supabaseUrl && c.supabaseAnonKey));
 }
 
+function muatSkrip(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = () => (window.supabase?.createClient ? resolve(window.supabase) : reject(new Error('Pustaka Supabase tidak lengkap')));
+    s.onerror = () => { s.remove(); reject(new Error('Gagal memuat ' + src)); };
+    document.head.appendChild(s);
+  });
+}
+
+function muatPustaka() {
+  if (window.supabase?.createClient) return Promise.resolve(window.supabase);
+  return muatSkrip(SUPABASE_LOKAL).catch(() => muatSkrip(SUPABASE_CDN));
+}
+
 export function getClient() {
   if (window.__SB_MOCK) return Promise.resolve(window.__SB_MOCK); // untuk pengujian
   if (!isConfigured()) return Promise.resolve(null);
   if (!clientPromise) {
     const c = window.DESA_CONFIG;
-    clientPromise = import(SUPABASE_JS).then(({ createClient }) =>
-      createClient(c.supabaseUrl, c.supabaseAnonKey));
+    clientPromise = muatPustaka()
+      .then(({ createClient }) => createClient(c.supabaseUrl, c.supabaseAnonKey))
+      .catch(e => { clientPromise = null; throw e; }); // boleh dicoba lagi nanti
   }
   return clientPromise;
+}
+
+// Galat jaringan dari Supabase ("Failed to fetch") diganti kalimat yang dimengerti warga.
+export function pesanGalat(error) {
+  const m = String(error?.message || error || '');
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(m)) {
+    return 'Tidak dapat terhubung ke server desa. Periksa koneksi internet, lalu coba lagi.';
+  }
+  return m || 'Terjadi kesalahan. Coba lagi beberapa saat lagi.';
 }
 
 // ---------- utilitas tampilan ----------
