@@ -58,6 +58,22 @@ const TINGKAT_LEMBAGA = [
   { k: 'anggota', urut: 5, judul: 'Anggota',                 cocok: /anggota/i },
   { k: 'lain',    urut: 6, judul: 'Pengurus lainnya',        cocok: /./ },
 ];
+// Organigram lembaga: kotak (pita jabatan + foto + nama) dihubungkan garis.
+// Baris: Pembina -> Ketua -> Wakil, Sekretaris, Bendahara -> bidang/Pokja/kader -> Anggota -> lainnya.
+function organigram(list) {
+  const baris = [['pembina'], ['ketua'], ['wakil', 'sekben'], ['bidang'], ['anggota'], ['lain']];
+  const tingkat = (p) => TINGKAT_LEMBAGA.find(t => t.cocok.test(String(p.jabatan || ''))).k;
+  const kotak = (p) => {
+    const foto = safeUrl(p.foto_url), kosong = !String(p.nama || '').trim() || /^[\s\-–—.]+$/.test(p.nama);
+    return `<div class="og-kotak${tingkat(p) === 'ketua' ? ' utama' : ''}"><div class="og-jabatan">${esc(p.jabatan)}</div>
+      <div class="og-isi"><span class="og-foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : kosong ? SILUET : esc(inisial(p.nama))}</span>
+      <b class="${kosong ? 'kosong' : ''}">${kosong ? 'Belum diisi' : esc(p.nama)}</b></div></div>`;
+  };
+  // urutkan dalam baris: wakil dulu, lalu sekretaris, bendahara; selebihnya menurut angka urutan
+  const urutSek = (p) => /wakil/i.test(p.jabatan) ? 0 : /sekretaris|sekertaris/i.test(p.jabatan) ? 1 : /bendahara/i.test(p.jabatan) ? 2 : 3;
+  const isi = baris.map(ks => list.filter(p => ks.includes(tingkat(p))).sort((a, b) => urutSek(a) - urutSek(b) || (a.urutan || 0) - (b.urutan || 0))).filter(r => r.length);
+  return `<div class="organigram">${isi.map((r, i) => `${i ? '<div class="og-sambung"></div>' : ''}<div class="og-baris${r.length > 1 ? ' banyak' : ''}${r.length === 6 ? ' padat' : ''}${r.length > 6 ? ' panel' : ''}">${r.map(kotak).join('')}</div>`).join('')}</div>`;
+}
 function baganPerangkat(list, tingkat = TINGKAT) {
   const isi = tingkat.map((t, i) => ({ urut: i, ...t, orang: [] }));
   list.forEach(p => isi.find(t => t.cocok.test(String(p.jabatan || ''))).orang.push(p));
@@ -223,12 +239,15 @@ function baganWilayah(semua) {
   const cariRw = (rw) => rtrw.find(p => { const n = nomorRtRw(p.jabatan); return n && n.rw === rw && !n.rt; });
   const cariRt = (rt, rw) => rtrw.find(p => { const n = nomorRtRw(p.jabatan); return n && n.rw === rw && n.rt === rt; });
   const nama = (p) => kosongNama(p) ? '<span class="ph-kosong">Belum diisi</span>' : esc(p.nama);
-  const simpulRt = (rt, rw) => `<div class="ph-rt"><div class="ph-simpul ph-t"><span class="ph-label">RT ${tiga(rt)}</span><span class="ph-nama">${nama(cariRt(rt, rw))}</span></div></div>`;
+  const ava = (p, kelas = '') => { const f = safeUrl(p?.foto_url);
+    return `<span class="wl-ava ${kelas}">${f ? `<img src="${esc(f)}" alt="" loading="lazy">` : kosongNama(p) ? SILUET : esc(inisial(p.nama))}</span>`; };
+  const simpulRt = (rt, rw) => { const p = cariRt(rt, rw);
+    return `<div class="ph-rt"><div class="ph-simpul ph-t">${ava(p, 'kecil')}<span class="ph-teks"><span class="ph-label">RT ${tiga(rt)}</span><span class="ph-nama">${nama(p)}</span></span></div></div>`; };
   const simpulRw = (w) => {
     // RT yang tercatat di data tapi melebihi jumlah RT di struktur tetap ditampilkan
     const ekstra = rtrw.map(p => nomorRtRw(p.jabatan)).filter(n => n && n.rw === w.no && n.rt > w.rt).map(n => n.rt);
     const daftar = [...new Set([...Array.from({ length: w.rt }, (_, i) => i + 1), ...ekstra])].sort((a, b) => a - b);
-    return `<div class="ph-rw" id="rw-${tiga(w.no)}"><div class="ph-simpul ph-w"><span class="ph-label">RW ${tiga(w.no)}</span><span class="ph-nama">${nama(cariRw(w.no))}</span><small>Ketua RW</small></div>
+    return `<div class="ph-rw" id="rw-${tiga(w.no)}"><div class="ph-simpul ph-w"><span class="ph-label">RW ${tiga(w.no)}</span><span class="ph-baris">${ava(cariRw(w.no))}<span><span class="ph-nama">${nama(cariRw(w.no))}</span><small>Ketua RW</small></span></span></div>
       ${daftar.length ? `<div class="ph-cabang">${daftar.map(rt => simpulRt(rt, w.no)).join('')}</div>` : ''}</div>`;
   };
   const blok = struktur.map((d, i) => {
@@ -345,7 +364,7 @@ function tampilLembaga(daftar, orang, dariDb) {
         <div class="lembaga-profil">${lencana(l)}<h2>Profil</h2>${teksProfil(l.profil) || '<p class="empty">Profil lembaga belum diisi.</p>'}</div>
         <div class="lembaga-susunan"><h2>Susunan pengurus</h2>
           ${l.kode === 'rt-rw' && dariDb ? baganWilayah(orang) + '<p class="small" style="margin-top:8px"><a href="perangkat.html#wilayah">Lihat juga di halaman Perangkat Desa</a></p>'
-            : pengurus.length ? baganPerangkat(pengurus, TINGKAT_LEMBAGA) : `<p class="empty">${dariDb ? 'Susunan pengurus belum diisi.' : 'Memuat susunan pengurus…'}</p>`}</div>
+            : pengurus.length ? organigram(pengurus) : `<p class="empty">${dariDb ? 'Susunan pengurus belum diisi.' : 'Memuat susunan pengurus…'}</p>`}</div>
       </div>`;
     return;
   }
