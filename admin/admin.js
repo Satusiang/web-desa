@@ -87,10 +87,18 @@ const thumb = (url) => safeUrl(url) ? `<img src="${esc(url)}" alt="">` : '<span 
 const angka = (s) => Number(String(s || '').replace(/[^0-9]/g, '')) || 0;
 
 // ---------- tab ----------
-document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  document.querySelectorAll('.tab').forEach(t => { t.hidden = t.id !== 't-' + b.dataset.tab; });
-}));
+// Menu admin: dasbor kartu; bagian dibuka lewat #nama di alamat (bisa dimuat ulang & tombol kembali browser)
+const kartuMenu = [...document.querySelectorAll('.kartu-menu[data-tab]')];
+function bukaTab(nama) {
+  const k = kartuMenu.find(b => b.dataset.tab === nama);
+  $('#menu-admin').hidden = !!k; $('#judul-tab').hidden = !k;
+  document.querySelectorAll('.tab').forEach(t => { t.hidden = !k || t.id !== 't-' + nama; });
+  if (k) { $('#judul-tab-teks').textContent = k.querySelector('b').textContent; $('#judul-tab-ket').textContent = k.querySelector('small').textContent; }
+  window.scrollTo(0, 0);
+}
+kartuMenu.forEach(b => b.addEventListener('click', () => { location.hash = b.dataset.tab; }));
+window.addEventListener('hashchange', () => bukaTab(location.hash.slice(1)));
+$('#kembali-menu').addEventListener('click', () => { history.pushState(null, '', location.pathname); bukaTab(''); });
 
 // ---------- CRUD umum ----------
 // Satu "modul" = form + daftar untuk satu tabel. cfg: {tabel, form, list, idEl, title, judulBaru, judulEdit,
@@ -207,7 +215,7 @@ const mPengumuman = modul({
   },
   item: r => {
     const lewat = r.berlaku_sampai && r.berlaku_sampai < today();
-    return `<b>${esc(r.judul)}</b><small>${esc(tanggalID(r.tanggal))}${r.berlaku_sampai ? ' · sampai ' + esc(tanggalID(r.berlaku_sampai)) : ''}${safeUrl(r.file_url) ? ' · 📎 ' + jenisLampiran(r.file_nama, r.file_url) : ''}</small>`
+    return `<b>${esc(r.judul)}</b><small>${esc(tanggalID(r.tanggal))}${r.berlaku_sampai ? ' · sampai ' + esc(tanggalID(r.berlaku_sampai)) : ''}${safeUrl(r.file_url) ? ' · lampiran ' + jenisLampiran(r.file_nama, r.file_url) : ''}</small>`
       + (r.penting ? '<span class="badge on">Penting</span>' : '') + (!r.tampil ? '<span class="badge off">Disembunyikan</span>' : lewat ? '<span class="badge off">Arsip</span>' : '');
   },
   nama: r => r.judul,
@@ -215,7 +223,7 @@ const mPengumuman = modul({
 $('#pg-file').addEventListener('change', e => {
   const f = e.target.files[0];
   $('#pg-lampiran').innerHTML = !f ? '' : f.type.startsWith('image/') ? `<img src="${URL.createObjectURL(f)}" alt="">`
-    : `<p class="small">📄 ${esc(f.name)} (${f.size < 1048576 ? Math.max(1, Math.round(f.size / 1024)) + ' KB' : (f.size / 1048576).toFixed(1) + ' MB'}) akan diunggah saat disimpan.</p>`;
+    : `<p class="small">File: ${esc(f.name)} (${f.size < 1048576 ? Math.max(1, Math.round(f.size / 1024)) + ' KB' : (f.size / 1048576).toFixed(1) + ' MB'}) akan diunggah saat disimpan.</p>`;
 });
 
 const mAgenda = modul({
@@ -594,7 +602,7 @@ function gambarAduan() {
   $('#l-aduan').innerHTML = list.length ? list.map(a => `<div class="aduan" data-id="${a.id}">
     <div class="hd"><b>${esc(a.tiket)} · ${esc(a.kategori)}</b><span class="muted">${esc(tanggalWIB(a.dibuat))}</span></div>
     <div class="isi">${esc(a.isi)}</div>
-    ${a.lokasi ? `<div class="pelapor">📍 ${esc(a.lokasi)}</div>` : ''}
+    ${a.lokasi ? `<div class="pelapor">Lokasi: ${esc(a.lokasi)}</div>` : ''}
     <div class="pelapor">Pelapor: ${esc(a.nama || 'tanpa nama')}${a.kontak ? ' · ' + esc(a.kontak) : ''} (hanya terlihat petugas)</div>
     <div class="f"><select data-k="status">${STATUS.map(s => `<option ${s === a.status ? 'selected' : ''}>${s}</option>`).join('')}</select>
       <textarea data-k="tanggapan" placeholder="Tanggapan / tindak lanjut (tampil ke pelapor)">${esc(a.tanggapan)}</textarea>
@@ -691,6 +699,7 @@ async function masukDasbor(session) {
   const ok = check(await sb.rpc('is_admin'));
   if (!ok) { show('denied'); return; }
   show('app');
+  bukaTab(location.hash.slice(1));
   mBerita.reset(); mPb.reset(); mPengumuman.reset();
   await Promise.all([muatAduan(), mPengumuman.muat().catch(e => { if (!/pengumuman/i.test(e.message)) throw e; $('#banner-skema').hidden = false; $('#l-pengumuman').innerHTML = '<p class="empty">Tabel pengumuman belum ada. Jalankan schema.sql terbaru (lihat peringatan kuning di atas).</p>'; }), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), muatLembagaAman().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
     .catch(e => toast('Gagal memuat data: ' + e.message, true));
@@ -758,7 +767,7 @@ $('#f-reset').addEventListener('submit', async e => {
     if (event === 'PASSWORD_RECOVERY') { modeReset = true; $('#rs-who').textContent = session?.user?.email || ''; show('reset'); }
   });
   const { data } = await sb.auth.getSession();
-  if (location.hash || query.has('code')) history.replaceState(null, '', location.pathname);
+  if (/[=&]/.test(location.hash) || query.has('code')) history.replaceState(null, '', location.pathname); // hapus token login, biarkan #menu
   if (errDesc) { show('login'); $('#l-err').textContent = PESAN_ERROR[errCode] || decodeURIComponent(errDesc.replace(/\+/g, ' ')); return; }
   if (modeReset && data.session) { $('#rs-who').textContent = data.session.user.email; show('reset'); return; }
   if (data.session) await masukDasbor(data.session);
