@@ -1,5 +1,11 @@
-# Berkas yang tidak ikut diunggah sebagai bagian website
-wrangler.jsonc
+# Berkas yang TIDAK ikut diunggah sebagai bagian website.
+# Penting: tanpa ini, folder .git (seluruh riwayat repo) ikut terpublikasi.
+.git
+.github
+.gitignore
 .assetsignore
 .wrangler
 node_modules
+wrangler.jsonc
+README.md
+supabase
