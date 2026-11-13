@@ -163,6 +163,12 @@ function terapkanPengaturan(cfg) {
   const peta = $('#peta');
   if (peta) {
     const mp = mapsInfo(k.maps_embed);
+    // Link pendek (maps.app.goo.gl) tidak bisa disematkan: tampilkan peta hasil pencarian alamat kantor desa,
+    // tombol tetap membuka titik dari link tersebut.
+    if (!mp.embed && mp.link) {
+      const cari = (k.alamat || '').trim() ? `${k.alamat}, Karang Bahagia, Bekasi` : 'Kantor Desa Karang Bahagia, Karangbahagia, Bekasi';
+      mp.embed = `https://www.google.com/maps?q=${encodeURIComponent(cari)}&output=embed`;
+    }
     if (mp.embed || mp.link) {
       peta.classList.toggle('has-map', !!mp.embed);
       peta.innerHTML = (mp.embed ? `<iframe src="${esc(mp.embed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Peta lokasi kantor desa"></iframe>` : '')
