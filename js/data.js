@@ -1,7 +1,7 @@
 // Mengisi halaman publik dengan data dari Supabase.
 // Jika Supabase belum dikonfigurasi atau gagal dihubungi, isi bawaan di HTML tetap tampil.
 import { getClient, tanggalWIB, esc, safeUrl, tanggalID, waIntl, waLocal, mapsInfo, ringkas, rupiah, paragraf, pesanGalat,
-  nomorDusun, nomorRtRw, romawi, tiga, jabatanKadus, strukturWilayah } from './sb.js';
+  nomorDusun, nomorRtRw, romawi, tiga, jabatanKadus, strukturWilayah, linkMaps } from './sb.js';
 
 const $ = (s) => document.querySelector(s);
 const page = document.body.dataset.page;
@@ -484,7 +484,8 @@ function gambarUMKM() {
   $('#jumlah-umkm').textContent = umkmCache.length ? `Menampilkan ${list.length} dari ${umkmCache.length} toko dan usaha.` : '';
   $('#umkm').innerHTML = list.length ? list.map(u => {
     const wa = u.wa ? waIntl(u.wa) : '';
-    const arah = u.alamat ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${u.nama}, ${u.alamat}, Karang Bahagia, Bekasi`)}` : '';
+    // Petunjuk arah: link Google Maps dari petugas; bila kosong, cari berdasarkan nama dan alamat toko.
+    const arah = linkMaps(u.maps_url) || (u.alamat ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${u.nama}, ${u.alamat}, Karang Bahagia, Bekasi`)}` : '');
     const foto = safeUrl(u.foto_url);
     return `<article class="toko">
       ${foto ? `<img class="toko-foto" src="${esc(foto)}" alt="" loading="lazy">` : ''}

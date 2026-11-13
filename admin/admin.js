@@ -1,4 +1,4 @@
-import { getClient, isConfigured, pesanGalat, tanggalWIB, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks,
+import { getClient, isConfigured, pesanGalat, linkMaps, tanggalWIB, esc, safeUrl, tanggalID, waLocal, rupiah, parseBaris, barisKeTeks,
   nomorDusun, nomorRtRw, romawi, tiga, jabatanKadus, jabatanRw, jabatanRt, strukturWilayah } from '../js/sb.js';
 
 const $ = (s) => document.querySelector(s);
@@ -25,8 +25,26 @@ async function busy(btn, fn) {
   finally { btn.disabled = false; btn.textContent = label; }
 }
 function check({ error, data }) {
-  if (error) throw new Error(error.message);
+  if (error) {
+    // Kolom/tabel baru belum ada di database: beri tahu langkah perbaikannya
+    if (/schema cache/i.test(error.message)) throw new Error(error.message + '. Database perlu diperbarui: jalankan supabase/schema.sql terbaru di Supabase SQL Editor.');
+    throw new Error(error.message);
+  }
   return data;
+}
+let umkmPunyaKolomMaps = false; // true bila baris yang sedang diedit sudah punya kolom maps_url
+// Isian link Google Maps di form UMKM. Kosong -> tidak dikirim (aman untuk database lama).
+function linkMapsDariForm() {
+  const isi = $('#u-maps').value.trim();
+  $('#u-maps-err').textContent = '';
+  if (!isi) return umkmPunyaKolomMaps ? { maps_url: '' } : {};
+  const url = linkMaps(isi);
+  if (!url) {
+    $('#u-maps-err').textContent = 'Link tidak dikenali. Gunakan link dari Google Maps (menu Bagikan → Salin link).';
+    throw new Error('Link Google Maps tidak valid');
+  }
+  $('#u-maps').value = url;
+  return { maps_url: url };
 }
 async function kompres(file, maxW = 1600, quality = 0.82) {
   if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
@@ -413,9 +431,9 @@ const mUmkm = modul({
   judulBaru: 'Tambah toko / usaha', judulEdit: 'Edit toko / usaha', resetBtn: '#u-reset',
   fotoEl: '#u-foto', previewEl: '#u-preview', folder: 'umkm',
   order: [['urutan', true], ['dibuat', true]],
-  afterReset: () => { $('#u-tampil').checked = true; },
-  baca: r => { $('#u-nama').value = r.nama; $('#u-kat').value = r.kategori; $('#u-urutan').value = r.urutan; $('#u-desk').value = r.deskripsi; $('#u-harga').value = r.harga; $('#u-wa').value = r.wa; $('#u-alamat').value = r.alamat; $('#u-tampil').checked = r.tampil; },
-  tulis: () => ({ nama: $('#u-nama').value.trim(), kategori: $('#u-kat').value, urutan: parseInt($('#u-urutan').value, 10) || 0, deskripsi: $('#u-desk').value.trim(), harga: $('#u-harga').value.trim(), wa: $('#u-wa').value.replace(/[^\d+]/g, ''), alamat: $('#u-alamat').value.trim(), tampil: $('#u-tampil').checked }),
+  afterReset: () => { $('#u-tampil').checked = true;  umkmPunyaKolomMaps = false; $('#u-maps-err').textContent = ''; },
+  baca: r => { $('#u-nama').value = r.nama; $('#u-kat').value = r.kategori; $('#u-urutan').value = r.urutan; $('#u-desk').value = r.deskripsi; $('#u-harga').value = r.harga; $('#u-wa').value = r.wa; $('#u-alamat').value = r.alamat; $('#u-maps').value = r.maps_url || ''; umkmPunyaKolomMaps = 'maps_url' in r; $('#u-tampil').checked = r.tampil; },
+  tulis: () => ({ nama: $('#u-nama').value.trim(), kategori: $('#u-kat').value, urutan: parseInt($('#u-urutan').value, 10) || 0, deskripsi: $('#u-desk').value.trim(), harga: $('#u-harga').value.trim(), wa: $('#u-wa').value.replace(/[^\d+]/g, ''), alamat: $('#u-alamat').value.trim(), tampil: $('#u-tampil').checked, ...linkMapsDariForm() }),
   item: r => `<b>${esc(r.nama)}</b><small>${esc(r.kategori)}${r.wa ? ' · ' + esc(waLocal(r.wa)) : ''}</small><span class="badge ${r.tampil ? 'on' : 'off'}">${r.tampil ? 'Tampil' : 'Disembunyikan'}</span>`,
   nama: r => r.nama,
 });
