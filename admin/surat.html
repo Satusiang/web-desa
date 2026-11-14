@@ -75,6 +75,8 @@ table.list th{font-size:13px;color:var(--muted);font-weight:700}
 .rekap{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
 .rekap div{background:var(--acc2);border-radius:6px;padding:6px 10px;font-size:13px}
 .rekap b{font-size:16px;margin-right:4px}
+.arsip-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 14px}
+.arsip-bar .hint{flex:1;min-width:260px}
 details.tpl{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:8px}
 details.tpl summary{cursor:pointer;font-weight:600}
 .ph{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f1f2f0;padding:1px 4px;border-radius:3px}
@@ -135,6 +137,10 @@ details.tpl summary{cursor:pointer;font-weight:600}
         <label class="f"><span>Bulan</span><select id="bulanFilter"></select></label>
       </div>
       <div class="rekap" id="rekap"></div>
+      <div class="arsip-bar">
+        <button class="b" type="button" id="btnZip">Unduh arsip surat (ZIP)</button>
+        <span class="hint">Berisi <b>daftar-surat.csv</b> (buku agenda, bisa dibuka di Excel) dan satu berkas untuk setiap surat dengan nama sesuai nomor surat, siap dicetak atau disimpan sebagai PDF. Mengikuti pilihan bulan dan pencarian di atas.</span>
+      </div>
       <div style="overflow:auto"><table class="list"><thead><tr><th>Tanggal</th><th>Nomor surat</th><th>Jenis</th><th>Nama</th><th>Petugas</th><th></th></tr></thead><tbody id="riwayatBody"></tbody></table></div>
       <h3>Cadangan data</h3>
       <p class="hint">Data surat tersimpan di browser komputer ini saja. Unduh cadangan secara rutin (misalnya setiap Jumat) dan simpan di flashdisk. <span id="infoCadangan"></span></p>
@@ -501,15 +507,19 @@ function doPrint(){
 
 // ---------- Riwayat ----------
 function monthKey(iso){ return iso ? iso.slice(0,7) : ''; }
+function daftarTerfilter(){
+  const q = document.getElementById('cari').value.trim().toLowerCase();
+  const fm = document.getElementById('bulanFilter').value || 'all';
+  return DB.letters.filter(l=> (fm==='all'||monthKey(l.tanggal)===fm) && (!q || (l.nama||'').toLowerCase().includes(q) || (l.nik||'').includes(q) || (l.nomor||'').toLowerCase().includes(q)) )
+    .sort((a,b)=> (b.tanggal||'').localeCompare(a.tanggal||'') || b.urut-a.urut);
+}
 function renderRiwayat(){
   const sel = document.getElementById('bulanFilter');
   const months = [...new Set(DB.letters.map(l=>monthKey(l.tanggal)))].sort().reverse();
   const curM = sel.value || months[0] || '';
   sel.innerHTML = '<option value="all">Semua bulan</option>' + months.map(m=>{ const [y,mo]=m.split('-'); return `<option value="${m}" ${m===curM?'selected':''}>${BULAN[Number(mo)-1]} ${y}</option>`; }).join('');
   if(!months.length) sel.value='all';
-  const q = document.getElementById('cari').value.trim().toLowerCase();
-  const fm = sel.value;
-  const list = DB.letters.filter(l=> (fm==='all'||monthKey(l.tanggal)===fm) && (!q || l.nama.toLowerCase().includes(q) || l.nik.includes(q) || l.nomor.toLowerCase().includes(q)) ).sort((a,b)=> b.tanggal.localeCompare(a.tanggal) || b.urut-a.urut);
+  const list = daftarTerfilter();
   const counts = {}; list.forEach(l=>counts[l.jenis]=(counts[l.jenis]||0)+1);
   document.getElementById('rekap').innerHTML = `<div><b>${list.length}</b>surat</div>` + Object.entries(counts).map(([k,v])=>`<div><b>${v}</b>${esc(k)}</div>`).join('');
   document.getElementById('riwayatBody').innerHTML = list.length ? list.map(l=>`<tr><td>${fmtDate(l.tanggal)}</td><td>${esc(l.nomor)}</td><td>${esc(l.jenis)}</td><td>${esc(l.nama)}</td><td>${esc(l.petugas)}</td><td><button class="b alt" data-open="${l.id}" style="padding:5px 10px;font-size:13px">Buka / cetak ulang</button></td></tr>`).join('') : '<tr><td colspan="6" class="hint">Belum ada surat.</td></tr>';
@@ -519,6 +529,75 @@ function renderRiwayat(){
     show('buat'); renderAll();
   });
 }
+
+// ---------- arsip ZIP: daftar CSV + satu berkas HTML per surat (dibuat di browser, tanpa server) ----------
+const CRC_T = (()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c = CRC_T[(c^u8[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+// ZIP tanpa kompresi (metode "store"): cukup untuk teks dan bisa dibuka semua aplikasi ZIP / Windows Explorer
+function buatZip(files){
+  const enc = new TextEncoder(), parts=[], pusat=[]; let off=0;
+  const d=new Date(), dtm=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF, dtd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  files.forEach(f=>{
+    const nama=enc.encode(f.name), isi = typeof f.data==='string' ? enc.encode(f.data) : f.data, crc=crc32(isi);
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true);
+    h.setUint16(10,dtm,true); h.setUint16(12,dtd,true); h.setUint32(14,crc,true); h.setUint32(18,isi.length,true); h.setUint32(22,isi.length,true);
+    h.setUint16(26,nama.length,true); h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer), nama, isi);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true); c.setUint16(10,0,true);
+    c.setUint16(12,dtm,true); c.setUint16(14,dtd,true); c.setUint32(16,crc,true); c.setUint32(20,isi.length,true); c.setUint32(24,isi.length,true);
+    c.setUint16(28,nama.length,true); c.setUint32(42,off,true);
+    pusat.push(new Uint8Array(c.buffer), nama);
+    off += 30+nama.length+isi.length;
+  });
+  const besar = pusat.reduce((n,p)=>n+p.length,0), e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true); e.setUint32(12,besar,true); e.setUint32(16,off,true);
+  return new Blob([...parts, ...pusat, new Uint8Array(e.buffer)], {type:'application/zip'});
+}
+const namaBerkas = (s)=> String(s||'surat').replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,120);
+function cssSurat(){
+  // ambil aturan tampilan surat dari halaman ini supaya berkas arsip sama persis dengan pratinjau
+  const pilih = /^(#page|\.kop|\.judul|\.ttd|\.kosong)/;
+  let css=''; for(const sh of document.styleSheets){ try{ for(const r of sh.cssRules) if(r.selectorText && pilih.test(r.selectorText)) css += r.cssText+'\n'; }catch(e){} }
+  return css;
+}
+function berkasSurat(r, css){
+  const t = r.tplSnap || tplOf(r.tpl), S = Object.assign({}, DEF_SET, r.settings||DB.settings), pg = paper(S);
+  return `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>${esc(r.nomor)} – ${esc(r.jenis)} – ${esc(r.nama)}</title>
+<style>${css}
+@page{size:${pg.w}mm ${pg.h}mm;margin:0}
+body{margin:0;background:#e3e6e2}
+#page{position:static!important;transform:none!important;width:${pg.w}mm;min-height:${pg.h}mm;margin:16px auto;box-sizing:border-box}
+@media print{body{background:#fff}#page{margin:0;box-shadow:none}}
+</style></head><body><div id="page">${renderLetter(t, r.data||{}, S, r.nomor)}</div></body></html>`;
+}
+// sel CSV: diberi kutip bila perlu; isian yang diawali = + - @ diberi ' supaya tidak dijalankan sebagai rumus di Excel
+function csvSel(v){ if(v && v.nik) return `="${String(v.nik).replace(/\D/g,'')}"`; v = String(v??''); if(/^[=+\-@]/.test(v)) v = "'"+v; return /[";\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+document.getElementById('btnZip').onclick = ()=>{
+  const list = daftarTerfilter().slice().reverse(); // urut dari surat terlama
+  const m = document.getElementById('backupMsg');
+  if(!list.length){ toast('Belum ada surat pada pilihan ini.'); return; }
+  const css = cssSurat(), dipakai = new Set(), files=[];
+  const baris = [['No','Tanggal surat','Nomor surat','Jenis surat','Nama','NIK','Keperluan','Ditandatangani oleh','Petugas','Waktu dibuat','Nama berkas']];
+  list.forEach((r,i)=>{
+    let nb = namaBerkas(r.nomor)+'.html', k=2; while(dipakai.has(nb)) nb = namaBerkas(r.nomor)+`-${k++}.html`; dipakai.add(nb);
+    files.push({name:'surat/'+nb, data:berkasSurat(r, css)});
+    const S = r.settings||DB.settings, d = r.data||{};
+    const ttd = d._signer==='pengganti' ? `${S.pengganti_nama||''} (a.n. Kepala Desa)` : (S.kades||'');
+    baris.push([i+1, fmtDate(r.tanggal), r.nomor, r.jenis, r.nama, r.nik ? {nik:r.nik} : '', d.keperluan||'', ttd, r.petugas||'', (r.dibuat||'').replace('T',' ').slice(0,16), 'surat/'+nb]);
+  });
+  // pemisah titik koma + BOM supaya langsung rapi di Excel berbahasa Indonesia
+  files.unshift({name:'daftar-surat.csv', data:'\uFEFF'+baris.map(b=>b.map(csvSel).join(';')).join('\r\n')});
+  files.push({name:'cadangan-data-surat.json', data:JSON.stringify(Object.assign({}, DB, {lastBackup:todayISO()}))});
+  const fm = document.getElementById('bulanFilter').value;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(buatZip(files));
+  a.download = `arsip-surat-karangbahagia-${fm && fm!=='all' ? fm : 'semua'}-${todayISO()}.zip`;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  DB.lastBackup = todayISO(); save(); cekCadangan();
+  m.className='msg ok'; m.textContent=`Arsip ${list.length} surat diunduh. File ZIP ini juga berisi cadangan data lengkap, jadi bisa dipakai untuk "Pulihkan dari cadangan" setelah diekstrak.`;
+};
 
 function download(name, text){
   const a = document.createElement('a');
