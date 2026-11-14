@@ -23,12 +23,15 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .view{display:none}.view.on{display:block}
 .banner{background:var(--warn);border:1px solid #F2C230;border-left:5px solid #D9A916;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .grid{display:grid;grid-template-columns:minmax(320px,440px) 1fr;gap:16px;align-items:start}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.grid-atur{grid-template-columns:1fr 1fr}
+.grid>*{min-width:0}
+@media(max-width:900px){.grid,.grid-atur{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
 .card h2{font-size:17px;margin:0 0 12px;color:#1D4428}
 .card h3{font-size:14px;margin:16px 0 8px;color:var(--muted)}
 .jenis{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
 .jenis button{text-align:left;border:1px solid var(--line);background:#fff;padding:10px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:14px;line-height:1.3;min-height:44px}
+.jenis button.tambah-jenis{border-style:dashed;color:var(--acc);font-weight:700;text-align:center}
 .jenis button.on{border-color:var(--acc);background:var(--acc2);font-weight:600}
 label.f{display:block;margin-bottom:9px}
 label.f span{display:block;font-size:13.5px;font-weight:600;color:#1D4428;margin-bottom:4px}
@@ -75,12 +78,31 @@ table.list th{font-size:13px;color:var(--muted);font-weight:700}
 .rekap{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
 .rekap div{background:var(--acc2);border-radius:6px;padding:6px 10px;font-size:13px}
 .rekap b{font-size:16px;margin-right:4px}
+.tpl-sendiri{grid-column:1/-1}
+.tpl-daftar{display:grid;gap:8px;margin:10px 0 12px}
+.tpl-daftar .it{display:flex;align-items:center;gap:10px;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tpl-daftar .it b{display:block}.tpl-daftar .it small{color:var(--muted)}
+.tpl-form{margin-top:16px;border-top:1px solid var(--line);padding-top:6px}
+.tpl-form .wajib{color:var(--err)}
+label.f.cek{display:flex;gap:10px;align-items:flex-start}
+label.f.cek input{width:auto;min-height:0;margin-top:3px}
+label.f.cek span{font-weight:500;color:var(--ink);font-size:14px}
+.isian-baris{display:grid;grid-template-columns:2fr 1.3fr auto auto;gap:8px;align-items:end;margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#FAFCF9}
+.isian-baris .opsi{grid-column:1/-1}
+.isian-baris .kode{font-size:13px;color:var(--muted);grid-column:1/-1;margin-top:-4px}
+.isian-baris label.cekw{display:flex;gap:6px;align-items:center;font-size:14px;white-space:nowrap;min-height:42px}
+.isian-baris label.cekw input{width:auto;min-height:0}
+.chip-isian{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.chip-isian button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer;font-family:ui-monospace,Consolas,monospace;min-height:34px}
+.chip-isian button:hover{border-color:var(--acc)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media(max-width:700px){.isian-baris{grid-template-columns:1fr 1fr}}
 .arsip-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 14px}
 .arsip-bar .hint{flex:1;min-width:260px}
 details.tpl{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:8px}
 details.tpl summary{cursor:pointer;font-weight:600}
 .ph{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f1f2f0;padding:1px 4px;border-radius:3px}
-#gate[hidden]{display:none!important}
+#gate[hidden],[hidden]{display:none!important}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1d2320;color:#fff;padding:10px 16px;border-radius:6px;font-size:14px;display:none;z-index:9}
 @media print{
   body{background:#fff}
@@ -153,7 +175,7 @@ details.tpl summary{cursor:pointer;font-weight:600}
   </section>
 
   <section class="view" id="v-atur">
-    <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="grid grid-atur">
       <div class="card">
         <h2>Identitas desa dan kop surat</h2>
         <div class="row2">
@@ -199,6 +221,35 @@ details.tpl summary{cursor:pointer;font-weight:600}
           <button class="b danger" id="btnResetTpl">Kembalikan templat bawaan</button>
         </div>
         <div class="msg" id="setMsg"></div>
+      </div>
+      <div class="card tpl-sendiri" id="tplSendiri">
+        <h2>Templat surat buatan desa</h2>
+        <p class="hint">Buat jenis surat baru yang belum ada, misalnya Surat Keterangan Penghasilan atau Surat Keterangan Belum Menikah. Templat baru langsung muncul di menu Buat Surat.</p>
+        <div id="daftarTplSendiri" class="tpl-daftar"></div>
+        <button class="b" type="button" id="btnTplBaru">+ Buat templat baru</button>
+        <form id="formTpl" class="tpl-form" hidden onsubmit="return false">
+          <h3 id="judulFormTpl">Templat baru</h3>
+          <div class="row2">
+            <label class="f"><span>Nama di tombol <b>*</b></span><input id="tNama" maxlength="40" placeholder="mis. Keterangan Penghasilan"></label>
+            <label class="f"><span>Kode klasifikasi</span><input id="tKode" maxlength="20" placeholder="mis. 400"></label>
+          </div>
+          <label class="f"><span>Judul surat (tercetak di surat) <b>*</b></span><input id="tJudul" maxlength="100" placeholder="mis. Surat Keterangan Penghasilan"></label>
+          <label class="f cek"><input type="checkbox" id="tIdentitas" checked> <span>Pakai identitas pemohon (nama, NIK, tempat/tanggal lahir, jenis kelamin, agama, status, pekerjaan, alamat)</span></label>
+          <h3>Isian tambahan</h3>
+          <p class="hint">Data lain yang diisi petugas saat membuat surat. Setiap isian punya kode, misalnya <span class="ph">{penghasilan}</span>, untuk dipakai di isi surat.</p>
+          <div id="isianTpl"></div>
+          <button class="b alt" type="button" id="btnTambahIsian">+ Tambah isian</button>
+          <h3>Isi surat <b class="wajib">*</b></h3>
+          <p class="hint">Pisahkan paragraf dengan baris kosong. Tulis <span class="ph">[IDENTITAS]</span> di baris tersendiri untuk tabel identitas pemohon. Klik kode di bawah untuk menyisipkannya di posisi kursor.</p>
+          <div class="chip-isian" id="chipTpl"></div>
+          <label class="f"><span class="sr">Isi surat</span><textarea id="tIsi" rows="12"></textarea></label>
+          <div class="msg err" id="tplErr"></div>
+          <div class="btns">
+            <button class="b" type="button" id="btnSimpanTpl">Simpan dan coba</button>
+            <button class="b alt" type="button" id="btnBatalTpl">Batal</button>
+            <button class="b danger" type="button" id="btnHapusTpl" hidden>Hapus templat</button>
+          </div>
+        </form>
       </div>
     </div>
   </section>
@@ -264,6 +315,7 @@ function load(){
   d.counter = d.counter || {year:new Date().getFullYear(), last:0};
   d.letters = d.letters || [];
   d.tpl = d.tpl || {};
+  d.custom = Array.isArray(d.custom) ? d.custom : [];
   return d;
 }
 function save(){
@@ -290,10 +342,12 @@ function showStoreWarn(){
 }
 
 // ---------- templates (with user overrides) ----------
+// Templat bawaan + templat buatan desa (disimpan di browser bersama data surat, ikut cadangan)
+function semuaTpl(){ return TEMPLATES.concat(DB.custom||[]); }
 function tplOf(id){
-  const base = TEMPLATES.find(t=>t.id===id);
+  const base = semuaTpl().find(t=>t.id===id) || (cur && cur.locked && cur.locked.tplSnap) || TEMPLATES[0];
   const ov = DB.tpl[id];
-  if(!ov) return base;
+  if(!ov || base.custom) return base;
   const t = JSON.parse(JSON.stringify(base));
   if(ov.judul) t.judul = ov.judul;
   if(ov.kode !== undefined) t.kode = ov.kode;
@@ -389,8 +443,10 @@ function freshData(t){
   return d;
 }
 function renderJenis(){
-  document.getElementById('jenisList').innerHTML = TEMPLATES.map(t=>`<button type="button" data-t="${t.id}" class="${t.id===cur.tpl?'on':''}">${esc(t.nama)}</button>`).join('');
-  document.querySelectorAll('#jenisList button').forEach(b=>b.onclick=()=>{
+  document.getElementById('jenisList').innerHTML = semuaTpl().map(t=>`<button type="button" data-t="${t.id}" class="${t.id===cur.tpl?'on':''}">${esc(t.nama)}</button>`).join('')
+    + '<button type="button" class="tambah-jenis" data-baru>+ Templat baru</button>';
+  document.querySelector('#jenisList [data-baru]').onclick = ()=>{ show('atur'); bukaFormTpl(null); };
+  document.querySelectorAll('#jenisList button[data-t]').forEach(b=>b.onclick=()=>{
     if(cur.locked){ newLetter(b.dataset.t); return; }
     cur.tpl=b.dataset.t; cur.data=freshData(tplOf(cur.tpl)); renderAll();
   });
@@ -623,6 +679,7 @@ document.getElementById('fileImport').onchange = e=>{
       if(!d || !Array.isArray(d.letters) || !d.settings) throw new Error('format');
       const ids = new Set(DB.letters.map(l=>l.id));
       let added = 0; d.letters.forEach(l=>{ if(!ids.has(l.id)){ DB.letters.push(l); added++; } });
+      if(Array.isArray(d.custom)){ const ada=new Set((DB.custom||[]).map(t=>t.id)); d.custom.forEach(t=>{ if(!ada.has(t.id)) DB.custom.push(t); }); }
       if(d.counter && (d.counter.year>DB.counter.year || (d.counter.year===DB.counter.year && d.counter.last>DB.counter.last))) DB.counter = d.counter;
       if(!DB.letters.length || added===d.letters.length){ DB.settings = Object.assign({}, DEF_SET, d.settings); DB.tpl = d.tpl||{}; }
       save(); m.className='msg ok'; m.textContent=`Pulih: ${added} surat ditambahkan. Nomor urut terakhir sekarang ${DB.counter.last} (${DB.counter.year}).`;
@@ -637,6 +694,7 @@ document.getElementById('bulanFilter').onchange = renderRiwayat;
 
 // ---------- Pengaturan ----------
 function loadSettingsForm(){
+  renderDaftarTpl();
   document.querySelectorAll('[data-s]').forEach(el=>{ el.value = DB.settings[el.dataset.s] ?? ''; });
   document.getElementById('ctrYear').value = DB.counter.year;
   document.getElementById('ctrLast').value = DB.counter.last;
@@ -673,6 +731,115 @@ document.getElementById('btnResetTpl').onclick = ()=>{
 document.getElementById('logoFile').onchange = e=>{
   const f=e.target.files[0]; if(!f) return;
   const rd=new FileReader(); rd.onload=()=>{ DB.settings.logo=rd.result; save(); toast('Logo diganti.'); if(!cur.locked) renderPreview(); }; rd.readAsDataURL(f);
+};
+
+// ---------- templat buatan desa ----------
+const JENIS_ISIAN = [['text','Teks singkat'],['textarea','Teks panjang'],['date','Tanggal'],['number','Angka'],['select','Pilihan']];
+const KODE_DIPAKAI = new Set(STD.map(f=>f.k).concat(['desa','kecamatan','kabupaten','ttl','alamat_lengkap']));
+let tplEdit = null; // salinan templat yang sedang diedit
+const kodeDari = (l)=> String(l||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,30) || 'isian';
+function isiKeTeks(t){ return t.body.map(b=> b.id ? '[IDENTITAS]' : ('p' in b ? b.p : '')).filter(Boolean).join('\n\n'); }
+function teksKeIsi(s){ return s.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=> x.toUpperCase()==='[IDENTITAS]' ? {id:1} : {p:x.replace(/\s*\n\s*/g,' ')}); }
+function renderDaftarTpl(){
+  const el=document.getElementById('daftarTplSendiri');
+  el.innerHTML = (DB.custom||[]).length ? DB.custom.map(t=>`<div class="it"><div><b>${esc(t.nama)}</b><small>${esc(t.judul)} · kode ${esc(t.kode||'-')} · ${DB.letters.filter(l=>l.tpl===t.id).length} surat dibuat</small></div>
+    <div class="btns" style="margin:0"><button class="b alt" type="button" data-coba="${t.id}">Pakai</button><button class="b alt" type="button" data-edit-tpl="${t.id}">Edit</button></div></div>`).join('')
+    : '<p class="hint">Belum ada templat buatan desa.</p>';
+  el.querySelectorAll('[data-edit-tpl]').forEach(b=>b.onclick=()=>bukaFormTpl(b.dataset.editTpl));
+  el.querySelectorAll('[data-coba]').forEach(b=>b.onclick=()=>{ show('buat'); newLetter(b.dataset.coba); });
+}
+function bukaFormTpl(id){
+  const ada = id && DB.custom.find(t=>t.id===id);
+  tplEdit = ada ? JSON.parse(JSON.stringify(ada)) : {id:'c_'+Date.now().toString(36), custom:true, nama:'', judul:'', kode:'', identitas:true,
+    fields:[{k:'keperluan',l:'Keperluan',t:'textarea',req:1}],
+    body:[{p:PEMBUKA},{id:1},{p:'Orang tersebut di atas adalah benar warga Desa {desa}.'},{p:'Surat keterangan ini diberikan untuk keperluan {keperluan}.'},{p:PENUTUP}]};
+  const f=document.getElementById('formTpl'); f.hidden=false;
+  document.getElementById('judulFormTpl').textContent = ada ? `Edit templat: ${ada.nama}` : 'Templat baru';
+  document.getElementById('tNama').value=tplEdit.nama; document.getElementById('tJudul').value=tplEdit.judul;
+  document.getElementById('tKode').value=tplEdit.kode; document.getElementById('tIdentitas').checked=!!tplEdit.identitas;
+  document.getElementById('tIsi').value=isiKeTeks(tplEdit);
+  document.getElementById('tplErr').textContent='';
+  const h=document.getElementById('btnHapusTpl'); h.hidden=!ada; h.textContent='Hapus templat'; h.dataset.yakin='';
+  renderIsianTpl(); f.scrollIntoView({behavior:'smooth',block:'start'}); document.getElementById('tNama').focus();
+}
+function bacaIsianTpl(){
+  document.querySelectorAll('#isianTpl .isian-baris').forEach((r,i)=>{
+    const f=tplEdit.fields[i]; f.l=r.querySelector('[data-f=l]').value; f.t=r.querySelector('[data-f=t]').value; f.req=r.querySelector('[data-f=req]').checked?1:0;
+    const o=r.querySelector('[data-f=o]'); if(f.t==='select') f.o=(o?o.value:'').split(',').map(x=>x.trim()).filter(Boolean); else delete f.o;
+  });
+}
+function renderIsianTpl(){
+  document.getElementById('isianTpl').innerHTML = tplEdit.fields.map((f,i)=>`<div class="isian-baris" data-i="${i}">
+    <label class="f" style="margin:0"><span>Nama isian</span><input data-f="l" value="${esc(f.l)}" placeholder="mis. Penghasilan per bulan"></label>
+    <label class="f" style="margin:0"><span>Jenis</span><select data-f="t">${JENIS_ISIAN.map(([v,n])=>`<option value="${v}" ${(f.t||'text')===v?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label class="cekw"><input type="checkbox" data-f="req" ${f.req?'checked':''}> Wajib</label>
+    <button class="b danger" type="button" data-hapus-isian="${i}" aria-label="Hapus isian ${esc(f.l)}">Hapus</button>
+    ${f.t==='select'?`<label class="f opsi" style="margin:0"><span>Pilihan (pisahkan dengan koma)</span><input data-f="o" value="${esc((f.o||[]).join(', '))}" placeholder="mis. Ya, Tidak"></label>`:''}
+    <div class="kode">Kode di isi surat: <span class="ph">{${esc(f.k)}}</span></div></div>`).join('') || '<p class="hint">Tidak ada isian tambahan.</p>';
+  const box=document.getElementById('isianTpl');
+  box.querySelectorAll('[data-f=t]').forEach(s=>s.onchange=()=>{ bacaIsianTpl(); renderIsianTpl(); });
+  box.querySelectorAll('[data-f=l]').forEach((inp,i)=>inp.oninput=()=>{
+    const f=tplEdit.fields[i];
+    if(f.baru){ // kode mengikuti nama selama isian baru dan belum dipakai di isi surat
+      const lama=f.k; let k=kodeDari(inp.value), n=2; while(KODE_DIPAKAI.has(k)||tplEdit.fields.some((x,j)=>j!==i&&x.k===k)) k=kodeDari(inp.value)+'_'+(n++);
+      f.k=k; inp.closest('.isian-baris').querySelector('.kode .ph').textContent=`{${k}}`;
+      const isi=document.getElementById('tIsi'); if(lama!==k && isi.value.includes(`{${lama}}`)) isi.value=isi.value.split(`{${lama}}`).join(`{${k}}`);
+    }
+    renderChipTpl();
+  });
+  box.querySelectorAll('[data-hapus-isian]').forEach(b=>b.onclick=()=>{ bacaIsianTpl(); tplEdit.fields.splice(Number(b.dataset.hapusIsian),1); renderIsianTpl(); });
+  renderChipTpl();
+}
+function renderChipTpl(){
+  const idt=document.getElementById('tIdentitas').checked;
+  const kode=['desa','kecamatan','kabupaten'].concat(idt?['nama','nik','ttl','jk','agama','status_kawin','pekerjaan','alamat_lengkap']:[]).concat(tplEdit.fields.map(f=>f.k));
+  const el=document.getElementById('chipTpl');
+  el.innerHTML = (idt?'<button type="button" data-sisip="[IDENTITAS]">[IDENTITAS]</button>':'') + kode.map(k=>`<button type="button" data-sisip="{${k}}">{${k}}</button>`).join('');
+  el.querySelectorAll('[data-sisip]').forEach(b=>b.onclick=()=>{
+    const ta=document.getElementById('tIsi'), s=ta.selectionStart??ta.value.length, e=ta.selectionEnd??s, v=b.dataset.sisip;
+    const sisip = v==='[IDENTITAS]' ? '\n\n[IDENTITAS]\n\n' : v;
+    ta.value = ta.value.slice(0,s)+sisip+ta.value.slice(e); ta.focus(); ta.selectionStart=ta.selectionEnd=s+sisip.length;
+  });
+}
+document.getElementById('tIdentitas').onchange = renderChipTpl;
+document.getElementById('btnTplBaru').onclick = ()=>bukaFormTpl(null);
+document.getElementById('btnBatalTpl').onclick = ()=>{ document.getElementById('formTpl').hidden=true; tplEdit=null; };
+document.getElementById('btnTambahIsian').onclick = ()=>{
+  bacaIsianTpl(); let k='isian_'+(tplEdit.fields.length+1), n=2; while(tplEdit.fields.some(f=>f.k===k)) k='isian_'+(tplEdit.fields.length+(n++));
+  tplEdit.fields.push({k, l:'', t:'text', req:1, baru:true}); renderIsianTpl();
+  const ins=document.querySelectorAll('#isianTpl [data-f=l]'); ins[ins.length-1].focus();
+};
+document.getElementById('btnSimpanTpl').onclick = ()=>{
+  bacaIsianTpl();
+  const err=document.getElementById('tplErr'), salah=[];
+  const t=tplEdit; t.nama=document.getElementById('tNama').value.trim(); t.judul=document.getElementById('tJudul').value.trim();
+  t.kode=document.getElementById('tKode').value.trim(); t.identitas=document.getElementById('tIdentitas').checked;
+  t.body=teksKeIsi(document.getElementById('tIsi').value);
+  if(!t.nama) salah.push('Nama di tombol belum diisi');
+  if(!t.judul) salah.push('Judul surat belum diisi');
+  if(!t.body.length) salah.push('Isi surat belum diisi');
+  if(semuaTpl().some(x=>x.id!==t.id && x.nama.toLowerCase()===t.nama.toLowerCase())) salah.push(`Nama "${t.nama}" sudah dipakai templat lain`);
+  t.fields.forEach((f,i)=>{ if(!f.l.trim()) salah.push(`Nama isian ke-${i+1} belum diisi`); if(f.t==='select' && !(f.o||[]).length) salah.push(`Pilihan untuk "${f.l||'isian ke-'+(i+1)}" belum diisi`); });
+  if(!t.identitas && t.body.some(b=>b.id)) salah.push('[IDENTITAS] dipakai di isi surat, tapi "Pakai identitas pemohon" tidak dicentang');
+  // kode yang dipakai di isi surat harus ada
+  const tersedia=new Set(['desa','kecamatan','kabupaten'].concat(t.identitas?STD.map(f=>f.k).concat(['ttl','alamat_lengkap']):[]).concat(t.fields.map(f=>f.k)));
+  const tidakAda=[...new Set(t.body.filter(b=>b.p).flatMap(b=>(b.p.match(/\{([a-z0-9_]+)\}/g)||[]).map(x=>x.slice(1,-1))))].filter(k=>!tersedia.has(k));
+  if(tidakAda.length) salah.push(`Kode belum punya isian: ${tidakAda.map(k=>'{'+k+'}').join(', ')}`);
+  if(salah.length){ err.textContent='Periksa kembali: '+salah.join('; ')+'.'; return; }
+  err.textContent='';
+  t.fields.forEach(f=>{ delete f.baru; if(f.t==='text') delete f.t; f.l=f.l.trim(); });
+  const i=DB.custom.findIndex(x=>x.id===t.id); if(i>=0) DB.custom[i]=t; else DB.custom.push(t);
+  save(); renderDaftarTpl(); document.getElementById('formTpl').hidden=true;
+  toast(`Templat "${t.nama}" disimpan.`);
+  show('buat'); newLetter(t.id);
+};
+document.getElementById('btnHapusTpl').onclick = e=>{
+  const b=e.target, t=tplEdit; if(!t) return;
+  if(b.dataset.yakin!=='1'){ b.dataset.yakin='1'; b.textContent='Tekan lagi untuk menghapus'; return; }
+  DB.custom=DB.custom.filter(x=>x.id!==t.id); save(); renderDaftarTpl(); document.getElementById('formTpl').hidden=true;
+  if(cur.tpl===t.id && !cur.locked){ cur.tpl=TEMPLATES[0].id; cur.data=freshData(TEMPLATES[0]); }
+  renderJenis();
+  toast(`Templat "${t.nama}" dihapus. Surat yang sudah dibuat dengan templat ini tetap tersimpan di riwayat.`);
 };
 
 // ---------- nav ----------
