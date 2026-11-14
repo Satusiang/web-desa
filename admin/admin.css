@@ -14,7 +14,7 @@ body.admin{background:var(--bg)}
 code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.9em}
 .form{display:grid;gap:14px}
 .form label{display:grid;gap:6px;font-weight:600;font-size:.9rem;color:var(--hijau-2)}
-.form input,.form textarea,.form select{width:100%;padding:11px 12px;border:1px solid #cdd9d1;border-radius:10px;font:inherit;font-weight:400;color:var(--ink);background:#fff}
+.form input,.form textarea,.form select{width:100%;padding:11px 12px;border:1px solid #7D8F80;border-radius:10px;font:inherit;font-weight:400;color:var(--ink);background:#fff}
 .form input:focus,.form textarea:focus,.form select:focus{outline:2px solid var(--emas);border-color:transparent}
 .form .check{display:flex;align-items:center;gap:8px;font-weight:600}
 .form .check input{width:auto}
@@ -39,7 +39,7 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.9em}
 .gal-item{border:1px solid var(--line);border-radius:12px;overflow:hidden;display:grid}
 .gal-item img{width:100%;aspect-ratio:4/3;object-fit:cover}
 .gal-item .f{padding:10px;display:grid;gap:8px}
-.gal-item input,.gal-item select{padding:8px 10px;border:1px solid #cdd9d1;border-radius:8px;font:inherit;font-size:.88rem}
+.gal-item input,.gal-item select{padding:8px 10px;border:1px solid #7D8F80;border-radius:8px;font:inherit;font-size:.88rem}
 .gal-item .acts{display:flex;gap:6px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--hijau-2);color:#fff;padding:12px 18px;border-radius:12px;font-size:.92rem;display:none;z-index:99;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .toast.err{background:#c0392b}
@@ -51,7 +51,7 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.9em}
 .tbl-edit{border:1px solid var(--line);border-radius:12px;min-width:520px}
 .tbl-edit th,.tbl-edit td{padding:6px;background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
 .tbl-edit th{background:var(--bg)}
-.tbl-edit input[type=text]{padding:8px 10px;border:1px solid #cdd9d1;border-radius:8px;font:inherit;font-size:.9rem;width:100%;min-width:110px}
+.tbl-edit input[type=text]{padding:8px 10px;border:1px solid #7D8F80;border-radius:8px;font:inherit;font-size:.9rem;width:100%;min-width:110px}
 .tbl-edit .x{background:none;border:0;color:#c0392b;font-size:1.1rem;cursor:pointer;padding:4px 8px}
 .tbl-edit .tb{font-size:.8rem;display:flex;gap:4px;align-items:center;white-space:nowrap}
 .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
@@ -64,13 +64,13 @@ code{background:var(--bg);padding:1px 6px;border-radius:6px;font-size:.9em}
 .aduan .isi{white-space:pre-line}
 .aduan .pelapor{font-size:.85rem;color:var(--muted)}
 .aduan .f{display:grid;grid-template-columns:160px 1fr auto auto;gap:8px;align-items:center}
-.aduan select,.aduan textarea{padding:8px 10px;border:1px solid #cdd9d1;border-radius:8px;font:inherit;font-size:.9rem;width:100%}
+.aduan select,.aduan textarea{padding:8px 10px;border:1px solid #7D8F80;border-radius:8px;font:inherit;font-size:.9rem;width:100%}
 .aduan textarea{min-height:40px}
 @media (max-width:900px){.aduan .f{grid-template-columns:1fr}}
 header.site .who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--muted)}
 .admin main > section{padding:0}
 #t-pengaduan label{display:grid;gap:6px;font-weight:600;font-size:.9rem;color:var(--hijau-2);max-width:260px}
-#t-pengaduan select#a-filter{padding:10px 12px;border:1px solid #cdd9d1;border-radius:10px;font:inherit;font-weight:400}
+#t-pengaduan select#a-filter{padding:10px 12px;border:1px solid #7D8F80;border-radius:10px;font:inherit;font-weight:400}
 .grid-3{grid-template-columns:repeat(3,1fr)}
 @media (max-width:900px){.grid-3{grid-template-columns:1fr}}
 /* Kepala halaman admin di HP: email dipotong rapi, tombol Keluar tetap terlihat */
@@ -90,7 +90,7 @@ header.site .who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:
 .wle-dusun{border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .wle-baris{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
 .wle-baris label{display:grid;gap:4px;font-weight:600;font-size:.82rem;color:var(--hijau-2);flex:1 1 200px}
-.wle input{padding:9px 10px;border:1px solid #cdd9d1;border-radius:8px;font:inherit;font-size:.93rem;width:100%;background:#fff}
+.wle input{padding:9px 10px;border:1px solid #7D8F80;border-radius:8px;font:inherit;font-size:.93rem;width:100%;background:#fff}
 .wle input:focus{outline:2px solid var(--emas);border-color:transparent}
 .wle-d{background:var(--hijau-2);padding:12px 14px}
 .wle-d label{color:#fff}
