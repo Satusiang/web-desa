@@ -141,3 +141,41 @@ header.site .who{display:flex;align-items:center;gap:12px;font-size:.9rem;color:
 @media (max-width:600px){.menu-grid{gap:10px}.menu-grid>.kartu-menu{width:calc(50% - 5px);padding:16px 10px}.kartu-menu small{font-size:.8rem}}
 .btn.small{min-height:36px}
 .btn.mini{min-height:32px}
+
+/* --- perbaikan dari design critique --- */
+/* tombol Hapus tidak menonjol: garis, bukan blok merah */
+.btn.danger.small,.btn.danger.mini{background:#fff;color:#A3261C;border:1px solid #E0B4AE}
+.btn.danger.small:hover,.btn.danger.mini:hover{background:#FBEDEB;border-color:#A3261C}
+/* ukuran sentuh dan teks tombol kecil */
+.btn.small{min-height:40px;font-size:.875rem}
+.btn.mini{min-height:36px;font-size:.85rem}
+/* form tidak melebar di HP */
+.grid-admin>*{min-width:0}
+.grow{min-width:min(200px,100%)}
+.form input,.form select,.form textarea{min-width:0;max-width:100%}
+/* kotak konfirmasi */
+dialog.konfirm{border:0;border-radius:12px;padding:22px;max-width:min(440px,calc(100vw - 32px));box-shadow:0 20px 50px rgba(0,0,0,.25)}
+dialog.konfirm::backdrop{background:rgba(16,32,22,.45)}
+dialog.konfirm p{white-space:pre-line;margin:0 0 18px;line-height:1.55}
+dialog.konfirm .row{justify-content:flex-end;flex-wrap:wrap}
+dialog.konfirm .btn.danger{background:#A3261C;color:#fff;border:0}
+/* pengaduan */
+.aduan select{padding:10px 12px;border:1px solid #7D8F80;border-radius:10px;font:inherit;background:#fff;min-height:44px}
+.aduan .tampil-lapor{font-size:.875rem;max-width:210px;line-height:1.35}
+/* label urutan */
+.form label small.muted{font-weight:400;font-size:.8rem}
+/* cari di daftar perangkat */
+.cari-daftar{display:grid;gap:6px;font-weight:600;font-size:.9rem;color:var(--hijau-2);margin:6px 0 12px}
+.cari-daftar input{padding:10px 12px;border:1px solid #7D8F80;border-radius:10px;font:inherit;font-weight:400}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* lingkaran foto wilayah: ikon kamera */
+.wle-foto svg{width:20px;height:20px;fill:none;stroke:var(--hijau-2);stroke-width:1.8;stroke-linejoin:round}
+.wle-rt .wle-foto{width:40px;height:40px}
+/* pengaturan: daftar isi dan tombol simpan menempel */
+.set-isi{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.set-isi a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--hijau-2);font-weight:700;font-size:.9rem;text-decoration:none}
+.set-isi a:hover{border-color:var(--hijau-2)}
+#t-pengaturan h2[id]{scroll-margin-top:16px}
+.simpan-lekat{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;box-shadow:0 -6px 18px rgba(20,50,30,.08)}
+@media (max-width:900px){.aduan .tampil-lapor{max-width:none}}
+.list>*{min-width:0}

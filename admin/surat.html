@@ -4,46 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Layanan Surat – Admin Desa Karang Bahagia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="../assets/logo-bekasi.png">
 <style id="pagesize"></style>
 <style>
-:root{--bg:#f4f5f3;--card:#fff;--ink:#1d2320;--muted:#5f6b65;--line:#d9ddd9;--acc:#1f6f4a;--acc2:#e8f3ed;--err:#b3261e;--warn:#fff4d6}
+:root{--bg:#EEF3EC;--card:#fff;--ink:#1F2A22;--muted:#5A665D;--line:#D9E3D6;--acc:#2E6B3F;--acc2:#EEF3EC;--err:#A3261C;--warn:#FFF6D6;--field:#7D8F80}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
-header{background:var(--acc);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+body{margin:0;font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+header{background:#1D4428;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 header h1{font-size:17px;margin:0;font-weight:600}
 header .sub{font-size:12px;opacity:.85}
 nav{display:flex;gap:4px;margin-left:auto}
-nav button{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:14px}
+nav button{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font:inherit;font-size:15px;min-height:42px}
 nav button.on{background:#fff;color:var(--acc);font-weight:600}
 main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .view{display:none}.view.on{display:block}
-.banner{background:var(--warn);border:1px solid #ecd38a;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:13px}
+.banner{background:var(--warn);border:1px solid #F2C230;border-left:5px solid #D9A916;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .grid{display:grid;grid-template-columns:minmax(320px,440px) 1fr;gap:16px;align-items:start}
 @media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
-.card h2{font-size:15px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h2{font-size:17px;margin:0 0 12px;color:#1D4428}
 .card h3{font-size:14px;margin:16px 0 8px;color:var(--muted)}
 .jenis{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
-.jenis button{text-align:left;border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1.3}
+.jenis button{text-align:left;border:1px solid var(--line);background:#fff;padding:10px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:14px;line-height:1.3;min-height:44px}
 .jenis button.on{border-color:var(--acc);background:var(--acc2);font-weight:600}
 label.f{display:block;margin-bottom:9px}
-label.f span{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+label.f span{display:block;font-size:13.5px;font-weight:600;color:#1D4428;margin-bottom:4px}
 label.f span b{color:var(--err)}
-input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--field);border-radius:8px;font:inherit;background:#fff;min-height:42px}
+input:focus,select:focus,textarea:focus{outline:3px solid #F2C230;outline-offset:0;border-color:var(--acc)}
 input:disabled,select:disabled,textarea:disabled{background:#f1f2f0;color:#444}
 input.bad,select.bad{border-color:var(--err)}
 textarea{min-height:70px;resize:vertical}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.b{border:1px solid var(--acc);background:var(--acc);color:#fff;padding:9px 14px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600}
+.b{border:1px solid var(--acc);background:var(--acc);color:#fff;padding:10px 16px;border-radius:8px;cursor:pointer;font:inherit;font-size:15px;font-weight:700;min-height:44px;display:inline-flex;align-items:center}
 .b.alt{background:#fff;color:var(--acc)}
 .b.danger{background:#fff;color:var(--err);border-color:var(--err)}
 .b:disabled{opacity:.45;cursor:not-allowed}
-.msg{font-size:13px;margin-top:8px}
+.msg{font-size:14px;margin-top:8px}
 .msg.err{color:var(--err)}.msg.ok{color:var(--acc)}
-.hint{font-size:12px;color:var(--muted)}
+.hint{font-size:13.5px;color:var(--muted);line-height:1.5}
 .previewwrap{background:#e3e6e2;border-radius:8px;padding:16px;overflow:hidden}
 .pagebox{margin:0 auto;position:relative}
 #page{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);transform-origin:top left;position:absolute;left:0;top:0;font-family:"Times New Roman",Times,serif;font-size:12pt;line-height:1.45;color:#000;padding:12mm 20mm 15mm 25mm}
@@ -66,9 +69,9 @@ textarea{min-height:70px;resize:vertical}
 .ttd .sp{height:24mm}
 .ttd .nm{font-weight:bold;text-decoration:underline;text-transform:uppercase}
 .kosong{color:#999}
-table.list{width:100%;border-collapse:collapse;font-size:13px}
+table.list{width:100%;border-collapse:collapse;font-size:14px}
 table.list th,table.list td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
-table.list th{font-size:12px;color:var(--muted);font-weight:600}
+table.list th{font-size:13px;color:var(--muted);font-weight:700}
 .rekap{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
 .rekap div{background:var(--acc2);border-radius:6px;padding:6px 10px;font-size:13px}
 .rekap b{font-size:16px;margin-right:4px}
@@ -104,6 +107,7 @@ details.tpl summary{cursor:pointer;font-weight:600}
 </header>
 <main>
   <div class="banner" id="storewarn" style="display:none"></div>
+  <div class="banner" id="cadwarn" role="status" style="display:none"><span id="cadteks"></span><button class="b" type="button" id="btnCadSekarang">Unduh cadangan sekarang</button></div>
 
   <section class="view on" id="v-buat">
     <div class="grid">
@@ -133,9 +137,9 @@ details.tpl summary{cursor:pointer;font-weight:600}
       <div class="rekap" id="rekap"></div>
       <div style="overflow:auto"><table class="list"><thead><tr><th>Tanggal</th><th>Nomor surat</th><th>Jenis</th><th>Nama</th><th>Petugas</th><th></th></tr></thead><tbody id="riwayatBody"></tbody></table></div>
       <h3>Cadangan data</h3>
-      <p class="hint">Data tersimpan di browser komputer ini saja. Unduh cadangan secara rutin (misalnya setiap Jumat) dan simpan di flashdisk.</p>
+      <p class="hint">Data surat tersimpan di browser komputer ini saja. Unduh cadangan secara rutin (misalnya setiap Jumat) dan simpan di flashdisk. <span id="infoCadangan"></span></p>
       <div class="btns">
-        <button class="b alt" id="btnExport">Unduh cadangan (.json)</button>
+        <button class="b alt" id="btnExport">Unduh cadangan ke komputer</button>
         <label class="b alt" style="display:inline-block">Pulihkan dari cadangan<input type="file" id="fileImport" accept=".json,application/json" style="display:none"></label>
       </div>
       <div class="msg" id="backupMsg"></div>
@@ -260,6 +264,20 @@ function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){ storeOK = false; showStoreWarn(); }
 }
 let DB = load();
+// Pengingat cadangan: data surat hanya ada di browser, jadi ingatkan bila cadangan terakhir > 7 hari
+function hariSejak(iso){ if(!iso) return Infinity; return Math.floor((Date.now()-new Date(iso+'T00:00:00').getTime())/864e5); }
+function cekCadangan(){
+  const w=document.getElementById('cadwarn'), info=document.getElementById('infoCadangan');
+  const h=hariSejak(DB.lastBackup);
+  if(info) info.textContent = DB.lastBackup ? `Cadangan terakhir: ${DB.lastBackup.split('-').reverse().join('-')}.` : 'Belum pernah mengunduh cadangan.';
+  if(!w) return;
+  if(DB.letters.length && h>7){
+    document.getElementById('cadteks').textContent = DB.lastBackup
+      ? `Cadangan terakhir ${h} hari lalu. Unduh cadangan baru supaya buku agenda dan nomor surat tidak hilang bila browser dibersihkan.`
+      : `Sudah ada ${DB.letters.length} surat, tapi belum pernah dicadangkan. Unduh cadangan supaya data tidak hilang bila browser dibersihkan.`;
+    w.style.display='flex';
+  } else w.style.display='none';
+}
 function showStoreWarn(){
   const w = document.getElementById('storewarn');
   if(!storeOK){ w.style.display='block'; w.textContent='Penyimpanan browser tidak tersedia. Surat dan nomor tidak akan tersimpan setelah halaman ditutup. Buka file ini di Chrome atau Edge biasa (bukan mode penyamaran).'; }
@@ -450,6 +468,7 @@ function validate(t){
   });
   if(!cur.data._tanggal) errs.push('Tanggal surat belum diisi');
   if(cur.data._signer==='pengganti' && !DB.settings.pengganti_nama) errs.push('Nama penandatangan pengganti belum diisi di Pengaturan');
+  if(!(DB.settings.alamat_kantor||'').trim()) errs.push('Alamat kantor desa untuk kop surat belum diisi. Buka menu Pengaturan di kanan atas');
   return errs;
 }
 function saveLetter(){
@@ -473,6 +492,7 @@ function saveLetter(){
   cur.locked = rec;
   renderAll();
   toast(`Tersimpan: nomor ${nomor}`);
+  cekCadangan();
 }
 function doPrint(){
   layoutPage(cur.locked ? cur.locked.settings : DB.settings);
@@ -507,10 +527,13 @@ function download(name, text){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 document.getElementById('btnExport').onclick = ()=>{
+  DB.lastBackup = todayISO(); save();
   download(`cadangan-surat-karangbahagia-${todayISO()}.json`, JSON.stringify(DB));
   document.getElementById('backupMsg').className='msg ok';
   document.getElementById('backupMsg').textContent='Cadangan diunduh. Simpan file-nya di flashdisk.';
+  cekCadangan();
 };
+document.getElementById('btnCadSekarang').onclick = ()=> document.getElementById('btnExport').click();
 document.getElementById('fileImport').onchange = e=>{
   const f = e.target.files[0]; if(!f) return;
   const rd = new FileReader();
@@ -587,6 +610,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('v-buat').cla
 
 // ---------- start ----------
 showStoreWarn();
+cekCadangan();
 document.getElementById('hdrsub').textContent = 'Desa '+DB.settings.desa;
 cur.data = freshData(tplOf(cur.tpl));
 renderAll();
