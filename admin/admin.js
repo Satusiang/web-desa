@@ -14,6 +14,19 @@ function toast(msg, isErr = false) {
   clearTimeout(t._h);
   t._h = setTimeout(() => (t.style.display = 'none'), isErr ? 6000 : 3000);
 }
+// Kotak konfirmasi berbahasa Indonesia (pengganti confirm() bawaan browser). Hasil: Promise<boolean>
+function konfirmasi(pesan, ya = 'Ya, hapus') {
+  const d = $('#dlg-konfirm');
+  $('#dlg-konfirm-teks').textContent = pesan;
+  $('#dlg-ya').textContent = ya;
+  return new Promise(res => {
+    const selesai = (v) => { d.close(); $('#dlg-ya').onclick = $('#dlg-batal').onclick = d.oncancel = null; res(v); };
+    $('#dlg-ya').onclick = () => selesai(true);
+    $('#dlg-batal').onclick = () => selesai(false);
+    d.oncancel = (e) => { e.preventDefault(); selesai(false); };
+    d.showModal(); $('#dlg-batal').focus();
+  });
+}
 function show(view) {
   ['noconfig', 'login', 'forgot', 'reset', 'denied', 'app'].forEach(v => { $('#v-' + v).hidden = v !== view; });
 }
@@ -24,12 +37,19 @@ async function busy(btn, fn) {
   catch (e) { console.error(e); toast('Gagal: ' + (e.message || e), true); }
   finally { btn.disabled = false; btn.textContent = label; }
 }
+// Ubah pesan teknis dari database menjadi kalimat yang dimengerti petugas
+function terjemahGalat(m) {
+  m = String(m || '');
+  if (/schema cache/i.test(m)) return 'Database perlu diperbarui. Hubungi pengelola website (jalankan supabase/schema.sql terbaru).';
+  if (/row-level security|permission denied|jwt expired|invalid jwt|not authorized|401/i.test(m)) return 'Sesi login sudah berakhir atau akun ini tidak punya izin. Silakan keluar lalu masuk lagi.';
+  if (/duplicate key|already exists/i.test(m)) return 'Data yang sama sudah ada.';
+  if (/foreign key/i.test(m)) return 'Data ini masih dipakai di bagian lain, jadi belum bisa diubah atau dihapus.';
+  if (/check constraint|invalid input syntax/i.test(m)) return 'Ada isian yang tidak sesuai. Periksa kembali isian Anda.';
+  if (/payload too large|maximum allowed size|413/i.test(m)) return 'Ukuran file terlalu besar (maksimal 10 MB).';
+  return pesanGalat(m);
+}
 function check({ error, data }) {
-  if (error) {
-    // Kolom/tabel baru belum ada di database: beri tahu langkah perbaikannya
-    if (/schema cache/i.test(error.message)) throw new Error(error.message + '. Database perlu diperbarui: jalankan supabase/schema.sql terbaru di Supabase SQL Editor.');
-    throw new Error(error.message);
-  }
+  if (error) { const e = new Error(terjemahGalat(error.message)); e.asli = error.message; throw e; }
   return data;
 }
 let umkmPunyaKolomMaps = false; // true bila baris yang sedang diedit sudah punya kolom maps_url
@@ -97,22 +117,48 @@ function bukaTab(nama) {
   window.scrollTo(0, 0);
 }
 kartuMenu.forEach(b => b.addEventListener('click', () => { location.hash = b.dataset.tab; }));
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-loncat]'); if (!a) return;
+  e.preventDefault(); document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 window.addEventListener('hashchange', () => bukaTab(location.hash.slice(1)));
 $('#kembali-menu').addEventListener('click', () => { history.pushState(null, '', location.pathname); bukaTab(''); });
 
 // ---------- CRUD umum ----------
 // Satu "modul" = form + daftar untuk satu tabel. cfg: {tabel, form, list, idEl, title, judulBaru, judulEdit,
 //   order:[[kolom, asc]], baca(row) -> isi form, tulis() -> row, item(row) -> html, folder, fotoEl, previewEl, nama(row)}
+const LABEL = { berita: 'Berita', pengumuman: 'Pengumuman', agenda: 'Agenda', pembangunan: 'Kegiatan pembangunan', perangkat: 'Data pengurus',
+  lembaga: 'Lembaga', layanan: 'Syarat layanan', umkm: 'Toko' };
+const KOSONG = { berita: 'Belum ada berita. Isi form di samping untuk menulis berita pertama.', pengumuman: 'Belum ada pengumuman. Isi form di samping untuk membuat pengumuman.',
+  agenda: 'Belum ada agenda. Isi form di samping untuk menambah jadwal kegiatan.', pembangunan: 'Belum ada kegiatan pembangunan. Isi form di samping untuk menambahkannya.',
+  perangkat: 'Belum ada data pengurus. Isi form di samping, atau isi Kepala Dusun dan RT/RW di menu Wilayah.', lembaga: 'Belum ada lembaga. Isi form di samping untuk menambahkannya.',
+  layanan: 'Belum ada syarat layanan. Isi form di samping untuk menambahkannya.', umkm: 'Belum ada toko. Isi form di samping untuk mendaftarkan toko warga.' };
 function modul(cfg) {
   let cache = [];
   const form = $(cfg.form);
+  const label = LABEL[cfg.tabel] || 'Data';
   const reset = () => {
     form.reset();
     $(cfg.idEl).value = '';
     if (cfg.previewEl) $(cfg.previewEl).innerHTML = '';
     if (cfg.title) $(cfg.title).textContent = cfg.judulBaru;
+    if (cfg.resetBtn) $(cfg.resetBtn).textContent = 'Kosongkan form';
     cfg.afterReset?.();
   };
+  // Pencarian di daftar (mis. daftar perangkat yang panjang)
+  const saring = () => {
+    if (!cfg.cari) return;
+    const q = $(cfg.cari).value.trim().toLowerCase();
+    let judul = null, adaTampil = false;
+    const tutup = () => { if (judul) judul.hidden = !adaTampil; };
+    [...$(cfg.list).children].forEach(el => {
+      if (el.classList.contains('grup-judul')) { tutup(); judul = el; adaTampil = false; return; }
+      const cocok = !q || el.textContent.toLowerCase().includes(q);
+      el.hidden = !cocok; if (cocok) adaTampil = true;
+    });
+    tutup();
+  };
+  if (cfg.cari) $(cfg.cari).addEventListener('input', saring);
   const muat = async () => {
     let q = sb.from(cfg.tabel).select('*');
     for (const [k, asc] of cfg.order) q = q.order(k, { ascending: asc });
@@ -123,7 +169,8 @@ function modul(cfg) {
     $(cfg.list).innerHTML = cache.length ? cache.map(r => `${cfg.grup && cfg.grup(r) !== grupLalu ? `<p class="grup-judul">${esc(grupLalu = cfg.grup(r))}</p>` : ''}<div class="item">${cfg.foto === false ? '' : thumb(r.foto_url)}
       <div class="meta">${cfg.item(r)}</div>
       <div class="acts"><button class="btn alt small" data-edit="${r.id}">Edit</button>
-      <button class="btn danger small" data-del="${r.id}">Hapus</button></div></div>`).join('') : '<p class="empty">Belum ada data.</p>';
+      <button class="btn danger small" data-del="${r.id}">Hapus</button></div></div>`).join('') : `<p class="empty">${esc(KOSONG[cfg.tabel] || 'Belum ada data.')}</p>`;
+    saring();
   };
   $(cfg.list).addEventListener('click', async e => {
     const id = e.target.dataset.edit || e.target.dataset.del;
@@ -136,12 +183,13 @@ function modul(cfg) {
       if (cfg.pratinjau) cfg.pratinjau(r);
       else if (cfg.previewEl && safeUrl(r.foto_url)) $(cfg.previewEl).innerHTML = `<img src="${esc(r.foto_url)}" alt="">`;
       if (cfg.title) $(cfg.title).textContent = cfg.judulEdit;
+      if (cfg.resetBtn) $(cfg.resetBtn).textContent = 'Batal edit';
       form.scrollIntoView({ behavior: 'smooth' });
-    } else if (confirm(`Hapus "${cfg.nama(r)}"?`)) {
+    } else if (await konfirmasi(`Hapus ${label.toLowerCase()} "${cfg.nama(r)}"?\n\nData ini akan hilang dari website dan tidak bisa dikembalikan.`)) {
       await busy(e.target, async () => {
         check(await sb.from(cfg.tabel).delete().eq('id', r.id));
         if (r[cfg.kolomFile || 'foto_url']) await hapusFile(r[cfg.kolomFile || 'foto_url']);
-        toast('Data dihapus');
+        toast(`${label} dihapus`);
         await muat();
       });
     }
@@ -168,7 +216,7 @@ function modul(cfg) {
       if (id) check(await sb.from(cfg.tabel).update(row).eq('id', id));
       else check(await sb.from(cfg.tabel).insert(row));
       if ((f || buang) && lama?.[kol]) await hapusFile(lama[kol]);
-      toast(id ? 'Perubahan disimpan' : 'Data ditambahkan');
+      toast(id ? `Perubahan ${label.toLowerCase()} disimpan` : `${label} ditambahkan`);
       reset();
       await muat();
     });
@@ -250,7 +298,7 @@ const mPb = modul({
 
 const mPerangkat = modul({
   tabel: 'perangkat', form: '#f-perangkat', list: '#l-perangkat', idEl: '#p-id', title: '#perangkat-title',
-  judulBaru: 'Tambah orang', judulEdit: 'Edit data', resetBtn: '#p-reset',
+  judulBaru: 'Tambah orang', judulEdit: 'Edit data', resetBtn: '#p-reset', cari: '#cari-perangkat',
   fotoEl: '#p-foto', previewEl: '#p-preview', folder: 'perangkat',
   order: [['kelompok', false], ['urutan', true]],
   afterReset: () => aturPilihanLembaga(),
@@ -315,10 +363,10 @@ const mLembaga = modul({
 async function muatLembagaAman() {
   try { await mLembaga.muat(); skemaLama = false; }
   catch (e) {
-    if (!/lembaga/i.test(e.message || '')) throw e;
+    if (!/lembaga/i.test(e.asli || e.message || '')) throw e;
     skemaLama = true; lembagaCache = [];
     $('#banner-skema').hidden = false;
-    $('#l-lembaga').innerHTML = '<p class="empty">Tabel lembaga belum ada. Jalankan schema.sql terbaru (lihat peringatan kuning di atas).</p>';
+    $('#l-lembaga').innerHTML = '<p class="empty">Fitur Lembaga belum aktif. Hubungi pengelola website untuk memperbarui database (lihat peringatan kuning di atas).</p>';
     aturPilihanLembaga();
   }
 }
@@ -369,7 +417,7 @@ function gambarWilayah() {
   // Tombol foto bulat di samping nama: klik untuk memilih foto (tersimpan saat "Simpan wilayah", bila nama diisi)
   const foto = (s, jenis, extra = '') => {
     const src = s.preview || safeUrl(s.foto_url);
-    return `<label class="wle-foto${src ? ' ada' : ''}" title="${src ? 'Ganti foto' : 'Tambah foto'}">${src ? `<img src="${esc(src)}" alt="">` : '<span>+ Foto</span>'}
+    return `<label class="wle-foto${src ? ' ada' : ''}" title="${src ? 'Ganti foto' : 'Tambah foto'}">${src ? `<img src="${esc(src)}" alt="">` : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span class="sr">Tambah foto</span>'}
       <input type="file" accept="image/*" data-foto="${jenis}" ${extra} hidden></label>`;
   };
   $('#wl-editor').innerHTML = wl.dusun.length ? wl.dusun.map((d, i) => `<div class="wle-dusun" data-d="${i}">
@@ -418,7 +466,7 @@ $('#wl-editor').addEventListener('change', e => {
   s.file = f; s.preview = URL.createObjectURL(f); wl.ubah = true;
   gambarWilayah();
 });
-$('#wl-editor').addEventListener('click', e => {
+$('#wl-editor').addEventListener('click', async e => {
   const aksi = e.target.dataset.aksi; if (!aksi) return;
   wl.ubah = true;
   const di = +e.target.closest('[data-d]').dataset.d, d = wl.dusun[di];
@@ -426,7 +474,7 @@ $('#wl-editor').addEventListener('click', e => {
   const isi = (s) => s.nama.trim();
   if (aksi === 'hapus-dusun') {
     const terisi = [d.kadus, ...d.rw.flatMap(x => [x.ketua, ...x.rt])].filter(isi).length;
-    if (!confirm(`Hapus ${d.nama}${terisi ? ` beserta ${terisi} nama di dalamnya` : ''}? Perubahan baru tersimpan setelah klik "Simpan wilayah".`)) return;
+    if (!await konfirmasi(`Hapus ${d.nama}${terisi ? ` beserta ${terisi} nama di dalamnya` : ''}?\n\nPerubahan baru tersimpan setelah Anda klik "Simpan wilayah".`)) return;
     wl.dusun.splice(di, 1);
   }
   if (aksi === 'tambah-rw') {
@@ -434,13 +482,13 @@ $('#wl-editor').addEventListener('click', e => {
     d.rw.push({ no: Math.max(0, ...semua) + 1, ketua: slot(null), rt: [slot(null), slot(null), slot(null)] });
   }
   if (aksi === 'hapus-rw') {
-    if (!confirm(`Hapus RW ${tiga(r.no)} beserta RT-nya? Perubahan baru tersimpan setelah klik "Simpan wilayah".`)) return;
+    if (!await konfirmasi(`Hapus RW ${tiga(r.no)} beserta semua RT-nya?\n\nPerubahan baru tersimpan setelah Anda klik "Simpan wilayah".`)) return;
     d.rw.splice(rj, 1);
   }
   if (aksi === 'tambah-rt') r.rt.push(slot(null));
   if (aksi === 'kurangi-rt') {
     const t = r.rt[r.rt.length - 1];
-    if (isi(t) && !confirm(`Hapus RT ${tiga(r.rt.length)} (${t.nama})?`)) return;
+    if (isi(t) && !await konfirmasi(`Hapus RT ${tiga(r.rt.length)} (${t.nama})?`)) return;
     r.rt.pop();
   }
   gambarWilayah();
@@ -480,7 +528,7 @@ $('#wl-simpan').addEventListener('click', e => busy(e.target, async () => {
   const dipakai = new Set(target.map(x => x.s.id).filter(Boolean));
   const hapus = [...wl.idAwal.values()].filter(p => !dipakai.has(p.id))
     .concat(target.filter(x => x.s.id && !x.row.nama).map(x => wl.idAwal.get(x.s.id)).filter(Boolean));
-  if (hapus.length && !confirm(`${hapus.length} nama akan dihapus dari susunan:\n${hapus.map(p => `• ${p.nama} (${p.jabatan})`).join('\n')}\n\nLanjutkan?`)) return;
+  if (hapus.length && !await konfirmasi(`${hapus.length} nama akan dihapus dari website:\n${hapus.map(p => `• ${p.nama} (${p.jabatan})`).join('\n')}\n\nData ini tidak bisa dikembalikan.`, 'Ya, simpan dan hapus')) return;
   const sisip = target.filter(x => !x.s.id && x.row.nama).map(x => x.row);
   const beda = (x) => { const lama = wl.idAwal.get(x.s.id) || {}; return Object.keys(x.row).some(k => (lama[k] ?? null) !== (x.row[k] ?? null)); };
   const ubah = target.filter(x => x.s.id && x.row.nama && beda(x));
@@ -530,7 +578,7 @@ async function muatDokumen() {
 }
 $('#l-dokumen').addEventListener('click', async e => {
   const d = dokumenCache.find(x => x.id === e.target.dataset.del);
-  if (!d || !confirm(`Hapus dokumen "${d.judul}"?`)) return;
+  if (!d || !await konfirmasi(`Hapus dokumen "${d.judul}"?\n\nDokumen akan hilang dari halaman Transparansi dan tidak bisa dikembalikan.`)) return;
   await busy(e.target, async () => {
     check(await sb.from('dokumen').delete().eq('id', d.id));
     await hapusFile(d.file_url);
@@ -584,7 +632,7 @@ $('#f-apbdes').addEventListener('submit', e => {
 });
 $('#ap-hapus').addEventListener('click', async e => {
   const tahun = parseInt($('#ap-tahun').value, 10);
-  if (!apbList.some(a => a.tahun === tahun) || !confirm(`Hapus APBDes tahun ${tahun}?`)) return;
+  if (!apbList.some(a => a.tahun === tahun) || !await konfirmasi(`Hapus APBDes tahun ${tahun}?\n\nRincian anggaran tahun ini akan hilang dari website dan tidak bisa dikembalikan.`)) return;
   await busy(e.target, async () => {
     check(await sb.from('apbdes').delete().eq('tahun', tahun));
     toast(`APBDes ${tahun} dihapus`);
@@ -606,8 +654,9 @@ function gambarAduan() {
     <div class="pelapor">Pelapor: ${esc(a.nama || 'tanpa nama')}${a.kontak ? ' · ' + esc(a.kontak) : ''} (hanya terlihat petugas)</div>
     <div class="f"><select data-k="status">${STATUS.map(s => `<option ${s === a.status ? 'selected' : ''}>${s}</option>`).join('')}</select>
       <textarea data-k="tanggapan" placeholder="Tanggapan / tindak lanjut (tampil ke pelapor)">${esc(a.tanggapan)}</textarea>
-      <label class="check" style="font-size:.85rem;white-space:nowrap"><input type="checkbox" data-k="tampil" ${a.tampil ? 'checked' : ''}> Tampil publik</label>
-      <button class="btn small" data-save>Simpan</button></div></div>`).join('') : '<p class="empty">Tidak ada pengaduan.</p>';
+      <label class="check tampil-lapor"><input type="checkbox" data-k="tampil" ${a.tampil ? 'checked' : ''}> Tampilkan di halaman Lapor (tanpa nama pelapor)</label>
+      <button class="btn small" data-save>Simpan</button></div></div>`).join('')
+    : `<p class="empty">${f === 'aktif' ? 'Tidak ada pengaduan yang belum selesai. Pilih "Semua" di kotak "Tampilkan" untuk melihat semua pengaduan.' : aduanCache.length ? 'Tidak ada pengaduan dengan status ini.' : 'Belum ada pengaduan dari warga.'}</p>`;
   const aktif = aduanCache.filter(a => a.status === 'Diterima').length;
   $('#cnt-aduan').textContent = aktif ? aktif : '';
 }
@@ -701,7 +750,7 @@ async function masukDasbor(session) {
   show('app');
   bukaTab(location.hash.slice(1));
   mBerita.reset(); mPb.reset(); mPengumuman.reset();
-  await Promise.all([muatAduan(), mPengumuman.muat().catch(e => { if (!/pengumuman/i.test(e.message)) throw e; $('#banner-skema').hidden = false; $('#l-pengumuman').innerHTML = '<p class="empty">Tabel pengumuman belum ada. Jalankan schema.sql terbaru (lihat peringatan kuning di atas).</p>'; }), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), muatLembagaAman().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
+  await Promise.all([muatAduan(), mPengumuman.muat().catch(e => { if (!/pengumuman/i.test(e.asli || e.message)) throw e; $('#banner-skema').hidden = false; $('#l-pengumuman').innerHTML = '<p class="empty">Fitur Pengumuman belum aktif. Hubungi pengelola website untuk memperbarui database (lihat peringatan kuning di atas).</p>'; }), mBerita.muat(), mAgenda.muat(), muatAPB(), mPb.muat(), muatDokumen(), muatLembagaAman().then(() => mPerangkat.muat()), mLayanan.muat(), mUmkm.muat(), muatPengaturan()])
     .catch(e => toast('Gagal memuat data: ' + e.message, true));
 }
 $('#f-login').addEventListener('submit', async e => {
