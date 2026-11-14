@@ -18,7 +18,7 @@ img{max-width:100%;display:block}
 :focus-visible{outline:3px solid var(--kuning);outline-offset:2px}
 h1,h2,h3{color:var(--padi-tua);line-height:1.2;letter-spacing:-.01em}
 h2{font-size:clamp(1.4rem,2.6vw,1.85rem);font-weight:800;margin-bottom:10px}
-h3{font-size:1.06rem;font-weight:700;margin-bottom:6px}
+h3,h2.h3{font-size:1.06rem;font-weight:700;margin-bottom:6px;letter-spacing:-.01em}
 p+p{margin-top:10px}
 .lead{color:var(--redup);max-width:62ch}
 .muted{color:var(--redup)}
@@ -116,7 +116,7 @@ header.site{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px s
 .beranda-kabar .news.daftar article a{grid-template-columns:140px 1fr}
 .beranda-kabar .news.daftar .img.kosong{display:block;background:var(--padi-muda) url(../assets/logo-bekasi.png) center/34px no-repeat;opacity:.85}
 /* beranda: pilihan keperluan warga */
-.pembuka .keperluan{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px;border-top:0}
+.pembuka .keperluan{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(310px,100%),1fr));gap:12px;border-top:0}
 .pembuka .keperluan a{height:100%;background:#fff;border:1px solid var(--garis);border-radius:6px;padding:14px 16px}
 .pembuka .keperluan a:hover{border-color:var(--padi);background:#fff;box-shadow:0 6px 16px rgba(29,68,40,.08)}
 .pembuka h1{font-size:clamp(1.9rem,3.8vw,2.6rem);font-weight:800;line-height:1;letter-spacing:-.035em;color:var(--padi-tua)}
@@ -217,7 +217,7 @@ section{padding:56px 0}
 .agenda .tgl{text-align:center;border:1px solid var(--garis);border-radius:5px;overflow:hidden;line-height:1.1;background:#fff;align-self:start}
 .agenda .tgl small{display:block;background:var(--padi);color:#fff;font-size:.72rem;font-weight:700;padding:3px 0}
 .agenda .tgl b{display:block;font-size:1.45rem;color:var(--padi-tua);padding:5px 0}
-.agenda h4{color:var(--padi-tua);font-size:1rem}
+.agenda h3{color:var(--padi-tua);font-size:1rem}
 .agenda p{color:var(--redup);font-size:.9rem}
 
 /* perangkat */
@@ -474,7 +474,7 @@ table.tbl{width:100%;border-collapse:collapse;background:#fff}
 .daftar-titik{padding-left:20px;display:grid;gap:4px}
 .cari-baris{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
 .cari{flex:1 1 320px;max-width:520px}
-.cari input{width:100%;padding:12px 14px;border:1px solid #BFCDBC;border-radius:5px;font:inherit;background:#fff}
+.cari input{width:100%;padding:12px 14px;border:1px solid #7D8F80;border-radius:5px;font:inherit;background:#fff}
 .cari input:focus{outline:3px solid var(--kuning);border-color:var(--padi)}
 .direktori{display:grid;border-top:1px solid var(--garis)}
 .toko{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--garis)}
@@ -496,7 +496,7 @@ table.tbl{width:100%;border-collapse:collapse;background:#fff}
 /* formulir */
 .form{display:grid;gap:15px}
 .form label{display:grid;gap:6px;font-weight:600;font-size:.93rem;color:var(--tinta)}
-.form input,.form textarea,.form select{width:100%;padding:11px 12px;border:1px solid #BFCDBC;border-radius:5px;font:inherit;font-weight:400;color:var(--tinta);background:#fff}
+.form input,.form textarea,.form select{width:100%;padding:11px 12px;border:1px solid #7D8F80;border-radius:5px;font:inherit;font-weight:400;color:var(--tinta);background:#fff}
 .form input:focus,.form textarea:focus,.form select:focus{outline:3px solid var(--kuning);outline-offset:0;border-color:var(--padi)}
 .form .check{display:flex;align-items:center;gap:8px}
 .form .check input{width:auto}
@@ -534,7 +534,7 @@ table.tbl{width:100%;border-collapse:collapse;background:#fff}
 
 footer.site{background:var(--padi-tua);color:#CFE0D3;padding:40px 0 26px;font-size:.92rem}
 footer.site .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:30px}
-footer.site h4{color:#fff;margin-bottom:8px;font-size:1rem}
+footer.site h4,footer.site .ftr-judul{color:#fff;margin-bottom:8px;font-size:1rem;font-weight:700;letter-spacing:0}
 footer.site a{color:#fff}
 footer.site ul{list-style:none;display:grid;gap:0}
 footer.site ul a{display:inline-flex;align-items:center;min-height:44px}
@@ -586,6 +586,7 @@ body[data-page=lapor] .wa-float{display:none!important}
 .sambutan.tanpa-foto{grid-template-columns:1fr}
 .lompat{position:absolute;left:-9999px;top:0;background:var(--kuning);color:#3A2E00;padding:10px 14px;font-weight:700;z-index:100}
 .lompat:focus{left:8px;top:8px}
+main:focus{outline:none}
 .bagikan{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--garis)}
 @media print{header.site,footer.site,.wa-float,.pengumuman,.bagikan,.lompat{display:none!important}}
 

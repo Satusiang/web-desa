@@ -26,7 +26,7 @@ function kartuAgenda(a) {
   const [, m, d] = String(a.tanggal).split('-').map(Number);
   const info = [a.waktu, a.tempat].filter(Boolean).map(esc).join(', ');
   return `<div class="ag"><div class="tgl"><b>${d}</b><small>${BLN[m - 1]}</small></div>
-    <div><h4>${esc(a.judul)}</h4><p>${esc(tanggalID(a.tanggal))}${info ? ', ' + info : ''}</p>${a.keterangan ? `<p>${esc(a.keterangan)}</p>` : ''}</div></div>`;
+    <div><h3>${esc(a.judul)}</h3><p>${esc(tanggalID(a.tanggal))}${info ? ', ' + info : ''}</p>${a.keterangan ? `<p>${esc(a.keterangan)}</p>` : ''}</div></div>`;
 }
 const SILUET = '<svg class="siluet" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="17" r="9"/><path d="M7 44c1.5-10 8.5-15 17-15s15.5 5 17 15z"/></svg>';
 function kartuOrang(p) {
@@ -616,6 +616,7 @@ function pengumumanHal() {
   if (id) {
     const p = pengumumanCache.find(x => x.id === id);
     if (!p) { box.innerHTML = '<a class="kembali" href="pengumuman.html">Semua pengumuman</a><p class="empty">Pengumuman ini tidak ditemukan. Mungkin sudah dihapus atau alamatnya salah.</p>'; return; }
+    $('#judul-daftar-pg')?.remove();
     document.title = `${p.judul} – Pengumuman Desa Karang Bahagia`;
     $('.kepala-hal .jejak').innerHTML = '<a href="index.html">Beranda</a> / <a href="pengumuman.html">Pengumuman</a>';
     $('.kepala-hal h1').textContent = p.judul;

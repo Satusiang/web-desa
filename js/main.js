@@ -34,7 +34,7 @@
 
   const hdr = document.createElement('div');
   hdr.innerHTML = `
-  <div class="pengumuman" id="pengumuman" hidden><div class="wrap"><b>Pengumuman:</b><span id="pengumuman-teks"></span></div></div>
+  <aside class="pengumuman" id="pengumuman" aria-label="Pengumuman penting" hidden><div class="wrap"><b>Pengumuman:</b><span id="pengumuman-teks"></span></div></aside>
   <header class="site">
     <div class="wrap nav">
       <a class="brand" href="index.html"><img src="assets/logo-bekasi.png" alt="Logo Kabupaten Bekasi">
@@ -44,23 +44,25 @@
     </div>
   </header>`;
   document.body.prepend(...hdr.children);
-  const mainEl = document.querySelector('main'); if (mainEl) mainEl.id = 'isi';
+  const mainEl = document.querySelector('main');
+  if (mainEl) { mainEl.id = 'isi'; mainEl.tabIndex = -1; }
   const skip = document.createElement('a'); skip.href = '#isi'; skip.className = 'lompat'; skip.textContent = 'Langsung ke isi';
+  skip.addEventListener('click', e => { if (!mainEl) return; e.preventDefault(); mainEl.focus(); mainEl.scrollIntoView(); });
   document.body.prepend(skip);
 
   const ftr = document.createElement('footer');
   ftr.className = 'site';
   ftr.innerHTML = `<div class="wrap">
     <div class="cols">
-      <div><h4>Pemerintah Desa Karang Bahagia</h4>
+      <div><h2 class="ftr-judul">Pemerintah Desa Karang Bahagia</h2>
         <p>Kecamatan Karang Bahagia, Kabupaten Bekasi, Jawa Barat</p>
         <p data-bind="alamat"></p>
         <p data-bind="jam"></p></div>
-      <div><h4>Layanan</h4><ul>
+      <div><h2 class="ftr-judul">Layanan</h2><ul>
         <li><a href="layanan.html">Panduan layanan surat</a></li>
         <li><a href="lapor.html">Pengaduan &amp; cek status</a></li>
         <li><a href="transparansi.html">APBDes &amp; dokumen publik</a></li></ul></div>
-      <div><h4>Tautan</h4><ul>
+      <div><h2 class="ftr-judul">Tautan</h2><ul>
         <li><a href="pengumuman.html">Pengumuman desa</a></li>
         <li><a href="ekonomi.html">BUM Desa, Koperasi &amp; UMKM</a></li>
         <li><a href="kontak.html">Kontak &amp; nomor darurat</a></li>
@@ -77,10 +79,15 @@
   wa.dataset.wa = 'Halo Pemerintah Desa Karang Bahagia, saya ingin bertanya.';
   wa.innerHTML = '<span>Tanya petugas</span><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>';
   wa.prepend(wa.querySelector('svg'));
-  document.body.appendChild(wa);
+  const bantuan = document.createElement('aside');
+  bantuan.setAttribute('aria-label', 'Bantuan');
+  bantuan.appendChild(wa);
+  document.body.appendChild(bantuan);
 
   const toast = document.createElement('div');
   toast.id = 'toast';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
   document.body.appendChild(toast);
   window.toast = (msg) => {
     toast.textContent = msg; toast.style.display = 'block';
@@ -115,8 +122,22 @@
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     const li = document.querySelector('.ada-sub.open');
-    if (li) { tutupSub(); li.querySelector('.sub-btn').focus(); }
+    if (li) { tutupSub(); li.querySelector('.sub-btn').focus(); return; }
+    const menu = document.getElementById('menu');
+    if (menu.classList.contains('open')) { menu.classList.remove('open'); mb.setAttribute('aria-expanded', 'false'); mb.focus(); }
   });
+
+  // Pesan validasi form dalam bahasa Indonesia (pesan bawaan browser mengikuti bahasa browser)
+  document.addEventListener('invalid', e => {
+    const el = e.target, v = el.validity;
+    if (!el.setCustomValidity) return;
+    const nama = (el.labels?.[0]?.childNodes[0]?.textContent || 'Isian ini').trim().replace(/\s*\(.*\)$/, '');
+    el.setCustomValidity(v.valueMissing ? (el.tagName === 'SELECT' ? `Silakan pilih ${nama.toLowerCase()}.` : `${nama} wajib diisi.`)
+      : v.tooShort ? `${nama} minimal ${el.minLength} karakter.` : v.typeMismatch && el.type === 'email' ? 'Masukkan alamat email yang benar.'
+      : v.tooLong ? `${nama} maksimal ${el.maxLength} karakter.` : '');
+  }, true);
+  document.addEventListener('input', e => { if (e.target.setCustomValidity) e.target.setCustomValidity(''); }, true);
+  document.addEventListener('change', e => { if (e.target.setCustomValidity) e.target.setCustomValidity(''); }, true);
 
   // Elemen dengan data-wa="pesan" membuka WhatsApp kantor desa (nomor dari pengaturan admin)
   document.addEventListener('click', e => {

@@ -33,7 +33,7 @@
 <section>
   <div class="wrap dua">
     <div class="card">
-      <h3>Buat laporan</h3>
+      <h2 class="h3">Buat laporan</h2>
       <p id="lapor-off" class="muted">Memuat formulir pengaduan… Bila tidak muncul, sampaikan laporan lewat <a href="#" data-wa="Halo petugas Desa Karang Bahagia, saya ingin menyampaikan laporan:">WhatsApp kantor desa</a>.</p>
       <form class="form" id="f-lapor" hidden>
         <label>Kategori
@@ -46,19 +46,19 @@
         <label>Nomor HP (boleh dikosongkan, hanya dilihat petugas)<input id="lp-kontak" maxlength="40" inputmode="tel"></label>
         <label class="hp" aria-hidden="true">Jangan diisi<input id="lp-web" tabindex="-1" autocomplete="off"></label>
         <button class="btn" type="submit">Kirim laporan</button>
-        <p class="err" id="lp-err"></p>
-        <div id="lp-hasil"></div>
+        <p class="err" id="lp-err" role="alert"></p>
+        <div id="lp-hasil" role="status"></div>
         <p class="small muted">Nama dan nomor HP tidak ditampilkan di website. Jangan menuliskan NIK atau data pribadi orang lain. Baca <a href="privasi.html">kebijakan privasi</a>.</p>
       </form>
     </div>
     <div>
       <div class="card">
-        <h3>Cek status laporan</h3>
+        <h2 class="h3">Cek status laporan</h2>
         <form class="form" id="f-cek" hidden>
           <label>Nomor tiket<input id="ck-tiket" required placeholder="LP-261110-AB12" style="text-transform:uppercase"></label>
           <button class="btn alt" type="submit">Cek status</button>
         </form>
-        <div id="ck-hasil" style="margin-top:12px"><p class="muted">Memuat…</p></div>
+        <div id="ck-hasil" style="margin-top:12px" aria-live="polite"><p class="muted">Memuat…</p></div>
       </div>
     </div>
   </div>
